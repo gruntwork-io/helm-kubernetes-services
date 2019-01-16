@@ -1,6 +1,6 @@
 [![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_helm_services)
 
-# Kubernetes Services Helm Charts
+# [NOT YET IMPLEMENTED] Kubernetes Services Helm Charts
 
 This package contains Helm charts for deploying your applications on Kubernetes clusters with
 [Helm](https://helm.sh).
