@@ -17,11 +17,11 @@ resilient, fault tolerant, and scalable.
 A Module is a reusable, tested, documented, configurable, best-practices definition of a single piece of Infrastructure
 (e.g., Docker cluster, VPC, Jenkins, Consul), written using a combination of [Terraform](https://www.terraform.io/), Go,
 and Bash. A module contains a set of automated tests, documentation, and examples that have been proven in production,
-providing the underlying infrastructure for [Gruntwork's customers](https://www.gruntwork.io/customers).  
+providing the underlying infrastructure for [Gruntwork's customers](https://www.gruntwork.io/customers).
 
 Instead of figuring out the details of how to run a piece of infrastructure from scratch, you can reuse existing code
 that has been proven in production. And instead of maintaining all that infrastructure code yourself, you can leverage
-the work of the community to pick up infrastructure improvements through a version number bump.  
+the work of the community to pick up infrastructure improvements through a version number bump.
 
 
 ## What is a Submodule?
