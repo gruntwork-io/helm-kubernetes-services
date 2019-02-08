@@ -1,87 +1,223 @@
-# Default values for k8s-service.
+#----------------------------------------------------------------------------------------------------------------------
+# CHART PARAMETERS
+# This file declares the configuration input values for the k8s-service Helm chart.
 # This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+#----------------------------------------------------------------------------------------------------------------------
 
-nameOverride: ""
-fullnameOverride: ""
+#----------------------------------------------------------------------------------------------------------------------
+# REQUIRED VALUES
+# These values are expected to be defined and passed in by the operator when deploying this helm chart.
+#----------------------------------------------------------------------------------------------------------------------
 
-replicaCount: 1
+# containerImage is a map that describes the container image that should be used to serve the application managed by
+# this chart.
+# The expected keys are:
+#   - repository (string) (required) : The container image repository that should be used.
+#                                      E.g `nginx` ; `gcr.io/kubernetes-helm/tiller`
+#   - tag        (string) (required) : The tag of the image (e.g `latest`) that should be used. We recommend using a
+#                                      fixed tag or the SHA of the image. Avoid using the tags `latest`, `head`,
+#                                      `canary`, or other tags that are designed to be “floating”.
+#   - pullPolicy (string)            : The image pull policy to employ. Determines when the image will be pulled in. See
+#                                      the official Kubernetes docs for more info. If undefined, this will default to
+#                                      `IfNotPresent`.
+#
+# The following example deploys the `nginx:stable` image with a `IfNotPresent` image pull policy, which indicates that
+# the image should only be pulled if it has not been pulled previously.
+#
+# EXAMPLE:
+#
+# containerImage:
+#   repository: nginx
+#   tag: stable
+#   pullPolicy: IfNotPresent
 
-deploymentAnnotations: {}
+# applicationName is a string that names the application. This is used to label the pod and to name the main application
+# container in the pod spec. The label is keyed under "gruntwork.io/app-name"
 
-containerAnnotations: {}
 
-image:
-  repository: nginx
-  tag: stable
-  pullPolicy: IfNotPresent
+#----------------------------------------------------------------------------------------------------------------------
+# OPTIONAL VALUES
+# These values have defaults, but may be overridden by the operator
+#----------------------------------------------------------------------------------------------------------------------
 
+# containerPorts is a map that specifies the ports to open on the container. This is a nested map: the first map lists
+# the named ports, while the second layer lists the port spec. The named references can be used to refer to the specific
+# port of the container in other resources, like Service.
+# The expected keys of the port spec are:
+#   - port     (int)    (required) : The port in the container that should be exposed.
+#   - protocol (string) (required) : The network protocol (e.g TCP or UDP) that is exposed.
+#
+# The default config exposes TCP port 80 and binds the name `http` to it, while also exposing TCP port 443 with the
+# bound name `https`:
 containerPorts:
   http:
     port: 80
     protocol: TCP
+  https:
+    port: 443
+    protocol: TCP
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
+# livenessProbe is a map that specifies the liveness probe of the main application container. Liveness probes indicate
+# when a container has reached a fatal state where it needs to be restarted to recover. When the liveness probe fails,
+# the container is automatically recreated. You can read more about container liveness probes in the official docs:
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+# NOTE: This variable is injected directly into the container spec.
+#
+# The following example specifies an http GET based liveness probe, that will base the probe on a http GET request to
+# the port bound to name `http` (see description on `containerPorts`) on the path `/`.
+#
+# EXAMPLE:
+#
+# livenessProbe:
+#   httpGet:
+#     path: /
+#     port: http
+livenessProbe: {}
 
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+# readinessProbe is a map that specifies the readiness probe of the main application container. Readiness probes
+# indicate when a container is unable to serve traffic. When the readiness probe fails, the container is cycled out of
+# the list of available containers to the `Service`. You can read more about readiness probes in the official docs:
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+# NOTE: This variable is injected directly into the container spec.
+#
+# The following example specifies an http GET based readiness probe, that will base the probe on a http GET request to
+# the port bound to name `http` (see description on `containerPorts`) on the path `/`.
+#
+# EXAMPLE:
+#
+# readinessProbe:
+#   httpGet:
+#     path: /
+#     port: http
+readinessProbe: {}
 
-# We always include a preStop hook with a shutdown delay for eventual consistency reasons.
-# See https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
+# shutdownDelay is the number of seconds to delay the shutdown sequence of the Pod by. This is implemented as a sleep
+# call in the preStop hook. By default, this chart includes a preStop hook with a shutdown delay for eventual
+# consistency reasons. You can read more about why you might want to do this in
+# https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304 
+# You can disable this behavior by setting this value to 0.
 shutdownDelay: 5
 
-# Example:
+# sideCarContainers specifies any additional containers that should be deployed as side cars to the main application
+# container. This will be included in the Deployment container spec so that it will be included in the application Pod.
+# This is a nested map, where the first map key is used to name the container, with the nested map being injected as the
+# container spec.
+#
+# The following example specifies a data dog agent container as a side car with some environment variables, binding the
+# name `datadog`:
+#
+# EXAMPLE:
+#
 # sideCarContainers:
-#   name:
-#     image:
-#     ...
+#   datadog:
+#     image: datadog/agent:latest
+#     env:
+#       - name: DD_API_KEY
+#         value: ASDF-1234
+#       - name: SD_BACKEND
+#         value: docker
 sideCarContainers: {}
 
-# The minimum number of containers that should be up at any given moment.
-minAvailable: 1
+# replicaCount can be used to configure the number of replica pods that should be deployed and maintained at any given
+# point in time. For example, setting to 3 will signal Kubernetes (via the Deployment contoller) to maintain 3 pods.
+replicaCount: 1
 
+# deploymentAnnotations will add the provided map to the annotations for the Deployment resource created by this chart.
+# The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
+# NOTE: This variable is injected directly into the deployment spec.
+deploymentAnnotations: {}
+
+# podAnnotations will add the provided map to the annotations for the Pod resource created by the Deployment.
+# The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
+# NOTE: This variable is injected directly into the pod spec.
+podAnnotations: {}
+
+# minPodsAvailable specifies the minimum number of pods that should be available at any given point in time. This is
+# used to configure a PodDisruptionBudget for the included pod. See
+# https://blog.gruntwork.io/avoiding-outages-in-your-kubernetes-cluster-using-poddisruptionbudgets-ef6a4baa5085
+# for an introduction to PodDisruptionBudgets.
+# NOTE: setting this to 0 will skip creating the PodDisruptionBudget resource.
+minPodsAvailable: 0
+
+# service is a map that specifies the configuration for the Service resource that is created by the chart.
+# The expected keys are:
+#   - enabled     (bool)   (required) : Whether or not the Service resource should be created. If false, no Service
+#                                       resource will be created.
+#   - type        (string)            : The Service type, as defined in Kubernetes
+#                                       (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
+#                                       Defaults to ClusterIP.
+#   - annotations (map)               : Annotations that should be added to the Service resource. This is injected
+#                                       directly in to the resource yaml.
+#   - ports       (map)    (required) : A map that specifies the port bindings of the service against the Pods in the
+#                                       Deployment. This has the same structure as containerPorts, with the additional
+#                                       key of `targetPort` to indicate which port of the container the service port
+#                                       should route to. The `targetPort` can be a name defined in `containerPorts`.  
+#
+# The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to port 80
+# of the service, and names the binding as `app`:
 service:
-  type: ClusterIP
-  annotations: {}
+  enabled: true
   ports:
-    http:
+    app:
       port: 80
-      targetPort: http
+      targetPort: 80
       protocol: TCP
 
-
+# ingress is a map that can be used to configure an Ingress resource for this service. By default, turn off ingress.
+# NOTE: if you enable Ingress, then Service must also be enabled.
+# The expected keys are:
+#   - enabled     (bool)         (required) : Whether or not the Ingress resource should be created. If false, no
+#                                             Ingress resource will be created.
+#   - annotations (map)                     : Annotations that should be added to the Service resource. This is injected
+#                                             directly in to the resource yaml.
+#   - tls         (list[map])               : Sets up TLS termination on the ingress rule. Each item is a separate TLS
+#                                             rule that maps to one or more hosts specified in this ingress rule. This
+#                                             is injected directly in to the resource yaml.
+#   - hosts       (list[string]) (required) : Sets up the host routes for the ingress resource. There will be a routing
+#                                             rule for each host defined in this list.
+#   - path        (string)       (required) : The url path to match to route to the Service.
+#   - servicePort (int|string)   (required) : The port (as a number) or the name of the port on the Service to route to.
+#
+# The following example specifies an Ingress rule that routes chart-example.local/app to the Service port `app` with
+# TLS configured using the certificate key pair in the Secret `chart-example-tls`:
+#
+# EXAMPLE:
+#
+# ingress:
+#   enabled: true
+#   annotations:
+#     kubernetes.io/ingress.class: nginx
+#     kubernetes.io/tls-acme: "true"
+#   path: /app
+#   servicePort: app
+#   hosts:
+#     - chart-example.local
+#   tls: 
+#     - secretName: chart-example-tls
+#       hosts:
+#         - chart-example.local
 ingress:
   enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  path: /
-  hosts:
-    - chart-example.local
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+# containerResources specifies the amount of resources the application container will require. Only specify if you have
+# specific resource needs.
+# NOTE: This variable is injected directly into the pod spec. See the official documentation for what this might look
+# like: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+containerResources: {}
 
+# nodeSelector and affinity specify restrictions on what node this pod should be scheduled on.
+# NOTE: These variables are injected directly into the pod spec. See the official documentation for what this might look
+# like: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 nodeSelector: {}
+affinity: {}
 
+# tolerations can be used to allow the pod to be scheduled on nodes with a specific taint.
+# NOTE: This variable is injected directly into the pod spec. See the official documentation for what this might look
+# like: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
 
-affinity: {}
+# nameOverride can be used to override the default chart name.
+nameOverride: ""
+
+# fullnameOverride can be used to override the fully qualified app name, which is used to name the resources
+fullnameOverride: ""

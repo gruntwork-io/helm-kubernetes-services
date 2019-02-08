@@ -1,11 +1,14 @@
-# The main Deployment Controller for the application being deployed. This resource manages the creation and replacement
-# of the Pods backing your application.
+{{- /*
+The main Deployment Controller for the application being deployed. This resource manages the creation and replacement
+of the Pods backing your application.
+*/ -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "k8s-service.fullname" . }}
   labels:
-    # These labels are required by helm. You can read more about required labels in  the chart best pracices guide:
+    gruntwork.io/app-name: {{ .Values.applicationName }}
+    # These labels are required by helm. You can read more about required labels in the chart best pracices guide:
     # https://docs.helm.sh/chart_best_practices/#standard-labels
     helm.sh/chart: {{ include "k8s-service.chart" . }}
     app.kubernetes.io/name: {{ include "k8s-service.name" . }}
@@ -19,22 +22,24 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
+      gruntwork.io/app-name: {{ .Values.applicationName }}
       app.kubernetes.io/name: {{ include "k8s-service.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
+        gruntwork.io/app-name: {{ .Values.applicationName }}
         app.kubernetes.io/name: {{ include "k8s-service.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-      {{- with .Values.containerAnnotations -}}
+      {{- with .Values.podAnnotations }}
       annotations:
 {{ toYaml . | indent 8 }}
       {{- end }}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: {{ .Values.applicationName }}
+          image: "{{ .Values.containerImage.repository }}:{{ .Values.containerImage.tag }}"
+          imagePullPolicy: {{ .Values.containerImage.pullPolicy | default "IfNotPresent" }}
           {{- if .Values.containerPorts }}
           ports:
             {{- range $key, $value := .Values.containerPorts }}
@@ -48,8 +53,8 @@ spec:
           readinessProbe:
 {{ toYaml .Values.readinessProbe | indent 12 }}
           resources:
-{{ toYaml .Values.resources | indent 12 }}
-          # We always include a preStop hook with a shutdown delay for eventual consistency reasons.
+{{ toYaml .Values.containerResources | indent 12 }}
+          # Include a preStop hook with a shutdown delay for eventual consistency reasons.
           # See https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
           {{- if .Values.shutdownDelay }}
           lifecycle:
