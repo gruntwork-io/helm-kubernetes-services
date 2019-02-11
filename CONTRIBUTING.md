@@ -93,7 +93,7 @@ using pre-commit hooks managed using [pre-commit](http://pre-commit.com/):
 1. Make sure you have the helm client installed. See [the official docs](https://docs.helm.sh/using_helm/#install-helm)
    for instructions.
 
-Now just write your code, and every time you commit, `helm lint` will be run on the charts that you modify.
+Now write your code, and every time you commit, `helm lint` will be run on the charts that you modify.
 
 
 ## Create a pull request
