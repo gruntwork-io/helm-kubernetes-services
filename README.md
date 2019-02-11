@@ -112,7 +112,7 @@ lifecycle of a Pod. Using Controllers, you can schedule your Pods as:
 
 This Package and its Charts are maintained by [Gruntwork](http://www.gruntwork.io/). If you are looking for help or
 commercial support, send an email to
-[support@gruntwork.io](mailto:support@gruntwork.io?Subject=GKE%20Module).
+[support@gruntwork.io](mailto:support@gruntwork.io?Subject=Helm%20Kubernetes%20Services%20Module).
 
 Gruntwork can help with:
 

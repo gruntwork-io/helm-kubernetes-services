@@ -1,0 +1,665 @@
+# Kubernetes Service Helm Chart
+
+This Helm Chart can be used to deploy your application container under a
+[Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) resource onto your Kubernetes
+cluster. You can use this Helm Chart to run and deploy a long-running container, such as a web service or backend
+microservice. The container will be packaged into
+[Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) that are managed by the `Deployment`
+controller.
+
+This Helm Chart can also be used to front the `Pods` of the `Deployment` resource with a
+[Service](https://kubernetes.io/docs/concepts/services-networking/service/) to provide a stable endpoint to access the
+`Pods`, as well as load balance traffic to them. The Helm Chart can also specify
+[Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) rules to further configure complex routing
+rules in front of the `Service`.
+
+
+## How to use this chart?
+
+* See the [root README](/README.md) for general instructions on using Gruntwork Helm Charts.
+* See the [examples](/examples) folder for example usage.
+* See the provided [values.yaml](./values.yaml) file for the required and optional configuration values that you can set
+  on this chart.
+
+
+## What resources does this Helm Chart deploy?
+
+The following resources will be deployed with this Helm Chart, depending on which configuration values you use:
+
+- `Deployment`: The main `Deployment` controller that will manage the application container image specified in the
+                `containerImage` input value.
+- `Service`: The `Service` resource providing a stable endpoint that can be used to address to `Pods` created by the
+             `Deployment` controller. Created only if you configure the `service` input (and set
+             `service.enabled = true`).
+- `Ingress`: The `Ingress` resource providing host and path routing rules to the `Service` for the deployed `Ingress`
+             controller in the cluster. Created only if you configure the `ingress` input (and set
+             `ingress.enabled = true`).
+- `PodDisruptionBudget`: The `PodDisruptionBudget` resource that specifies a disruption budget for the `Pods` managed by
+                         the `Deployment`. This manages how many pods can be disrupted by a voluntary disruption (e.g
+                         node maintenance). Created if you specify a non-zero value for the `minPodsAvailable` input
+                         value.
+
+
+## How do I expose my application internally to the cluster?
+
+In general, `Pods` are considered ephemeral in Kubernetes. `Pods` can come and go at any point in time, either because
+containers fail or the underlying instances crash. In either case, the dynamic nature of `Pods` make it difficult to
+consistently access your application if you individually addressing the `Pods` directly.
+
+Traditionally, this is solved using service discovery, where you have a stateful system that the `Pods` would register
+to when they are available. Then, your other applications can query the system to find all the available `Pods` and
+access one of the available ones.
+
+Kubernetes provides a built in mechanism for service discovery in the `Service` resource. `Services` are an abstraction
+that groups a set of `Pods` behind a consistent, stable endpoint to address them. By creating a `Service` resource, you
+can provide a single endpoint to other applications to connect to the `Pods` behind the `Service`, and not worry about
+the dynamic nature of the `Pods`.
+
+You can read a more detailed description of `Services` in [the official
+documentation](https://kubernetes.io/docs/concepts/services-networking/service/). Here we will cover just enough to
+understand how to access your app.
+
+By default, this Helm Chart will deploy your application container in a `Pod` that exposes ports 80 and 443. These will
+be exposed to the Kubernetes cluster behind the `Service` resource, which exposes port 80. You can modify this behavior
+by overriding the `containerPorts` input value and the `service` input value. See the corresponding section in the
+`values.yaml` file for more details.
+
+Once the `Service` is created, you can check what endpoint the `Service` provides by querying Kubernetes using
+`kubectl`. First, retrieve the `Service` name that is outputted in the install summary when you first install the Helm
+Chart. If you forget, you can get the same information at a later point using `helm status`. For example, if you had
+previously installed this chart under the name `edge-service`, you can run the following command to see the created
+resources:
+
+```bash
+$ helm status edge-service
+LAST DEPLOYED: Fri Feb  8 16:25:49 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/Service
+NAME                AGE
+edge-service-nginx  24m
+
+==> v1/Deployment
+edge-service-nginx  24m
+
+==> v1/Pod(related)
+
+NAME                                 READY  STATUS   RESTARTS  AGE
+edge-service-nginx-844c978df7-f5wc4  1/1    Running  0         24m
+edge-service-nginx-844c978df7-mln26  1/1    Running  0         24m
+edge-service-nginx-844c978df7-rdsr8  1/1    Running  0         24m
+```
+
+This will show you some metadata about the release, the deployed resources, and any notes provided by the Helm Chart. In
+this example, the service name is `edge-service-nginx` so we will use that to query the `Service`:
+
+```bash
+$ kubectl get service edge-service-nginx
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+edge-service-nginx   ClusterIP   172.20.186.176   <none>        80/TCP    27m
+```
+
+Here you can see basic information about the `Service`. The important piece of information is the `CLUSTER-IP` and
+`PORT` fields, which tell you the available endpoint for the `Service`, and any exposed ports. Given that, any `Pod` in
+your Kubernetes cluster can access the `Pods` of this application by hitting `{CLUSTER-IP}:{PORT}`. So for this example,
+that will be `172.20.186.176:80`.
+
+But what if you want to automatically find a `Service` by name? The name of the `Service` created by this Helm Chart is
+always `{RELEASE_NAME}-{applicationName}`, where `applicationName` is provided in the input value and `RELEASE_NAME` is
+set when you install the Helm Chart. This means that the name is predictable, while the allocated IP address may not be.
+
+To address the `Service` by name, Kubernetes provides two ways:
+
+- environment variables
+- DNS
+
+### Addressing Service by Environment Variable
+
+For each active `Service` that a `Pod` has access to, Kubernetes will automatically set a set of environment variables
+in the container. These are `{SVCNAME}_SERVICE_HOST` and `{SVCNAME}_SERVICE_PORT` to get the host address (ip address)
+and port respectively, where `SVCNAME` is the name of the `Service`. Note that `SVCNAME` will be the all caps version
+with underscores of the `Service` name.
+
+Using the previous example where we installed this chart with a release name `edge-service` and `applicationName`
+`nginx`, we get the `Service` name `edge-service-nginx`. Kubernetes will expose the following environment variables to
+all containers that can access the `Service`:
+
+```
+EDGE_SERVICE_NGINX_SERVICE_HOST=172.20.186.176
+EDGE_SERVICE_NGINX_SERVICE_PORT=80
+```
+
+Note that environment variables are set when the container first boots up. This means that if you already `Pods`
+deployed in your system before the `Service` was created, you will have to cycle the `Pods` in order to get the
+environment variables. If you wish to avoid ordering issues, you can use the DNS method to address the `Service`
+instead, if that is available.
+
+### Addressing Service by DNS
+
+If your Kubernetes cluster is deployed with the DNS add-on (this is automatically installed for EKS and GKE), then you
+can rely on DNS to address your `Service`. Every `Service` in Kubernetes will register the domain
+`{SVCNAME}.{NAMESPACE}.svc.cluster.local` to the DNS service of the cluster. This means that all your `Pods` in the
+cluster can get the `Service` host by hitting that domain.
+
+The `NAMESPACE` in the domain refers to the `Namespace` where the `Service` was created. By default, all resources are
+created in the `default` namespace. This is configurable at install time of the Helm Chart using the `--namespace`
+option.
+
+In our example, we deployed chart to the `default` `Namespace`, and the `Service` name is `edge-service-nginx`. So in
+this case, the domain of the `Service` will be `edge-service-nginx.default.svc.cluster.local`. When any `Pod` addresses
+that domain, it will get the address `172.20.186.176`.
+
+Note that DNS does not resolve ports, so in this case, you will have to know which port the `Service` uses. So in your
+`Pod`, you will have to know that the `Service` exposes port `80` when you address it in your code for the container as
+`edge-service-nginx.default.svc.cluster.local:80`. However, like the `Service` name, this should be predictable since it
+is specified in the Helm Chart input value.
+
+
+## How do I expose my application externally, outside of the cluster?
+
+Similar to the previous section ([How do I expose my application internally to the
+cluster?](#how-do-i-expose-my-application-internally-to-the-cluster), you can use a `Service` resource to expose your
+application externally. The primary service type that facilitates external access is the `NodePort` `Service` type.
+
+The `NodePort` `Service` type will expose the `Service` by binding an available port on the network interface of the
+physical machines running the `Pod`. This is different from a network interface internal to Kubernetes, which is only
+accessible within the cluster. Since the port is on the host machine network interface, you can access the `Service` by
+hitting that port on the node.
+
+For example, suppose you had a 2 node Kubernetes cluster deployed on EC2. Suppose further that all your EC2 instances
+have public IP addresses that you can access. For the sake of this example, we will assign random IP addresses to the
+instances:
+
+- 54.219.117.250
+- 38.110.235.198
+
+Now let's assume you deployed this helm chart using the `NodePort` `Service` type. You can do this by setting the
+`service.type` input value to `NodePort`:
+
+```yaml
+service:
+  enabled: true
+  type: NodePort
+  ports:
+    app:
+      port: 80
+      targetPort: 80
+      protocol: TCP
+```
+
+When you install this helm chart with this input config, helm will deploy the `Service` as a `NodePort`, binding an
+available port on the host machine to access the `Service`. You can confirm this by querying the `Service` using
+`kubectl`:
+
+```bash
+$ kubectl get service edge-service-nginx
+NAME                TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+edge-service-nginx  NodePort   10.99.244.96   <none>        80:31035/TCP   33s
+```
+
+In this example, you can see that the `Service` type is `NodePort` as expected. Additionally, you can see that the there
+is a port binding between port 80 and 31035. This port binding refers to the binding between the `Service` port (80 in
+this case) and the host port (31035 in this case).
+
+One thing to be aware of about `NodePorts` is that the port binding will exist on all nodes in the cluster. This means
+that, in our 2 node example, both nodes now have a port binding of 31035 on the host network interface that routes to
+the `Service`, regardless of whether or not the node is running the `Pods` backing the `Service` endpoint. This means
+that you can reach the `Service` on both of the following endpoints:
+
+- `54.219.117.250:31035`
+- `38.110.235.198:31035`
+
+This means that no two `Service` can share the same `NodePort`, as the port binding is shared across the cluster.
+Additionally, if you happen to hit a node that is not running a `Pod` backing the `Service`, Kubernetes will
+automatically hop to one that is.
+
+You might use the `NodePort` if you do not wish to manage load balancers through Kubernetes, or if you are running
+Kubernetes on prem where you do not have native support for managed load balancers.
+
+To summarize:
+
+- `NodePort` is the simplest way to expose your `Service` to externally to the cluster.
+- You have a limit on the number of `NodePort` `Services` you can have in your cluster, imposed by the number of open ports
+  available on your host machines.
+- You have potentially inefficient hopping if you happen to route to a node that is not running the `Pod` backing the
+  `Service`.
+
+Additionally, Kubernetes provides two mechanisms to manage an external load balancer that routes to the `NodePort` for
+you. The two ways are:
+
+- [Using a `LoadBalancer` `Service` type](#loadbalancer-service-type)
+- [Using `Ingress` resources with an `Ingress Controller`](#ingress-and-ingress-controllers)
+
+### LoadBalancer Service Type
+
+The `LoadBalancer` `Service` type will expose the `Service` by allocating a managed load balancer in the cloud that is
+hosting the Kubernetes cluster. On AWS, this will be an ELB, while on GCP, this will be a Cloud Load Balancer. When the
+`LoadBalancer` `Service` is created, Kubernetes will automatically create the underlying load balancer resource in the
+cloud for you, and create all the target groups so that they route to the `Pods` backing the `Service`.
+
+You can deploy this helm chart using the `LoadBalancer` `Service` type by setting the `service.type` input value to
+`LoadBalancer`:
+
+```yaml
+service:
+  enabled: true
+  type: LoadBalancer
+  ports:
+    app:
+      port: 80
+      targetPort: 80
+      protocol: TCP
+```
+
+When you install this helm chart with this input config, helm will deploy the `Service` as a `LoadBalancer`, allocating
+a managed load balancer in the cloud hosting your Kubernetes cluster. You can get the attached load balancer by querying
+the `Service` using `kubectl`. In this example, we will assume we are using EKS:
+
+```
+$ kubectl get service edge-service-nginx
+NAME                 TYPE           CLUSTER-IP    EXTERNAL-IP        PORT(S)        AGE
+edge-service-nginx   LoadBalancer   172.20.7.35   a02fef4d02e41...   80:32127/TCP   1m
+```
+
+Now, in this example, we have an entry in the `EXTERNAL-IP` field. This is truncated here, but you can get the actual
+output when you describe the service:
+
+```
+$ kubectl describe service edge-service-nginx
+Name:                     edge-service-nginx
+Namespace:                default
+Labels:                   app.kubernetes.io/instance=edge-service
+                          app.kubernetes.io/managed-by=Tiller
+                          app.kubernetes.io/name=nginx
+                          gruntwork.io/app-name=nginx
+                          helm.sh/chart=k8s-service-0.1.0
+Annotations:              <none>
+Selector:                 app.kubernetes.io/instance=edge-service,app.kubernetes.io/name=nginx,gruntwork.io/app-name=nginx
+Type:                     LoadBalancer
+IP:                       172.20.7.35
+LoadBalancer Ingress:     a02fef4d02e4111e9891806271fc7470-173030870.us-west-2.elb.amazonaws.com
+Port:                     app  80/TCP
+TargetPort:               80/TCP
+NodePort:                 app  32127/TCP
+Endpoints:                10.0.3.19:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:
+  Type    Reason                Age   From                Message
+  ----    ------                ----  ----                -------
+  Normal  EnsuringLoadBalancer  2m    service-controller  Ensuring load balancer
+  Normal  EnsuredLoadBalancer   2m    service-controller  Ensured load balancer
+```
+
+In the describe output, there is a field named `LoadBalancer Ingress`. When you have a `LoadBalancer` `Service` type,
+this field contains the public DNS endpoint of the associated load balancer resource in the cloud provider. In this
+case, we have an AWS ELB instance, so this endpoint is the public endpoint of the associated ELB resource.
+
+Eagle eyed readers might also notice that there is an associated `NodePort` on the resource. This is because under the
+hood, `LoadBalancer` `Services` utilize `NodePorts` to handle the connection between the managed load balancer of the
+cloud provider and the Kubernetes `Pods`. This is because at this time, there is no portable way to ensure that the
+network between the cloud load balancers and Kubernetes can be shared such that the load balancers can route to the
+internal network of the Kubernetes cluster. Therefore, Kubernetes resorts to using `NodePort` as an abstraction layer to
+connect the `LoadBalancer` to the `Pods` backing the `Service`. This means that `LoadBalancer` `Services` share the same
+drawbacks as using a `NodePort` `Service`.
+
+To summarize:
+
+- `LoadBalancer` provides a way to set up a cloud load balancer resource that routes to the provisioned `NodePort` on
+  each node in your Kubernetes cluster.
+- `LoadBalancer` can be used to provide a persistent endpoint that is robust to the ephemeral nature of nodes in your
+  cluster. E.g it is able to route to live nodes in the face of node failures.
+- `LoadBalancer` does not support weighted balancing. This means that you cannot balance the traffic so that it prefers
+  nodes that have more instances of the `Pod` running.
+- Note that under the hood, `LoadBalancer` utilizes a `NodePort` `Service`, and thus shares the same limits as `NodePort`.
+
+### Ingress and Ingress Controllers
+
+`Ingress` is a mechanism in Kubernetes that abstracts externally exposing a `Service` from the `Service` config itself.
+`Ingress` resources support:
+
+- assigning an externally accessible URL to a `Service`
+- perform hostname and path based routing of `Services`
+- load balance traffic using customizable balancing rules
+- terminate SSL
+
+You can read more about `Ingress` resources in [the official
+documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/). Here, we will cover the basics to
+understand how `Ingress` can be used to externally expose the `Service`.
+
+At a high level, the `Ingress` resource is used to specify the configuration for a particular `Service`. In turn, the
+`Ingress Controller` is responsible for fulfilling those configurations in the cluster. This means that the first
+decision to make in using `Ingress` resources, is selecting an appropriate `Ingress Controller` for your cluster.
+
+#### Choosing an Ingress Controller
+
+Before you can use an `Ingress` resource, you must install an `Ingress Controller` in your Kubernetes cluster. There are
+many kinds of `Ingress Controllers` available, each with different properties. You can see [a few examples listed in the
+official documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-controllers).
+
+When you use an external cloud `Ingress Controller` such as the [GCE Ingress
+Controller](https://github.com/kubernetes/ingress-gce/blob/master/README.md) or [AWS ALB Ingress
+Controller](https://github.com/kubernetes-sigs/aws-alb-ingress-controller), Kubernetes will allocate an externally
+addressable load balancer (for GCE this will be a Cloud Load Balancer and for AWS this will be an ALB) that fulfills the
+`Ingress` rules. This includes routing the domain names and paths to the right `Service` as configured by the `Ingress`
+rules. Additionally, Kubernetes will manage the target groups of the load balancer so that they are up to date with
+the latest `Ingress` configuration. However, in order for this to work, there needs to be some way for the load balancer
+to connect to the `Pods` servicing the `Service`. Since the `Pods` are internal to the Kubernetes network and the load
+balancers are external to the network, there must be a `NodePort` that links the two together. As such, like the
+`LoadBalancer` `Service` type, these `Ingress Controllers` also require a `NodePort` under the hood.
+
+<!-- TODO: include commentary on how to associate host domains to the Ingress Controller -->
+
+Alternatively, you can use an internal `Ingress Controller` that runs within Kubernetes as `Pods`. For example, the
+official `nginx Ingress Controller` will launch `nginx` as `Pods` within your Kubernetes cluster. These `nginx` `Pods`
+are then configured using `Ingress` resources, which then allows `nginx` to route to the right `Pods`. Since the `nginx`
+`Pods` are internal to the Kubernetes network, there is no need for your `Services` to be `NodePorts` as they are
+addressable within the network by the `Pods`. However, this means that you need some other mechanism to expose `nginx`
+to the outside world, which will require a `NodePort`. The advantage of this approach, despite still requiring a
+`NodePort`, is that you can have a single `NodePort` that routes to multiple services using hostnames or paths as
+managed by `nginx`, as opposed to requiring a `NodePort` per `Service` you wish to expose.
+
+Which `Ingress Controller` type you wish to use depends on your infrastructure needs. If you have relatively few
+`Services`, and you want the simplicity of a managed cloud load balancer experience, you might opt for the external
+`Ingress Controllers` such as GCE and AWS ALB controllers. On the other hand, if you have thousands of micro services
+that push you to the limits of the available number of ports on a host machine, you might opt for an internal `Ingress
+Controller` approach. Whichever approach you decide, be sure to document your decision where you install the particular
+`Ingress Controller` so that others in your team know and understand the tradeoffs you made.
+
+#### Configuring Ingress for your Service
+
+Once you have an `Ingress Controller` installed and configured on your Kuberentes cluster, you can now start creating
+`Ingress` resources to add routes to it. This helm chart supports configuring an `Ingress` resource to complement the
+`Service` resource that is created in the chart.
+
+To add an `Ingress` resource, first make sure you have a `Service` enabled on the chart. Depending on the chosen
+`Ingress Controller`, the `Service` type should be `NodePort` or `ClusterIP`. Here, we will create a `NodePort`
+`Service` exposing port 80:
+
+```yaml
+service:
+  enabled: true
+  type: NodePort
+  ports:
+    app:
+      port: 80
+      targetPort: 80
+      protocol: TCP
+```
+
+Then, we will add the configuration for the `Ingress` resource by specifying the `ingress` input value. For this
+example, we will assume that we want to route `/app` to our `Service`, with the domain hosted on `app.yourco.com`:
+
+```yaml
+ingress:
+   enabled: true
+   path: /app
+   servicePort: 80
+   hosts:
+     - app.yourco.com
+```
+
+This will configure the load balancer backing the `Ingress Controller` that will route any traffic with host and path
+prefix `app.yourco.com/app` to the `Service` on port 80. If `app.yourco.com` is configured to point to the `Ingress
+Controller` load balancer, then once you deploy the helm chart you should be able to start accessing your app on that
+endpoint.
+
+
+## How do I check the status of the rollout?
+
+This Helm Chart packages your application into a `Deployment` controller. The `Deployment` controller will be
+responsible with managing the `Pods` of your application, ensuring that the Kubernetes cluster matches the desired state
+configured by the chart inputs.
+
+When the Helm Chart installs, `helm` will mark the installation as successful when the resources are created. Under the
+hood, the `Deployment` controller will do the work towards ensuring the desired number of `Pods` are up and running.
+
+For example, suppose you set the `replicaCount` variable to 3 when installing this chart. This will configure the
+`Deployment` resource to maintain 3 replicas of the `Pod` at any given time, launching new ones if there is a deficit or
+removing old ones if there is a surplus.
+
+To see the current status of the `Deployment`, you can query Kubernetes using `kubectl`. The `Deployment` resource of
+the chart are labeled with the `applicationName` input value and the release name provided by helm. So for example,
+suppose you deployed this chart using the following `values.yaml` file and command:
+
+```yaml
+applicationName: nginx
+containerImage:
+  repository: nginx
+  tag: stable
+```
+
+```bash
+$ helm install -n edge-service gruntwork/k8s-service
+```
+
+In this example, the `applicationName` is set to `nginx`, while the release name is set to `edge-service`. This chart
+will then install a `Deployment` resource in the default `Namespace` with the following labels that uniquely identifies
+it:
+
+```
+app.kubernetes.io/name: nginx
+app.kubernetes.io/instance: edge-service
+```
+
+So now you can query Kubernetes for that `Deployment` resource using these labels to see the state:
+
+```bash
+$ kubectl get deployments -l "app.kubernetes.io/name=nginx,app.kubernetes.io/instance=edge-service"
+NAME                 DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+edge-service-nginx   3         3         3            1           24s
+```
+
+This includes a few useful information:
+
+- `DESIRED` lists the number of `Pods` that should be running in your cluster.
+- `CURRENT` lists how many `Pods` are currently created in the cluster.
+- `UP-TO-DATE` lists how many `Pods` are running the desired image.
+- `AVAILABLE` lists how many `Pods` are currently ready to serve traffic, as defined by the `readinessProbe`.
+
+When all the numbers are in sync and equal, that means the `Deployment` was rolled out successfully and all the `Pods`
+are passing the readiness healthchecks.
+
+In the example output above, note how the `Available` count is `1`, but the others are `3`. This means that all 3 `Pods`
+were successfully created with the latest image, but only `1` of them successfully came up. You can dig deeper into the
+individual `Pods` to check the status of the unavailable `Pods`. The `Pods` are labeled the same way, so you can pass in
+the same label query to get the `Pods` managed by the deployment:
+
+```bash
+$ kubectl get pods -l "app.kubernetes.io/name=nginx,app.kubernetes.io/instance=edge-service"
+NAME                                  READY     STATUS    RESTARTS   AGE
+edge-service-nginx-844c978df7-f5wc4   1/1       Running   0          52s
+edge-service-nginx-844c978df7-mln26   0/1       Pending   0          52s
+edge-service-nginx-844c978df7-rdsr8   0/1       Pending   0          52s
+```
+
+This will show you the status of each individual `Pod` in your deployment. In this example output, there are 2 `Pods`
+that are in the `Pending` status, meaning that they have not been scheduled yet. We can look into why the `Pod` failed
+to schedule by getting detailed information about the `Pod` with the `describe` command. Unlike `get pods`, `describe
+pod` requires a single `Pod` so we will grab the name of one of the failing `Pods` above and feed it to `describe pod`:
+
+```bash
+$ kubectl describe pod edge-service-nginx-844c978df7-mln26
+Name:               edge-service-nginx-844c978df7-mln26
+Namespace:          default
+Priority:           0
+PriorityClassName:  <none>
+Node:               <none>
+Labels:             app.kubernetes.io/instance=edge-service
+                    app.kubernetes.io/name=nginx
+                    gruntwork.io/app-name=nginx
+                    pod-template-hash=4007534893
+Annotations:        <none>
+Status:             Pending
+IP:
+Controlled By:      ReplicaSet/edge-service-nginx-844c978df7
+Containers:
+  nginx:
+    Image:        nginx:stable
+    Ports:        80/TCP, 443/TCP
+    Host Ports:   0/TCP, 0/TCP
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-mgkr9 (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  default-token-mgkr9:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-mgkr9
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type     Reason            Age               From               Message
+  ----     ------            ----              ----               -------
+  Warning  FailedScheduling  1m (x25 over 3m)  default-scheduler  0/2 nodes are available: 2 Insufficient pods.
+```
+
+This will output detailed information about the `Pod`, including an event log. In this case, the roll out failed because
+there is not enough capacity in the cluster to schedule the `Pod`.
+
+
+## How do you update the application to a new version?
+
+To update the application to a new version, you can upgrade the Helm Release using updated values. For example, suppose
+you deployed `nginx` version 1.15.4 using this Helm Chart with the following values:
+
+```yaml
+containerImage:
+  repository: nginx
+  tag: 1.15.4
+
+applicationName: nginx
+```
+
+In this example, we will further assume that you deployed this chart with the above values using the release name
+`edge-service`, using a command similar to below:
+
+```bash
+$ helm install -f values.yaml --name edge-service gruntwork/k8s-service
+```
+
+Now let's try upgrading `nginx` to version 1.15.8. To do so, we will first update our values file:
+
+```yaml
+containerImage:
+  repository: nginx
+  tag: 1.15.8
+
+applicationName: nginx
+```
+
+The only difference here is the `tag` of the `containerImage`.
+
+Next, we will upgrade our release using the updated values. To do so, we will use the `helm upgrade` command:
+
+```bash
+$ helm upgrade -f values.yaml edge-service gruntwork/k8s-service
+```
+
+This will update the created resources with the new values provided by the updated `values.yaml` file. For this example,
+the only resource that will be updated is the `Deployment` resource, which will now have a new `Pod` spec that points to
+`nginx:1.15.8` as opposed to `nginx:1.15.4`. This automatically triggers a rolling deployment internally to Kubernetes,
+which will launch new `Pods` using the latest image, and shut down old `Pods` once those are ready.
+
+You can read more about how changes are rolled out on `Deployment` resources in [the official
+documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment).
+
+Note that certain changes will lead to a replacement of the `Deployment` resource. For example, updating the
+`applicationName` will cause the `Deployment` resource to be deleted, and then created. This can lead to down time
+because the resources are replaced in an uncontrolled fashion.
+
+
+## How do I ensure a minimum number of Pods are available across node maintenance?
+
+Sometimes, you may want to ensure that a specific number of `Pods` are always available during [voluntary
+maintenance](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
+This chart exposes an input value `minPodsAvailable` that can be used to specify a minimum number of `Pods` to maintain
+during a voluntary maintenance activity. Under the hood, this chart will create a corresponding `PodDisruptionBudget` to
+ensure that a certain number of `Pods` are up before attempting to terminate additional ones.
+
+You can read more about `PodDisruptionBudgets` in [our blog post covering the
+topic](https://blog.gruntwork.io/avoiding-outages-in-your-kubernetes-cluster-using-poddisruptionbudgets-ef6a4baa5085)
+and in [the official
+documentation](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#how-disruption-budgets-work).
+
+
+## Why does the Pod have a preStop hook with a Shutdown Delay?
+
+When a `Pod` is removed from a Kubernetes cluster, the control plane notifies all nodes to remove the `Pod` from
+registered addresses. This includes removing the `Pod` from the list of available `Pods` to service a `Service`
+endpoint. However, because Kubernetes is a distributed system, there is a delay between the shutdown sequence and the
+`Pod` being removed from available addresses. As a result, the `Pod` could still get traffic despite it having already
+been shutdown on the node it was running on.
+
+Since there is no way to guarantee that the deletion has propagated across the cluster, we address this eventual
+consistency issue by adding an arbitrary delay between the `Pod` being deleted and the initiation of the `Pod` shutdown
+sequence. This is accomplished by adding a `sleep` command in the `preStop` hook.
+
+You can control the length of time to delay with the `shutdownDelay` input value. You can also disable this behavior by
+setting the `shutdownDelay` to 0.
+
+You can read more about this topic in [our blog post
+"Delaying Shutdown to Wait for Pod Deletion
+Propagation"](https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304).
+
+
+## What is a sidecar container?
+
+In Kubernetes, `Pods` are one or more tightly coupled containers that are deployed together. The containers in the `Pod`
+share, amongst other things, the network stack, the IPC namespace, and in some cases the PID namespace. You can read
+more about the resources that the containers in a `Pod` share in [the official
+documentation](https://kubernetes.io/docs/concepts/workloads/pods/pod/#what-is-a-pod).
+
+Sidecar Containers are additional containers that you wish to deploy in the `Pod` housing your application container.
+This helm chart supports deploying these containers by configuring the `sideCarContainers` input value. This input value
+is a map between the side car container name and the values of the container spec. The spec is rendered directly into
+the `Deployment` resource, with the `name` being set to the key. For example:
+
+```yaml
+sideCarContainers:
+  datadog:
+    image: datadog/agent:latest
+    env:
+      - name: DD_API_KEY
+        value: ASDF-1234
+      - name: SD_BACKEND
+        value: docker
+  nginx:
+    image: nginx:1.15.4
+```
+
+This input will be rendered in the `Deployment` resource as:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  ... Snipped for brevity ...
+spec:
+  ... Snipped for brevity ...
+  template:
+    spec:
+      containers:
+        ... The first entry relates to the application ...
+        - name: datadog 
+          image: datadog/agent:latest
+          env:
+            - name: DD_API_KEY
+              value: ASDF-1234
+            - name: SD_BACKEND
+              value: docker
+        - name: nginx
+          image: nginx:1.15.4
+```
+
+In this config, the side car containers are rendered as additional containers to deploy alongside the main application
+container configured by the `containerImage`, `ports`, `livenessProbe`, etc input values. Note that the
+`sideCarContainers` variable directly renders the spec, meaning that the additional values for the side cars such as
+`livenessProbe` should be rendered directly within the `sideCarContainers` input value.
