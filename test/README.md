@@ -1,24 +1,39 @@
 # Tests
 
-<!-- TODO: Replace with helm context -->
-
 This folder contains automated tests for this Module. All of the tests are written in [Go](https://golang.org/).
-Most of these are "integration tests" that deploy real infrastructure using Terraform and verify that infrastructure
-works as expected using a helper library called [Terratest](https://github.com/gruntwork-io/terratest).
+
+There are three tiers of tests for helm:
+
+- Template tests: These are tests designed to test the logic of the templates. These tests should run `helm template`
+  with various input values and parse the yaml to validate any logic embedded in the templates (e.g by reading them in
+  using client-go). Since templates are not statically typed, the goal of these tests is to promote fast cycle time
+  while catching some of the common bugs from typos or logic errors before getting to the slower integration tests.
+- Integration tests: These are tests that are designed to deploy the infrastructure and validate the resource
+  configurations. If you consider the templates to be syntactic tests, these are semantic tests that validate the
+  behavior of the deployed resources.
+- Production tests (helm tests): These are tests that are run with the helm chart after it is deployed to validate the chart
+  installed and deployed correctly. These should be smoke tests with minimal validation to ensure that the common
+  operator errors are captured as early as possible. Note that because these tests run even on a production system, they
+  should be passive and not destructive.
+
+This folder contains the "template tests" and "integration tests". Both types of tests use a helper library called
+[Terratest](https://github.com/gruntwork-io/terratest). While "template tests" do not need any infrastructure, the
+"integration tests" deploy the charts to a Kuberenetes cluster.
 
 
 
 ## WARNING WARNING WARNING
 
-**Note #1**: Many of these tests create real resources in an AWS account and then try to clean those resources up at 
-the end of a test run. That means these tests may cost you money to run! When adding tests, please be considerate of 
-the resources you create and take extra care to clean everything up when you're done!
+**Note #1**: Many of these tests create real resources in a Kubernetes cluster and then try to clean those resources up at
+the end of a test run. That means these tests may potentially pollute your Kubernetes cluster with unnecessary
+resources! When adding tests, please be considerate of the resources you create and take extra care to clean everything
+up when you're done!
 
 **Note #2**: Never forcefully shut the tests down (e.g. by hitting `CTRL + C`) or the cleanup tasks won't run!
 
 **Note #3**: We set `-timeout 60m` on all tests not because they necessarily take that long, but because Go has a
 default test timeout of 10 minutes, after which it forcefully kills the tests with a `SIGQUIT`, preventing the cleanup
-tasks from running. Therefore, we set an overlying long timeout to make sure all tests have enough time to finish and 
+tasks from running. Therefore, we set an overlying long timeout to make sure all tests have enough time to finish and
 clean up.
 
 
@@ -29,16 +44,11 @@ clean up.
 
 - Install the latest version of [Go](https://golang.org/).
 - Install [dep](https://github.com/golang/dep) for Go dependency management.
-- Install [Terraform](https://www.terraform.io/downloads.html).
-- Install [pyenv](https://github.com/pyenv/pyenv).
-- Install the following versions of python with pyenv:
-    - 2.7.12
-    - 3.5.2
-
-- Configure your AWS credentials using one of the [options supported by the AWS 
-  SDK](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html). Usually, the easiest option is to
-  set the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
-
+- Setup a Kubernetes cluster. We recommend using a local version for fast iteration:
+    - [minikube](https://github.com/kubernetes/minikube)
+    - [Kubernetes on Docker For Mac](https://docs.docker.com/docker-for-mac/kubernetes/)
+    - [Kubernetes on Docker For Windows](https://docs.docker.com/docker-for-windows/kubernetes/)
+- Install and setup [helm](https://docs.helm.sh/using_helm/#installing-helm)
 
 ### One-time setup
 
@@ -49,34 +59,14 @@ cd test
 dep ensure
 ```
 
-Download python dependencies using pip:
-
-```
-cd test/script_tests
-pip install -r requirements.txt
-```
-
-
 ### Run all the tests
-
-#### Terratest
 
 ```bash
 cd test
 go test -v -timeout 60m
 ```
 
-#### Python scripts
-
-```bash
-cd test/script_tests
-tox
-```
-
-
 ### Run a specific test
-
-#### Terratest
 
 To run a specific test called `TestFoo`:
 
@@ -85,18 +75,13 @@ cd test
 go test -v -timeout 60m -run TestFoo
 ```
 
-#### Python scripts
+### Run just the template tests
 
-TODO
+Since the integration tests require infrastructure, they can be considerably slower than the unit tests. As such, to
+promote fast test cycles, we mark all the integration tests to be skipped when using `short` mode. This means that you
+can run all the template tests using the `-short` flag:
 
-
-## Known instabilities in test
-
-- `TestEKSCluster` will sometimes fail with:
-
-  ```
-  kubernetes_config_map.eks_to_k8s_role_mapping: Post https://5D6DB4CE12C35AD89507342004154717.yl4.us-east-1.eks.amazonaws.com/api/v1/namespaces/kube-system/configmaps: dial tcp 23.23.30.22:443: i/o timeout
-  ```
-
-  This is a known issue where the EKS API does not come up immediately and there is a delay between the creation
-  completing, and the API actually being available. This is inconsistent, so try again to work around this.
+```bash
+cd test
+go test -v -short
+```

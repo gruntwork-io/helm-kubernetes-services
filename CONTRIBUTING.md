@@ -33,20 +33,6 @@ functionality you're adding in your contribution. Check out the
 [tests](https://github.com/gruntwork-io/helm-kubernetes-services/tree/master/test) folder for instructions on running
 the automated tests.
 
-Note that at Gruntwork, there are three tiers of tests for helm:
-
-- Template tests: These are tests designed to test the logic of the templates. These tests should run `helm template`
-  with various input values and parse the yaml to validate any logic embedded in the templates (e.g by reading them in
-  using client-go). Since templates are not statically typed, the goal of these tests is to promote fast cycle time
-  while catching some of the common bugs from typos or logic errors before getting to the slower integration tests.
-- Integration tests: These are tests that are designed to deploy the infrastructure and validate the resource
-  configurations. If you consider the templates to be syntactic tests, these are semantic tests that validate the
-  behavior of the deployed resources.
-- Production tests (helm tests): These are tests that are run with the helm chart after it is deployed to validate the chart
-  installed and deployed correctly. These should be smoke tests with minimal validation to ensure that the common
-  operator errors are captured as early as possible. Note that because these tests run even on a production system, they
-  should be passive and not destructive.
-
 ## Update the code
 
 At this point, make your code changes and use your new test case to verify that everything is working. As you work,
