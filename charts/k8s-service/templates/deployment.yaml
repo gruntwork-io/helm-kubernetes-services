@@ -21,13 +21,11 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      gruntwork.io/app-name: {{ .Values.applicationName }}
       app.kubernetes.io/name: {{ include "k8s-service.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        gruntwork.io/app-name: {{ .Values.applicationName }}
         app.kubernetes.io/name: {{ include "k8s-service.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
       {{- with .Values.podAnnotations }}
@@ -37,14 +35,18 @@ spec:
     spec:
       containers:
         - name: {{ .Values.applicationName }}
-          image: "{{ .Values.containerImage.repository }}:{{ .Values.containerImage.tag }}"
+          {{- $repo := required "containerImage.repository is required" .Values.containerImage.repository }}
+          {{- $tag := required "containerImage.tag is required" .Values.containerImage.tag }}
+          image: "{{ $repo }}:{{ $tag }}"
           imagePullPolicy: {{ .Values.containerImage.pullPolicy | default "IfNotPresent" }}
           {{- if .Values.containerPorts }}
           ports:
-            {{- range $key, $value := .Values.containerPorts }}
+            {{- range $key, $portSpec := .Values.containerPorts }}
+            {{- if not $portSpec.disabled }}
             - name: {{ $key }}
-              containerPort: {{ int $value.port }}
-              protocol: {{ $value.protocol }}
+              containerPort: {{ int $portSpec.port }}
+              protocol: {{ $portSpec.protocol }}
+            {{- end }}
             {{- end }}
           {{- end }}
           {{- if .Values.livenessProbe }}
@@ -57,9 +59,9 @@ spec:
           {{- end }}
           resources:
 {{ toYaml .Values.containerResources | indent 12 }}
+          {{- if gt (int .Values.shutdownDelay) 0 }}
           # Include a preStop hook with a shutdown delay for eventual consistency reasons.
           # See https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
-          {{- if .Values.shutdownDelay }}
           lifecycle:
             preStop:
               exec:

@@ -14,7 +14,6 @@ metadata:
     helm.sh/chart: {{ include "k8s-service.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    gruntwork.io/app-name: {{ .Values.applicationName }}
 {{- if .Values.service.annotations }}
 {{- with .Values.service.annotations }}
   annotations:
@@ -29,7 +28,6 @@ spec:
 {{ toYaml $value | indent 6 }}
     {{- end }}
   selector:
-    gruntwork.io/app-name: {{ .Values.applicationName }}
     app.kubernetes.io/name: {{ include "k8s-service.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
