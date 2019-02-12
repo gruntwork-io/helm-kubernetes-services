@@ -17,6 +17,17 @@ defaults: &defaults
     MINIKUBE_HOME: /home/circleci
     CHANGE_MINIKUBE_NONE_USER: "true"
 
+
+install_helm: &install_helm
+  name: install helm
+  command: |
+    # install helm
+    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz
+    tar -xvf helm.tar.gz
+    chmod +x linux-amd64/helm
+    sudo mv linux-amd64/helm /usr/local/bin/
+
+
 # Install and setup minikube
 # https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
 setup_minikube: &setup_minikube
@@ -28,12 +39,6 @@ setup_minikube: &setup_minikube
     sudo mv kubectl /usr/local/bin/
     mkdir -p ${HOME}/.kube
     touch ${HOME}/.kube/config
-
-    # install helm
-    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz
-    tar -xvf helm.tar.gz
-    chmod +x linux-amd64/helm
-    sudo mv linux-amd64/helm /usr/local/bin/
 
     # Install minikube
     curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
@@ -56,6 +61,7 @@ setup_minikube: &setup_minikube
       done
       true
     )
+
 
 install_gruntwork_utils: &install_gruntwork_utils
   name: install gruntwork utils
@@ -87,6 +93,10 @@ jobs:
       - run:
           <<: *install_gruntwork_utils
 
+      # Install helm
+      - run:
+          <<: *install_helm
+
       - save_cache:
           key: dep-{{ checksum "test/Gopkg.lock" }}
           paths:
@@ -114,6 +124,10 @@ jobs:
 
       - run:
           <<: *setup_minikube
+
+      # Install helm
+      - run:
+          <<: *install_helm
 
       - run:
           name: Install Tiller
