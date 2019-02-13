@@ -202,7 +202,6 @@
   version = "v0.4.2"
 
 [[projects]]
-  branch = "yori-helm-support"
   digest = "1:3edab856e9016f64d094f079d1c0579a26daef650fbd971a346093bbaca7411a"
   name = "github.com/gruntwork-io/terratest"
   packages = [
@@ -220,7 +219,8 @@
     "modules/ssh",
   ]
   pruneopts = "UT"
-  revision = "147c9409c7b3871689f3ac9319e42bb7a6011d40"
+  revision = "2a2ca2d080cfe8b3803744fdf1ddaf5fe87db720"
+  version = "v0.13.25"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
