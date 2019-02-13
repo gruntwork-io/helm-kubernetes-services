@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "k8s-service.name" -}}
-{{- .Values.applicationName | trunc 63 | trimSuffix "-" -}}
+{{- .Values.applicationName | required "applicationName is required" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -12,7 +12,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "k8s-service.fullname" -}}
-{{- $name := .Values.applicationName -}}
+{{- $name := required "applicationName is required" .Values.applicationName -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}

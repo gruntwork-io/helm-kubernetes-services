@@ -28,8 +28,10 @@ Get the application URL by running these commands:
 {{- else if contains "ClusterIP" $serviceType }}
   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "k8s-service.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
   {{- range $portName, $portSpec := .Values.containerPorts }}
+  {{- if not $portSpec.disabled }}
   echo "Visit http://127.0.0.1:80{{ $portSpec.port }} to use your application container serving port {{ $portName }}"
   kubectl port-forward $POD_NAME 80{{ $portSpec.port }}:{{ $portSpec.port }}
+  {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}

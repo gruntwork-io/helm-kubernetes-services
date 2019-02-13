@@ -7,6 +7,7 @@ kind: PodDisruptionBudget
 metadata:
   name: {{ include "k8s-service.fullname" . }}
   labels:
+<<<<<<< HEAD
     gruntwork.io/app-name: {{ .Values.applicationName }}
     # These labels are required by helm. You can read more about required labels in the chart best practices guide:
     # https://docs.helm.sh/chart_best_practices/#standard-labels
@@ -18,7 +19,6 @@ spec:
   minAvailable: {{ int .Values.minPodsAvailable }}
   selector:
     matchLabels:
-      gruntwork.io/app-name: {{ .Values.applicationName }}
       app.kubernetes.io/name: {{ include "k8s-service.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
