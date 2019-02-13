@@ -41,6 +41,43 @@ spec:
           imagePullPolicy: {{ .Values.containerImage.pullPolicy | default "IfNotPresent" }}
           {{- if .Values.containerPorts }}
           ports:
+            {{- /*
+					    NOTE: we check for a disabled flag here so that users of the helm
+              chart can override the default containerPorts. Specifically, defining a new
+              containerPorts in values.yaml will be merged with the default provided by the
+              chart. For example, if the user provides:
+
+                    containerPorts:
+                      app:
+                        port: 8080
+                        protocol: TCP
+
+              Then this is merged with the default and becomes:
+
+                    containerPorts:
+                      app:
+                        port: 8080
+                        protocol: TCP
+                      http:
+                        port: 80
+                        protocol: TCP
+                      https:
+                        port: 443
+                        protocol: TCP
+
+							and so it becomes append as opposed to replace. To handle this,
+              we allow users to explicitly disable predefined ports. So if the user wants to
+              replace the ports with their own, they would provide the following values file:
+
+                    containerPorts:
+                      app:
+                        port: 8080
+                        protocol: TCP
+                      http:
+                        disabled: true
+                      https:
+                        disabled: true
+            */ -}}
             {{- range $key, $portSpec := .Values.containerPorts }}
             {{- if not $portSpec.disabled }}
             - name: {{ $key }}
