@@ -126,7 +126,7 @@ func TestK8SServiceOptionalValuesAreOptional(t *testing.T) {
 }
 
 // Test that deploymentAnnotations render correctly to annotate the Deployment resource
-func TestK8SServiceDeploymentAnnotationsAnnotateCorrectly(t *testing.T) {
+func TestK8SServiceDeploymentAnnotationsRenderCorrectly(t *testing.T) {
 	t.Parallel()
 
 	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
@@ -150,7 +150,7 @@ func TestK8SServiceDeploymentAnnotationsAnnotateCorrectly(t *testing.T) {
 }
 
 // Test that podAnnotations render correctly to annotate the Pod Template Spec on the Deployment resource
-func TestK8SServicePodAnnotationsAnnotateCorrectly(t *testing.T) {
+func TestK8SServicePodAnnotationsRenderCorrectly(t *testing.T) {
 	t.Parallel()
 
 	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
