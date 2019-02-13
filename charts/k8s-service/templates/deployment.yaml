@@ -42,7 +42,7 @@ spec:
           {{- if .Values.containerPorts }}
           ports:
             {{- /*
-					    NOTE: we check for a disabled flag here so that users of the helm
+              NOTE: we check for a disabled flag here so that users of the helm
               chart can override the default containerPorts. Specifically, defining a new
               containerPorts in values.yaml will be merged with the default provided by the
               chart. For example, if the user provides:
@@ -65,7 +65,7 @@ spec:
                         port: 443
                         protocol: TCP
 
-							and so it becomes append as opposed to replace. To handle this,
+              and so it becomes append as opposed to replace. To handle this,
               we allow users to explicitly disable predefined ports. So if the user wants to
               replace the ports with their own, they would provide the following values file:
 
