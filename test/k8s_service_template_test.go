@@ -6,7 +6,6 @@
 package test
 
 import (
-	"encoding/json"
 	"path/filepath"
 	"testing"
 
@@ -144,11 +143,8 @@ func TestK8SServiceDeploymentAnnotationsAnnotateCorrectly(t *testing.T) {
 	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
 
 	// Parse the deployment and verify the annotations are set correctly
-	// NOTE: client-go is not able to decode yaml, so we first convert to json
-	jsonData, err := yaml.YAMLToJSON([]byte(out))
-	require.NoError(t, err)
 	var deployment appsv1.Deployment
-	require.NoError(t, json.Unmarshal(jsonData, &deployment))
+	helm.UnmarshalK8SYaml(t, out, &deployment)
 	assert.Equal(t, len(deployment.Annotations), 1)
 	assert.Equal(t, deployment.Annotations["unique-id"], uniqueID)
 }
@@ -171,11 +167,8 @@ func TestK8SServicePodAnnotationsAnnotateCorrectly(t *testing.T) {
 	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
 
 	// Parse the deployment and verify the annotations are set correctly
-	// NOTE: client-go is not able to decode yaml, so we first convert to json
-	jsonData, err := yaml.YAMLToJSON([]byte(out))
-	require.NoError(t, err)
 	var deployment appsv1.Deployment
-	require.NoError(t, json.Unmarshal(jsonData, &deployment))
+	helm.UnmarshalK8SYaml(t, out, &deployment)
 	renderedPodAnnotations := deployment.Spec.Template.Annotations
 	assert.Equal(t, len(renderedPodAnnotations), 1)
 	assert.Equal(t, renderedPodAnnotations["unique-id"], uniqueID)
@@ -205,11 +198,8 @@ func TestK8SServiceContainerPortsSetPortsCorrectly(t *testing.T) {
 	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
 
 	// Parse the deployment and verify the ports are set correctly
-	// NOTE: client-go is not able to decode yaml, so we first convert to json
-	jsonData, err := yaml.YAMLToJSON([]byte(out))
-	require.NoError(t, err)
 	var deployment appsv1.Deployment
-	require.NoError(t, json.Unmarshal(jsonData, &deployment))
+	helm.UnmarshalK8SYaml(t, out, &deployment)
 
 	renderedPodContainers := deployment.Spec.Template.Spec.Containers
 	require.Equal(t, len(renderedPodContainers), 1)
@@ -240,11 +230,8 @@ func TestK8SServiceShutdownDelayZeroDisablesPreStopHook(t *testing.T) {
 	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
 
 	// Parse the deployment and verify the preStop hook is not set
-	// NOTE: client-go is not able to decode yaml, so we first convert to json
-	jsonData, err := yaml.YAMLToJSON([]byte(out))
-	require.NoError(t, err)
 	var deployment appsv1.Deployment
-	require.NoError(t, json.Unmarshal(jsonData, &deployment))
+	helm.UnmarshalK8SYaml(t, out, &deployment)
 
 	renderedPodContainers := deployment.Spec.Template.Spec.Containers
 	require.Equal(t, len(renderedPodContainers), 1)
@@ -269,11 +256,8 @@ func TestK8SServiceNonZeroShutdownDelayIncludesPreStopHook(t *testing.T) {
 	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
 
 	// Parse the deployment and verify the preStop hook is set
-	// NOTE: client-go is not able to decode yaml, so we first convert to json
-	jsonData, err := yaml.YAMLToJSON([]byte(out))
-	require.NoError(t, err)
 	var deployment appsv1.Deployment
-	require.NoError(t, json.Unmarshal(jsonData, &deployment))
+	helm.UnmarshalK8SYaml(t, out, &deployment)
 
 	renderedPodContainers := deployment.Spec.Template.Spec.Containers
 	require.Equal(t, len(renderedPodContainers), 1)

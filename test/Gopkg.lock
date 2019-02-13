@@ -191,12 +191,11 @@
   revision = "7a902570cb17174de4ac788094f8ebedec136f57"
 
 [[projects]]
-  digest = "1:ce43ed27a79135fa989db1a1f1a4e653269dbb8d9da8d65ff06b3d36361d5824"
+  digest = "1:ca55309eddc07bc8324b7f76c9b7d42b08adc87ca73018fc95536c255958aa2d"
   name = "github.com/gruntwork-io/gruntwork-cli"
   packages = [
     "collections",
     "errors",
-    "files",
   ]
   pruneopts = "UT"
   revision = "6a2163138f3d10377f313428e7e367b0a6c0c1c9"
@@ -204,7 +203,7 @@
 
 [[projects]]
   branch = "yori-helm-support"
-  digest = "1:10a9f68499a7c390610cab190a5de9cfe44185d07d8b4d8d6f3c44c286f7f17e"
+  digest = "1:3edab856e9016f64d094f079d1c0579a26daef650fbd971a346093bbaca7411a"
   name = "github.com/gruntwork-io/terratest"
   packages = [
     "modules/aws",
@@ -221,7 +220,7 @@
     "modules/ssh",
   ]
   pruneopts = "UT"
-  revision = "dcb8f8dbc1fc1247bee281397a3e3dcc1fd46368"
+  revision = "147c9409c7b3871689f3ac9319e42bb7a6011d40"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
@@ -245,17 +244,6 @@
   pruneopts = "UT"
   revision = "1624edc4454b8682399def8740d46db5e4362ba4"
   version = "v1.1.5"
-
-[[projects]]
-  branch = "master"
-  digest = "1:36aebe90a13cf9128280ac834399b8bebf83685283c78df279d61c46bb2a8d83"
-  name = "github.com/mattn/go-zglob"
-  packages = [
-    ".",
-    "fastwalk",
-  ]
-  pruneopts = "UT"
-  revision = "2ea3427bfa539cca900ca2768d8663ecc8a708c1"
 
 [[projects]]
   digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
@@ -623,10 +611,13 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/ghodss/yaml",
     "github.com/gruntwork-io/terratest/modules/helm",
+    "github.com/gruntwork-io/terratest/modules/random",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
-    "gopkg.in/yaml.v2",
+    "k8s.io/api/apps/v1",
+    "k8s.io/api/core/v1",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
