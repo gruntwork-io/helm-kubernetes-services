@@ -46,7 +46,7 @@ The following charts are available in this package:
 ## How do you install the charts in this Package?
 
 The charts in this Package are distributed in the Gruntwork Helm Repo. You can access these charts by adding the
-Gruntwork Helm Repo to you client:
+Gruntwork Helm Repo to your client:
 
 ```bash
 $ helm repo add gruntwork https://helmcharts.gruntwork.io
