@@ -61,9 +61,17 @@ dep ensure
 
 ### Run all the tests
 
+We use build tags to categorize the tests. The tags are:
+
+- `all`: Run all the tests
+- `tpl`: Run the template tests
+- `integration`: Run the integration tests
+
+You can run all the tests by passing the `all` build tag:
+
 ```bash
 cd test
-go test -v -timeout 60m
+go test -v -tags all -timeout 60m
 ```
 
 ### Run a specific test
@@ -72,16 +80,15 @@ To run a specific test called `TestFoo`:
 
 ```bash
 cd test
-go test -v -timeout 60m -run TestFoo
+go test -v -timeout 60m -tags all -run TestFoo
 ```
 
 ### Run just the template tests
 
 Since the integration tests require infrastructure, they can be considerably slower than the unit tests. As such, to
-promote fast test cycles, we mark all the integration tests to be skipped when using `short` mode. This means that you
-can run all the template tests using the `-short` flag:
+promote fast test cycles, you may want to test just the template tests. To do so, you can pass the `tpl` build tag:
 
 ```bash
 cd test
-go test -v -short
+go test -v -tags tpl
 ```

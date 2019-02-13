@@ -137,7 +137,7 @@ jobs:
           name: run tests
           command: |
             mkdir -p /tmp/logs
-            run-go-tests --path test --timeout 60m | tee /tmp/logs/all.log
+            run-go-tests --packages "-tags all ./test" --timeout 60m | tee /tmp/logs/all.log
           no_output_timeout: 3600s
 
       - run:
