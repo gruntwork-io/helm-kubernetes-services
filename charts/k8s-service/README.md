@@ -115,7 +115,7 @@ To address the `Service` by name, Kubernetes provides two ways:
 - environment variables
 - DNS
 
-### Addressing Service by Environment Variable
+### Addressing Service by Environment Variables
 
 For each active `Service` that a `Pod` has access to, Kubernetes will automatically set a set of environment variables
 in the container. These are `{SVCNAME}_SERVICE_HOST` and `{SVCNAME}_SERVICE_PORT` to get the host address (ip address)
@@ -131,7 +131,7 @@ EDGE_SERVICE_NGINX_SERVICE_HOST=172.20.186.176
 EDGE_SERVICE_NGINX_SERVICE_PORT=80
 ```
 
-Note that environment variables are set when the container first boots up. This means that if you already `Pods`
+Note that environment variables are set when the container first boots up. This means that if you already had `Pods`
 deployed in your system before the `Service` was created, you will have to cycle the `Pods` in order to get the
 environment variables. If you wish to avoid ordering issues, you can use the DNS method to address the `Service`
 instead, if that is available.
@@ -147,7 +147,7 @@ The `NAMESPACE` in the domain refers to the `Namespace` where the `Service` was 
 created in the `default` namespace. This is configurable at install time of the Helm Chart using the `--namespace`
 option.
 
-In our example, we deployed chart to the `default` `Namespace`, and the `Service` name is `edge-service-nginx`. So in
+In our example, we deployed the chart to the `default` `Namespace`, and the `Service` name is `edge-service-nginx`. So in
 this case, the domain of the `Service` will be `edge-service-nginx.default.svc.cluster.local`. When any `Pod` addresses
 that domain, it will get the address `172.20.186.176`.
 
@@ -297,7 +297,7 @@ In the describe output, there is a field named `LoadBalancer Ingress`. When you 
 this field contains the public DNS endpoint of the associated load balancer resource in the cloud provider. In this
 case, we have an AWS ELB instance, so this endpoint is the public endpoint of the associated ELB resource.
 
-Eagle eyed readers might also notice that there is an associated `NodePort` on the resource. This is because under the
+**Note:** Eagle eyed readers might also notice that there is an associated `NodePort` on the resource. This is because under the
 hood, `LoadBalancer` `Services` utilize `NodePorts` to handle the connection between the managed load balancer of the
 cloud provider and the Kubernetes `Pods`. This is because at this time, there is no portable way to ensure that the
 network between the cloud load balancers and Kubernetes can be shared such that the load balancers can route to the
