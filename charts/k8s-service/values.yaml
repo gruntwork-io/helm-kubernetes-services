@@ -46,6 +46,9 @@
 # The expected keys of the port spec are:
 #   - port     (int)    (required) : The port in the container that should be exposed.
 #   - protocol (string) (required) : The network protocol (e.g TCP or UDP) that is exposed.
+#   - disabled (bool)              : Whether or not this port is disabled. This defaults to false if unset. Provided as a
+#                                    convenience to override the default ports on the commandline. For example, to
+#                                    disable port 443, you can pass `--set containerPorts.https.disabled=true`.
 #
 # The default config exposes TCP port 80 and binds the name `http` to it, while also exposing TCP port 443 with the
 # bound name `https`:
@@ -94,7 +97,7 @@ readinessProbe: {}
 # shutdownDelay is the number of seconds to delay the shutdown sequence of the Pod by. This is implemented as a sleep
 # call in the preStop hook. By default, this chart includes a preStop hook with a shutdown delay for eventual
 # consistency reasons. You can read more about why you might want to do this in
-# https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304 
+# https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
 # You can disable this behavior by setting this value to 0.
 shutdownDelay: 5
 

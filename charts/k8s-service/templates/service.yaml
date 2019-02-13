@@ -1,0 +1,33 @@
+{{- /*
+If the operator configures the service input variable, then also create a Service resource that exposes the Pod as a
+stable endpoint that can be routed within the Kubernetes cluster.
+*/ -}}
+{{- if .Values.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "k8s-service.fullname" . }}
+  labels:
+    # These labels are required by helm. You can read more about required labels in the chart best practices guide:
+    # https://docs.helm.sh/chart_best_practices/#standard-labels
+    app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+    helm.sh/chart: {{ include "k8s-service.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.service.annotations }}
+{{- with .Values.service.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- end }}
+spec:
+  type: {{ .Values.service.type | default "ClusterIP" }}
+  ports:
+    {{- range $key, $value := .Values.service.ports }}
+    - name: {{ $key }}
+{{ toYaml $value | indent 6 }}
+    {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

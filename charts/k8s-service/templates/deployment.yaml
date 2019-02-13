@@ -1,0 +1,124 @@
+{{- /*
+The main Deployment Controller for the application being deployed. This resource manages the creation and replacement
+of the Pods backing your application.
+*/ -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k8s-service.fullname" . }}
+  labels:
+    # These labels are required by helm. You can read more about required labels in the chart best practices guide:
+    # https://docs.helm.sh/chart_best_practices/#standard-labels
+    helm.sh/chart: {{ include "k8s-service.chart" . }}
+    app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.deploymentAnnotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ .Values.applicationName }}
+          {{- $repo := required "containerImage.repository is required" .Values.containerImage.repository }}
+          {{- $tag := required "containerImage.tag is required" .Values.containerImage.tag }}
+          image: "{{ $repo }}:{{ $tag }}"
+          imagePullPolicy: {{ .Values.containerImage.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.containerPorts }}
+          ports:
+            {{- /*
+              NOTE: we check for a disabled flag here so that users of the helm
+              chart can override the default containerPorts. Specifically, defining a new
+              containerPorts in values.yaml will be merged with the default provided by the
+              chart. For example, if the user provides:
+
+                    containerPorts:
+                      app:
+                        port: 8080
+                        protocol: TCP
+
+              Then this is merged with the default and becomes:
+
+                    containerPorts:
+                      app:
+                        port: 8080
+                        protocol: TCP
+                      http:
+                        port: 80
+                        protocol: TCP
+                      https:
+                        port: 443
+                        protocol: TCP
+
+              and so it becomes append as opposed to replace. To handle this,
+              we allow users to explicitly disable predefined ports. So if the user wants to
+              replace the ports with their own, they would provide the following values file:
+
+                    containerPorts:
+                      app:
+                        port: 8080
+                        protocol: TCP
+                      http:
+                        disabled: true
+                      https:
+                        disabled: true
+            */ -}}
+            {{- range $key, $portSpec := .Values.containerPorts }}
+            {{- if not $portSpec.disabled }}
+            - name: {{ $key }}
+              containerPort: {{ int $portSpec.port }}
+              protocol: {{ $portSpec.protocol }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.livenessProbe }}
+          livenessProbe:
+{{ toYaml .Values.livenessProbe | indent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe:
+{{ toYaml .Values.readinessProbe | indent 12 }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.containerResources | indent 12 }}
+          {{- if gt (int .Values.shutdownDelay) 0 }}
+          # Include a preStop hook with a shutdown delay for eventual consistency reasons.
+          # See https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sleep
+                  - "{{ int .Values.shutdownDelay }}"
+          {{- end }}
+        {{- range $key, $value := .Values.sideCarContainers }}
+        - name: {{ $key }}
+{{ toYaml $value | indent 12 }}
+        {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
