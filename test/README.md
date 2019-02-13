@@ -8,17 +8,17 @@ There are three tiers of tests for helm:
   with various input values and parse the yaml to validate any logic embedded in the templates (e.g by reading them in
   using client-go). Since templates are not statically typed, the goal of these tests is to promote fast cycle time
   while catching some of the common bugs from typos or logic errors before getting to the slower integration tests.
-- Integration tests: These are tests that are designed to deploy the infrastructure and validate the resource
-  configurations. If you consider the templates to be syntactic tests, these are semantic tests that validate the
-  behavior of the deployed resources.
-- Production tests (helm tests): These are tests that are run with the helm chart after it is deployed to validate the chart
-  installed and deployed correctly. These should be smoke tests with minimal validation to ensure that the common
-  operator errors are captured as early as possible. Note that because these tests run even on a production system, they
-  should be passive and not destructive.
+- Integration tests: These are tests that are designed to deploy the infrastructure and validate that it actually
+  works as expected. If you consider the template tests to be syntactic tests, these are semantic tests that validate
+  the behavior of the deployed resources.
+- Production tests (helm tests): These are tests that are run with the helm chart after it is deployed to validate the
+  chart installed and deployed correctly. These should be smoke tests with minimal validation to ensure that the common
+  operator errors during deployment are captured as early as possible. Note that because these tests run even on a
+  production system, they should be passive and not destructive.
 
 This folder contains the "template tests" and "integration tests". Both types of tests use a helper library called
 [Terratest](https://github.com/gruntwork-io/terratest). While "template tests" do not need any infrastructure, the
-"integration tests" deploy the charts to a Kuberenetes cluster.
+"integration tests" deploy the charts to a Kubernetes cluster.
 
 
 
@@ -45,9 +45,9 @@ clean up.
 - Install the latest version of [Go](https://golang.org/).
 - Install [dep](https://github.com/golang/dep) for Go dependency management.
 - Setup a Kubernetes cluster. We recommend using a local version for fast iteration:
-    - [minikube](https://github.com/kubernetes/minikube)
-    - [Kubernetes on Docker For Mac](https://docs.docker.com/docker-for-mac/kubernetes/)
-    - [Kubernetes on Docker For Windows](https://docs.docker.com/docker-for-windows/kubernetes/)
+    - Linux: [minikube](https://github.com/kubernetes/minikube)
+    - Mac OSX: [Kubernetes on Docker For Mac](https://docs.docker.com/docker-for-mac/kubernetes/)
+    - Windows: [Kubernetes on Docker For Windows](https://docs.docker.com/docker-for-windows/kubernetes/)
 - Install and setup [helm](https://docs.helm.sh/using_helm/#installing-helm)
 
 ### One-time setup
