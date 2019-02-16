@@ -102,9 +102,8 @@ jobs:
       - run:
           <<: *install_gruntwork_utils
 
-      # Install helm
       - run:
-          <<: *install_helm
+          <<: *install_helm_client
 
       - save_cache:
           key: dep-{{ checksum "test/Gopkg.lock" }}
@@ -135,7 +134,7 @@ jobs:
           <<: *setup_minikube
 
       - run:
-          <<: *install_helm
+          <<: *install_helm_client
 
       - run:
           <<: *deploy_tiller
