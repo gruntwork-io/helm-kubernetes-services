@@ -27,7 +27,8 @@
 
 [[constraint]]
   name = "github.com/gruntwork-io/terratest"
-  version = "0.13.25"
+  # version = "0.13.25"
+  branch = "yori-helm-integration"
 
 [prune]
   go-tests = true

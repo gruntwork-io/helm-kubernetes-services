@@ -67,3 +67,7 @@ readinessProbe:
   httpGet:
     path: /
     port: http
+
+# We override the service type to use NodePort so that we can access the Service from outside the Kubernetes cluster.
+service:
+  type: NodePort

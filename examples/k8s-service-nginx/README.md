@@ -361,36 +361,27 @@ status. The `READY` status is managed using `readinessProbes`: as long as the `P
 
 There are several different types of `Services`. You can learn more about the different types in the [How do I expose my
 application](/charts/k8s-service/README.md#how-do-i-expose-my-application-internally-to-the-cluster) section of the
-chart README. For this example, we used the default `Service` resource created by the chart, which creates a `ClusterIP`
-`Service` on port 80. A `ClusterIP` `Service` allocates a static IP address in the internal Kubernetes network that will
-load balance across the `Pods` that match the selector for the `Service`.
+chart README. For this example, we used the default `Service` resource created by the chart, but overrode the type to be
+`NodePort`. A `NodePort` `Service` exposes a port on the Kubernetes worker that routes to the `Service` endpoint. This
+endpoint will load balance across the `Pods` that match the selector for the `Service`.
 
-Since the `ClusterIP` `Service` is internal to the cluster, we can only access it from within the Kubernetes network.
-Similarly to accessing the `Pod`, we can use port forwarding to access the `Service` endpoint.
+To access a `NodePort` `Service`, we need to first find out what port is exposed. We can do this by querying for the
+`Service` using `kubectl`. As before, the `NOTES` output contains a command we can use to find the related `Service`.
+However, the `NOTES` output also contains instructions for directly getting the service node port and service node ip.
+Here, we will use those commands to extract the endpoint for the `Service`, with one modification. Because we are
+running the `Service` on `minikube`, there is one layer of indirection in the `minikube` VM. `minikube` runs in its own
+VM on your machine, which means that the ip of the node will be incorrect. So instead of querying for the registered
+node IP in Kubernetes, we will instead use `minikube` to get the ip address of the `minikub` VM to use ast the node IP:
 
-As before, the `NOTES` output contains a command we can use to find the related `Service`:
-
-```
-$ kubectl get services --namespace default -l "app.kubernetes.io/name=nginx,app.kubernetes.io/instance=queenly-liger"
-NAME                  TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
-queenly-liger-nginx   ClusterIP   10.99.8.186   <none>        80/TCP    25m
-```
-
-In the output, we see that the `Service` is named `queenly-liger-nginx` and is addressable in the Kubernetes cluster at
-ip address `10.99.8.186`, and exposes port 80.
-
-Using this information, we can create a port forward using the same `port-forward` command we used when accessing the `Pod` directly. This
-time, we will use the name `svc/queenly-liger-nginx` to open the tunnel to the `Service` endpoint instead of the `Pod`:
-
-```
-$ kubectl port-forward svc/queenly-liger-nginx 8080:80
+```bash
+export NODE_PORT=$(kubectl get --namespace default -o jsonpath="{.spec.ports[0].nodePort}" services queenly-liger-nginx)
+export NODE_IP=$(minikube ip)
+echo http://$NODE_IP:$NODE_PORT
 ```
 
-This creates a tunnel from localhost port 8080 to port 80 on the `Service`, which will in turn route to a `Pod` in the
-pool actively serviceing the `Service` endpoint. Note that the service automatically load balances each request, so
-every time you hit it you may get a different `Pod`.
-
-After creating the tunnel, verify you can still access Nginx by hitting `localhost:8080`.
+The first command query the `Service` resource to find out the node port that was used to expose the service. The second
+command queries the ip address of `minikub`. The last command will `echo` out the endpoint where the service is
+available. Try hitting that endpoint in your browser and you should see the familiar nginx splash screen.
 
 ## Summary
 
