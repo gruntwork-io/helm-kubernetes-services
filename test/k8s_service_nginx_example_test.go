@@ -104,7 +104,7 @@ func verifyServiceAvailable(t *testing.T, kubectlOptions *k8s.KubectlOptions, re
 	filters := metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=nginx,app.kubernetes.io/instance=%s", releaseName),
 	}
-	services := ListServices(t, kubectlOptions, filters)
+	services := k8s.ListServices(t, kubectlOptions, filters)
 	require.Equal(t, len(services), 1)
 	service := services[0]
 	k8s.WaitUntilServiceAvailable(t, kubectlOptions, service.Name, 60, 5*time.Second)
