@@ -111,8 +111,8 @@ func verifyServiceAvailable(t *testing.T, kubectlOptions *k8s.KubectlOptions, re
 
 	// Now hit the service endpoint to verify it is accessible
 	// Refresh service object in memory
-	service := k8s.GetService(t, kubectlOptions, service.Name)
-	serviceEndpoint := k8s.GetServiceEndpoint(t, service, 80)
+	service = *k8s.GetService(t, kubectlOptions, service.Name)
+	serviceEndpoint := k8s.GetServiceEndpoint(t, &service, 80)
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		serviceEndpoint,
