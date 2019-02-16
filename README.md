@@ -1,6 +1,6 @@
 [![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_helm_services)
 
-# [NOT YET IMPLEMENTED] Kubernetes Services Helm Charts
+# Kubernetes Services Helm Charts
 
 This package contains Helm charts for deploying your applications on Kubernetes clusters with
 [Helm](https://helm.sh).
@@ -17,8 +17,7 @@ This repo provides a Gruntwork IaC Package and has the following folder structur
 
 * [charts](/charts): This folder contains the main implementation code for this Package, broken down into multiple
   standalone charts.
-* [examples](/examples): This folder contains examples of how to use the Charts. The [example root
-  README](/examples/README.md) provides a quickstart guide on how to use the Charts in this Package.
+* [examples](/examples): This folder contains examples of how to use the Charts.
 * [test](/test): Automated tests for the Charts and examples.
 
 The following charts are available in this package:

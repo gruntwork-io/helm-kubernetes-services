@@ -1,11 +1,17 @@
+
 Check the status of your Deployment by running this comamnd:
 
 kubectl get deployments --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "k8s-service.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
 
 
-Additionally, list the related Pods with the following commands:
+List the related Pods with the following command:
 
 kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "k8s-service.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+
+Use the following command to view information about the Service:
+
+kubectl get services --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "k8s-service.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
 
 
 {{ if .Values.containerPorts -}}
