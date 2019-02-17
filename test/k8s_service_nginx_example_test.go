@@ -115,7 +115,7 @@ func verifyServiceAvailable(t *testing.T, kubectlOptions *k8s.KubectlOptions, re
 	serviceEndpoint := k8s.GetServiceEndpoint(t, &service, 80)
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
-		serviceEndpoint,
+		fmt.Sprintf("http://%s", serviceEndpoint),
 		60,
 		5*time.Second,
 		func(statusCode int, body string) bool {
