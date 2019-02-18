@@ -214,7 +214,7 @@
 
 [[projects]]
   branch = "yori-helm-integration"
-  digest = "1:643def91c98751f0d4e4168e80251e4cba5ab266df074db91dde8acf89437e6c"
+  digest = "1:c0a0654160dbba3fe2566a3b568a01d04d91c8a5890f5b96d5c967a422ffa7b0"
   name = "github.com/gruntwork-io/terratest"
   packages = [
     "modules/aws",
@@ -232,7 +232,7 @@
     "modules/ssh",
   ]
   pruneopts = "UT"
-  revision = "ad4d27a35866afd0f8e68333a4017cacb8ad256a"
+  revision = "8ad192735f142c3e5216aaed36c7b120ef9df31f"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
