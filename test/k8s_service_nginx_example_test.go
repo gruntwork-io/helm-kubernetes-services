@@ -90,7 +90,7 @@ func verifySinglePodNginxAvailable(t *testing.T, kubectlOptions *k8s.KubectlOpti
 	// Try to access the nginx service on the local port, retrying until we get a good response for up to 5 minutes
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
-		fmt.Sprintf("http://localhost:%d", localPort),
+		fmt.Sprintf("http://%s", tunnel.Endpoint()),
 		60,
 		5*time.Second,
 		func(statusCode int, body string) bool {
