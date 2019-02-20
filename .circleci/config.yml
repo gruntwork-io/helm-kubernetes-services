@@ -18,7 +18,7 @@ defaults: &defaults
     CHANGE_MINIKUBE_NONE_USER: "true"
 
 
-install_helm: &install_helm
+install_helm_client: &install_helm_client
   name: install helm
   command: |
     # install helm
@@ -26,6 +26,15 @@ install_helm: &install_helm
     tar -xvf helm.tar.gz
     chmod +x linux-amd64/helm
     sudo mv linux-amd64/helm /usr/local/bin/
+
+
+deploy_tiller: &deploy_tiller
+  name: deploy tiller
+  command: |
+    # Grant the default service account cluster admin rights so helm works
+    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
+    # Deploy Tiller
+    helm init --wait
 
 
 # Install and setup minikube
@@ -93,9 +102,8 @@ jobs:
       - run:
           <<: *install_gruntwork_utils
 
-      # Install helm
       - run:
-          <<: *install_helm
+          <<: *install_helm_client
 
       - save_cache:
           key: dep-{{ checksum "test/Gopkg.lock" }}
@@ -125,13 +133,11 @@ jobs:
       - run:
           <<: *setup_minikube
 
-      # Install helm
       - run:
-          <<: *install_helm
+          <<: *install_helm_client
 
       - run:
-          name: Install Tiller
-          command: helm init
+          <<: *deploy_tiller
 
       - run:
           name: run tests
