@@ -154,7 +154,7 @@ minPodsAvailable: 0
 #   - ports       (map)    (required) : A map that specifies the port bindings of the service against the Pods in the
 #                                       Deployment. This has the same structure as containerPorts, with the additional
 #                                       key of `targetPort` to indicate which port of the container the service port
-#                                       should route to. The `targetPort` can be a name defined in `containerPorts`.  
+#                                       should route to. The `targetPort` can be a name defined in `containerPorts`.
 #
 # The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to port 80
 # of the service, and names the binding as `app`:
@@ -201,6 +201,114 @@ service:
 #         - chart-example.local
 ingress:
   enabled: false
+
+# envVars is a map of strings to strings that specifies hard coded environment variables that should be set on the
+# application container. The keys will be mapped to environment variable keys, with the values mapping to the
+# environment variable values.
+#
+# The following example configures two environment variables, DB_HOST and DB_PORT:
+#
+# EXAMPLE:
+#
+# envVars:
+#   DB_HOST: "mysql.default.svc.cluster.local"
+#   DB_PORT: 3306
+envVars: {}
+
+# configMaps is a map that specifies the ConfigMap resources that should be exposed to the main application container. Each
+# entry in the map represents a ConfigMap resource. The key refers to the name of the ConfigMap that should be exposed,
+# with the value specifying how to expose the ConfigMap. The value is also a map and has the following attributes:
+#   - as (enum[volume,environment,none]) (required)
+#     : ConfigMaps can be exposed to Pods as a volume mount, or as environment variables. This attribute is a string
+#       enum that is expected to be either "volume" or "environment", specifying that the ConfigMap should be exposed as a
+#       mounted volume or via environment variables respectively. This attribute can also be set to "none", which
+#       disables the `ConfigMap` on the container.
+#   - mountPath (string)
+#     : For ConfigMaps mounted as a volume, specify the mount path on the container file system where the config values
+#       will be available.  Required when the ConfigMap is exposed as a volume. Ignored when the ConfigMap is exposed as
+#       environment variables.
+#   - items (map[ConfigMapItem])
+#     : Specify how each ConfigMap value should be made available. The keys are the key of the ConfigMap that you wish
+#       to configure, while the value is another map that controls how that key should be exposed. Required when the
+#       ConfigMap is exposed as environment variables. When the ConfigMap is exposed as a volume, this field is optional.
+#       If empty for volume ConfigMaps, all ConfigMpas will be mounted with the key as the file name relative to the
+#       mountPath. See below for expected attributes.
+# The expected attributes of the `ConfigMapItem` map (the submap within `items`) are:
+#   - filePath   (string) : The file path relative to the ConfigMap mountPath where the value of the ConfigMap keyed at
+#                           the given key of the item should be mounted to in the container. Ignored when the ConfigMap
+#                           is exposed as environment variables.
+#   - fileMode   (string) : The permissions mode of the file when mounted in the container. Ignored when the ConfigMap is
+#                           exposed as environment variables. Expected to be the octal (e.g 777, 644). Defaults to 644.
+#   - envVarName (string) : The name of the environment variable where the value of the ConfigMap keyed at the given key
+#                           of the item should be stored. Ignored when the ConfigMap is exposed as a volume mount.
+#
+# NOTE: These config values are only automatically injected to the main application container. To add them to the side
+# car containers, use the official Kubernetes Pod syntax:
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+#
+# The following example exposes the ConfigMap `myconfig` as a volume mounted to `/etc/myconfig`, while it exposes the
+# ConfigMap `myotherconfig` as an environment variable.
+#
+# EXAMPLE:
+#
+# configMaps:
+#   myconfig:
+#     as: volume
+#     mountPath: /etc/myconfig
+#   myotherconfig:
+#     as: environment
+#     items:
+#       foo:
+#         envVarName: CONFIG_FOO
+configMaps: {}
+
+# secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
+# the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value
+# specifying how to expose the Secret. The value is also a map and has the following attributes:
+#   - as (enum[volume,environment,none]) (required)
+#     : Secrets can be exposed to Pods as a volume mount, or as environment variables. This attribute is a string enum
+#       that is expected to be either "volume" or "environment", specifying that the Secret should be exposed as a mounted
+#       volume or via environment variables respectively. This attribute can also be set to "none", which disables the
+#       `Secret` on the container.
+#   - mountPath (string)
+#     : For Secrets mounted as a volume, specify the mount path on the container file system where the secrets will be
+#       available. Required when the Secret is exposed as a volume. Ignored when the Secret is exposed as environment
+#       variables.
+#   - items (map[SecretItem])
+#     : Specify how each Secret value should be made available. The keys are the key of the Secret that you wish to
+#       configure, while the value is another map that controls how that key should be exposed. Required when the Secret
+#       is exposed as environment variables. When the Secret is exposed as a volume, this field is optional. If empty for
+#       volume Secrets, all Secrets will be mounted with the key as the file name relative to the mountPath. See below
+#       for expected attributes.
+# The expected attributes of the `SecretItem` map (the submap within `items`) are:
+#   - filePath   (string) : The file path relative to the Secret mountPath where the value of the Secret keyed at the
+#                           given key of the item should be mounted to in the container. Ignored when the Secret is
+#                           exposed as environment variables.
+#   - fileMode   (string) : The permissions mode of the file when mounted in the container. Ignored when the Secret is
+#                           exposed as environment variables. Expected to be the octal (e.g 777, 644). Defaults to 644.
+#   - envVarName (string) : The name of the environment variable where the value of the Secret keyed at the given key of
+#                           the item should be stored. Ignored when the Secret is exposed as a volume mount.
+#
+# NOTE: These secrets are only automatically injected to the main application container. To add them to the side car
+# containers, use the official Kubernetes Pod syntax:
+# https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets
+#
+# The following example exposes the Secret `mysecret` as a volume mounted to `/etc/mysecret`, while it exposes the
+# Secret `myothersecret` as an environment variable.
+#
+# EXAMPLE:
+#
+# secrets:
+#   mysecret:
+#     as: volume
+#     mountPath: /etc/mysecret
+#   myothersecret:
+#     as: environment
+#     items:
+#       foo:
+#         envVarName: SECRET_FOO
+secrets: {}
+
 
 # containerResources specifies the amount of resources the application container will require. Only specify if you have
 # specific resource needs.
