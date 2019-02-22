@@ -534,7 +534,7 @@ container such that they are not hard coded in plain text in the container or in
 support these use cases, this Helm Chart provides three ways to share configuration values with the application
 container:
 
-- [Directly setting environment variables](#directly-settings-environment-variables)
+- [Directly setting environment variables](#directly-setting-environment-variables)
 - [Using ConfigMaps](#using-configmaps)
 - [Using Secrets](#using-secrets)
 
