@@ -255,14 +255,14 @@ func TestK8SServiceEnvironmentSecretAddsEnvVarsToPod(t *testing.T) {
 		renderedEnvVar[env.Name] = env
 	}
 
-	// Verify the DB_HOST env var comes from config map host key of dbsettings
+	// Verify the DB_HOST env var comes from secret host key of dbsettings
 	assert.Equal(t, renderedEnvVar["DB_HOST"].Value, "")
 	require.NotNil(t, renderedEnvVar["DB_HOST"].ValueFrom)
 	require.NotNil(t, renderedEnvVar["DB_HOST"].ValueFrom.SecretKeyRef)
 	assert.Equal(t, renderedEnvVar["DB_HOST"].ValueFrom.SecretKeyRef.Key, "host")
 	assert.Equal(t, renderedEnvVar["DB_HOST"].ValueFrom.SecretKeyRef.Name, "dbsettings")
 
-	// Verify the DB_PORT env var comes from config map port key of dbsettings
+	// Verify the DB_PORT env var comes from secret port key of dbsettings
 	assert.Equal(t, renderedEnvVar["DB_PORT"].Value, "")
 	require.NotNil(t, renderedEnvVar["DB_PORT"].ValueFrom)
 	require.NotNil(t, renderedEnvVar["DB_PORT"].ValueFrom.SecretKeyRef)
@@ -270,7 +270,7 @@ func TestK8SServiceEnvironmentSecretAddsEnvVarsToPod(t *testing.T) {
 	assert.Equal(t, renderedEnvVar["DB_PORT"].ValueFrom.SecretKeyRef.Name, "dbsettings")
 }
 
-// Test that setting the `secrets` input value with volume include the volume mount for the config map
+// Test that setting the `secrets` input value with volume include the volume mount for the secret
 // We test by injecting to secrets:
 // secrets:
 //   dbsettings:
@@ -295,7 +295,7 @@ func TestK8SServiceVolumeSecretAddsVolumeAndVolumeMountToPod(t *testing.T) {
 	require.Equal(t, len(renderedPodVolumes), 1)
 	podVolume := renderedPodVolumes[0]
 
-	// Check that the pod volume is a configmap volume
+	// Check that the pod volume is a secret volume
 	assert.Equal(t, podVolume.Name, "dbsettings-volume")
 	require.NotNil(t, podVolume.Secret)
 	assert.Equal(t, podVolume.Secret.SecretName, "dbsettings")
@@ -334,7 +334,7 @@ func TestK8SServiceVolumeSecretWithKeyFilePathAddsVolumeWithKeyFilePathToPod(t *
 	require.Equal(t, len(renderedPodVolumes), 1)
 	podVolume := renderedPodVolumes[0]
 
-	// Check that the pod volume is a configmap volume and has a file path instruction for host key
+	// Check that the pod volume is a secret volume and has a file path instruction for host key
 	assert.Equal(t, podVolume.Name, "dbsettings-volume")
 	require.NotNil(t, podVolume.Secret)
 	assert.Equal(t, podVolume.Secret.SecretName, "dbsettings")
@@ -376,6 +376,61 @@ func TestK8SServiceVolumeSecretWithKeyFileModeConvertsOctalToDecimal(t *testing.
 	}
 }
 
+// Test that setting the `secrets` and `configMaps` input value with volume include the volume mount for both.
+// We test by injecting to secrets and configMaps:
+// configMaps:
+//   dbsettings:
+//     as: volume
+//     mountPath: /etc/db
+// secrets:
+//   dbpassword:
+//     as: volume
+//     mountPath: /etc/dbpass
+func TestK8SServiceVolumeSecretAndConfigMapAddsBothVolumesAndVolumeMountsToPod(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"configMaps.dbsettings.as":        "volume",
+			"configMaps.dbsettings.mountPath": "/etc/db",
+			"secrets.dbpassword.as":           "volume",
+			"secrets.dbpassword.mountPath":    "/etc/dbpass",
+		},
+	)
+
+	// Verify that there is only one container and only one volume
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	renderedPodVolumes := deployment.Spec.Template.Spec.Volumes
+	require.Equal(t, len(renderedPodVolumes), 2)
+
+	// Map volumes to a map for easy lookup
+	volumes := map[string]corev1.Volume{}
+	for _, volume := range renderedPodVolumes {
+		volumes[volume.Name] = volume
+	}
+
+	// Check configMap pod volume exists
+	volume := volumes["dbsettings-volume"]
+	require.NotNil(t, volume.ConfigMap)
+	assert.Equal(t, volume.ConfigMap.Name, "dbsettings")
+
+	// Check secret pod volume exists
+	volume = volumes["dbpassword-volume"]
+	require.NotNil(t, volume.Secret)
+	assert.Equal(t, volume.Secret.SecretName, "dbpassword")
+
+	// Check that both volumes will be mounted on the pod in the specified paths
+	volumeMounts := map[string]corev1.VolumeMount{}
+	for _, mount := range appContainer.VolumeMounts {
+		volumeMounts[mount.Name] = mount
+	}
+	assert.Equal(t, volumeMounts["dbsettings-volume"].MountPath, "/etc/db")
+	assert.Equal(t, volumeMounts["dbpassword-volume"].MountPath, "/etc/dbpass")
+}
+
 func checkFileMode(t *testing.T, configMapsOrSecrets string, fileModeOctal string, fileModeDecimal int32) {
 	deployment := renderK8SServiceDeploymentWithSetValues(
 		t,
@@ -393,7 +448,7 @@ func checkFileMode(t *testing.T, configMapsOrSecrets string, fileModeOctal strin
 	podVolume := renderedPodVolumes[0]
 	assert.Equal(t, podVolume.Name, "dbsettings-volume")
 
-	// Check that the pod volume is a configmap volume and has a file mode instruction with decimal value of octal
+	// Check that the pod volume is a configmap/secret volume and has a file mode instruction with decimal value of octal
 	switch configMapsOrSecrets {
 	case "configMaps":
 		require.NotNil(t, podVolume.ConfigMap)
