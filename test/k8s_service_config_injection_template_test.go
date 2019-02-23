@@ -7,8 +7,10 @@ package test
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -372,6 +374,53 @@ func TestK8SServiceVolumeSecretWithKeyFileModeConvertsOctalToDecimal(t *testing.
 		t.Run(testCase.octal, func(t *testing.T) {
 			t.Parallel()
 			checkFileMode(t, "secrets", testCase.octal, testCase.decimal)
+		})
+	}
+}
+
+// Test the file mode calculation assertions. We test by injecting to secrets the following with different file mode
+// octals and checking that it fails
+// secrets:
+//   dbsettings:
+//     as: volume
+//     mountPath: /etc/db
+//     items:
+//       host:
+//         filePath: host.txt
+//         fileMode: 644
+func TestK8SServiceFileModeOctalToDecimalAssertions(t *testing.T) {
+	t.Parallel()
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	testCases := []string{
+		"800",  // First digit greater than max (7)
+		"080",  // Second digit greater than max (7)
+		"008",  // Third digit greater than max (7)
+		"nan",  // Not a number
+		"75n",  // Not a number
+		"0644", // Not three digits
+		"44",   // Not three digits
+	}
+	for _, testCase := range testCases {
+		// Capture range variable to force scope
+		testCase := testCase
+		t.Run(testCase, func(t *testing.T) {
+			t.Parallel()
+			// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values
+			// defined.
+			options := &helm.Options{
+				ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+				SetValues: map[string]string{
+					"secrets.dbsettings.as":                  "volume",
+					"secrets.dbsettings.mountPath":           "/etc/db",
+					"secrets.dbsettings.items.host.filePath": "host.txt",
+					"secrets.dbsettings.items.host.fileMode": testCase,
+				},
+			}
+			// Render just the deployment resource
+			_, err := helm.RenderTemplateE(t, options, helmChartPath, []string{"templates/deployment.yaml"})
+			assert.Error(t, err)
 		})
 	}
 }

@@ -35,15 +35,20 @@ However, due to yaml/json limitations, all the Kubernetes resources require file
 {{- define "k8s-service.fileModeOctalToDecimal" -}}
   {{- $digits := splitList "" (toString .) -}}
 
-  {{/* Make sure there are only 3 digits */}}
-  {{- if gt (len $digits) 3 -}}
-    {{- fail (printf "Too many digits for file mode octal: %s" .) -}}
+  {{/* Make sure there are exactly 3 digits */}}
+  {{- if ne (len $digits) 3 -}}
+    {{- fail (printf "File mode octal expects exactly 3 digits: %s" .) -}}
   {{- end -}}
 
   {{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
   {{- $accumulator := dict "res" 0 -}}
   {{- range $idx, $digit := $digits -}}
     {{- $digitI := atoi $digit -}}
+
+    {{/* atoi from sprig swallows conversion errors, so we double check to make sure it is a valid conversion */}}
+    {{- if and (eq $digitI 0) (ne $digit "0") -}}
+      {{- fail (printf "Digit %d of %s is not a number: %s" $idx . $digit) -}}
+    {{- end -}}
 
     {{/*  Make sure each digit is less than 8 */}}
     {{- if ge $digitI 8 -}}
