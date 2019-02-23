@@ -27,3 +27,40 @@ Create chart name and version as used by the chart label.
 {{- define "k8s-service.chart" -}}
   {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Convert octal to decimal (e.g 644 => 420). For file permission modes, many people are more familiar with octal notation.
+However, due to yaml/json limitations, all the Kubernetes resources require file modes to be reported in decimal.
+*/}}
+{{- define "k8s-service.fileModeOctalToDecimal" -}}
+  {{- $digits := splitList "" (toString .) -}}
+
+  {{/* Make sure there are only 3 digits */}}
+  {{- if gt (len $digits) 3 -}}
+    {{- fail (printf "Too many digits for file mode octal: %s" .) -}}
+  {{- end -}}
+
+  {{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
+  {{- $accumulator := dict "res" 0 -}}
+  {{- range $idx, $digit := $digits -}}
+    {{- $digitI := atoi $digit -}}
+
+    {{/*  Make sure each digit is less than 8 */}}
+    {{- if ge $digitI 8 -}}
+      {{- fail (printf "%s is not a valid octal digit" $digit) -}}
+    {{- end -}}
+
+    {{/* Since we don't have math.Pow, we hard code */}}
+    {{- if eq $idx 0 -}}
+      {{/* 8^2 */}}
+      {{- $_ := set $accumulator "res" (add (index $accumulator "res") (mul $digitI 64)) -}}
+    {{- else if eq $idx 1 -}}
+      {{/* 8^1 */}}
+      {{- $_ := set $accumulator "res" (add (index $accumulator "res") (mul $digitI 8)) -}}
+    {{- else -}}
+      {{/* 8^0 */}}
+      {{- $_ := set $accumulator "res" (add (index $accumulator "res") (mul $digitI 1)) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- "res" | index $accumulator | toString | printf -}}
+{{- end -}}

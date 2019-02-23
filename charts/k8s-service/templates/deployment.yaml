@@ -12,6 +12,7 @@ Similarly, we need to decide whether or not there are environment variables to a
 
 We need this because certain sections are omitted if there are no volumes or environment variables to add.
 */ -}}
+{{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
 {{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false -}}
 {{- if .Values.envVars -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
@@ -218,10 +219,9 @@ spec:
             items:
               {{- range $configKey, $keyMountConfig := $value.items }}
               - key: {{ $configKey }}
-                path: {{ quote $keyMountConfig.filePath }}
+                path: {{ required "filePath is required for configMap items" $keyMountConfig.filePath | quote }}
                 {{- if $keyMountConfig.fileMode }}
-                {{- /* TODO: convert octal to decimal */ -}}
-                mode: {{ $keyMountConfig.fileMode }}
+                mode: {{ include "k8s-service.fileModeOctalToDecimal" $keyMountConfig.fileMode }}
                 {{- end }}
               {{- end }}
             {{- end }}
@@ -236,10 +236,9 @@ spec:
             items:
               {{- range $secretKey, $keyMountConfig := $value.items }}
               - key: {{ $secretKey }}
-                path: {{ quote $keyMountConfig.filePath }}
+                path: {{ required "filePath is required for secrets items" $keyMountConfig.filePath | quote }}
                 {{- if $keyMountConfig.fileMode }}
-                {{- /* TODO: convert octal to decimal */ -}}
-                mode: {{ $keyMountConfig.fileMode }}
+                mode: {{ include "k8s-service.fileModeOctalToDecimal" $keyMountConfig.fileMode }}
                 {{- end }}
               {{- end }}
             {{- end }}
