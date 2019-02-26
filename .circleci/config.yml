@@ -154,6 +154,31 @@ jobs:
       - store_test_results:
           path: /tmp/logs
 
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+      - run:
+          <<: *install_gruntwork_utils
+
+      - run:
+          command: |
+            mkdir -p assets
+            assets_dir=$(realpath ./assets)
+            for chart in charts/*/; do
+              real_chart_path="$(realpath ${chart})"
+              chart_name=$(basename "$chart")
+              asset_name="${assets_dir}/${chart_name}-${CIRCLE_TAG}.tgz"
+              echo "Packaging chart ${chart_name} as ${asset_name}"
+              $(cd "${chart}" && tar -vzcf "${asset_name}" -C "${real_chart_path}" .)
+            done
+
+      - run:
+          command: upload-github-release-assets ./assets/*
+
+
 workflows:
   version: 2
   test-and-deploy:
@@ -169,3 +194,12 @@ workflows:
         filters:
           tags:
             only: /^v.*/
+
+    - deploy:
+        requires:
+          - test
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore: /.*/
