@@ -178,6 +178,11 @@ jobs:
             done
 
       - run:
+          command: |
+            cd assets
+            helm repo index .
+
+      - run:
           command: upload-github-release-assets ./assets/*
 
 
