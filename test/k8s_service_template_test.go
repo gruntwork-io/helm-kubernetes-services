@@ -14,7 +14,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -129,22 +128,9 @@ func TestK8SServiceOptionalValuesAreOptional(t *testing.T) {
 func TestK8SServiceDeploymentAnnotationsRenderCorrectly(t *testing.T) {
 	t.Parallel()
 
-	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
-	require.NoError(t, err)
-
-	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// Then we use SetValues to override the deploymentAnnotations
 	uniqueID := random.UniqueId()
-	options := &helm.Options{
-		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues:   map[string]string{"deploymentAnnotations.unique-id": uniqueID},
-	}
-	// Render just the deployment resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{"deploymentAnnotations.unique-id": uniqueID})
 
-	// Parse the deployment and verify the annotations are set correctly
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(t, out, &deployment)
 	assert.Equal(t, len(deployment.Annotations), 1)
 	assert.Equal(t, deployment.Annotations["unique-id"], uniqueID)
 }
@@ -153,22 +139,9 @@ func TestK8SServiceDeploymentAnnotationsRenderCorrectly(t *testing.T) {
 func TestK8SServicePodAnnotationsRenderCorrectly(t *testing.T) {
 	t.Parallel()
 
-	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
-	require.NoError(t, err)
-
-	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// Then we use SetValues to override the podAnnotations
 	uniqueID := random.UniqueId()
-	options := &helm.Options{
-		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues:   map[string]string{"podAnnotations.unique-id": uniqueID},
-	}
-	// Render just the deployment resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{"podAnnotations.unique-id": uniqueID})
 
-	// Parse the deployment and verify the annotations are set correctly
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(t, out, &deployment)
 	renderedPodAnnotations := deployment.Spec.Template.Annotations
 	assert.Equal(t, len(renderedPodAnnotations), 1)
 	assert.Equal(t, renderedPodAnnotations["unique-id"], uniqueID)
@@ -178,14 +151,9 @@ func TestK8SServicePodAnnotationsRenderCorrectly(t *testing.T) {
 func TestK8SServiceContainerPortsSetPortsCorrectly(t *testing.T) {
 	t.Parallel()
 
-	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
-	require.NoError(t, err)
-
-	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// Then we use SetValues to override the containerPorts by first nulling out what is there and adding new ones.
-	options := &helm.Options{
-		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues: map[string]string{
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
 			// disable the default ports
 			"containerPorts.http.disabled":  "true",
 			"containerPorts.https.disabled": "true",
@@ -193,13 +161,7 @@ func TestK8SServiceContainerPortsSetPortsCorrectly(t *testing.T) {
 			"containerPorts.app.port":     "9876",
 			"containerPorts.app.protocol": "TCP",
 		},
-	}
-	// Render just the deployment resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
-
-	// Parse the deployment and verify the ports are set correctly
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(t, out, &deployment)
+	)
 
 	renderedPodContainers := deployment.Spec.Template.Spec.Containers
 	require.Equal(t, len(renderedPodContainers), 1)
@@ -217,21 +179,7 @@ func TestK8SServiceContainerPortsSetPortsCorrectly(t *testing.T) {
 func TestK8SServiceShutdownDelayZeroDisablesPreStopHook(t *testing.T) {
 	t.Parallel()
 
-	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
-	require.NoError(t, err)
-
-	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// Then we use SetValues to override the shutdownDelay to 0
-	options := &helm.Options{
-		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues:   map[string]string{"shutdownDelay": "0"},
-	}
-	// Render just the deployment resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
-
-	// Parse the deployment and verify the preStop hook is not set
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(t, out, &deployment)
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{"shutdownDelay": "0"})
 
 	renderedPodContainers := deployment.Spec.Template.Spec.Containers
 	require.Equal(t, len(renderedPodContainers), 1)
@@ -243,21 +191,7 @@ func TestK8SServiceShutdownDelayZeroDisablesPreStopHook(t *testing.T) {
 func TestK8SServiceNonZeroShutdownDelayIncludesPreStopHook(t *testing.T) {
 	t.Parallel()
 
-	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
-	require.NoError(t, err)
-
-	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// Then we use SetValues to override the shutdownDelay to 5
-	options := &helm.Options{
-		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues:   map[string]string{"shutdownDelay": "5"},
-	}
-	// Render just the deployment resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
-
-	// Parse the deployment and verify the preStop hook is set
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(t, out, &deployment)
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{"shutdownDelay": "5"})
 
 	renderedPodContainers := deployment.Spec.Template.Spec.Containers
 	require.Equal(t, len(renderedPodContainers), 1)
