@@ -172,7 +172,7 @@ jobs:
               chart_name=$(basename "$chart")
               asset_name="${assets_dir}/${chart_name}-${CIRCLE_TAG}.tgz"
               echo "Packaging chart ${chart_name} as ${asset_name}"
-              $(cd "${chart}" && tar -vzcf "${asset_name}" -C "${real_chart_path}" .)
+              $(cd "${chart}" && tar -vzcf "${asset_name}" -C "${real_chart_path}" ./*)
             done
 
       - run:
