@@ -154,6 +154,43 @@ jobs:
       - store_test_results:
           path: /tmp/logs
 
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+      - run:
+          <<: *install_gruntwork_utils
+
+      - run:
+          <<: *install_helm_client
+
+      - run:
+          name: Generate chart packages
+          command: |
+            mkdir -p assets
+            assets_dir="$(python -c "import os; print(os.path.abspath('./assets'))")"
+            version_tag="$(echo "$CIRCLE_TAG" | sed "s/^v?//")"
+            for chart in charts/*/; do
+              chart_name="$(basename "$chart")"
+              echo "Packaging chart ${chart_name}"
+              # Update version tag
+              sed -i "s/0.0.1-replace/${version_tag}/" "${chart}/Chart.yaml"
+              # TODO: Figure out provenance strategy
+              (cd "charts" && helm package "${chart_name}" -d "${assets_dir}" --save=false)
+            done
+
+      - run:
+          name: Generate chart repo index
+          command: |
+            cd assets
+            helm repo index --url "https://github.com/gruntwork-io/helm-kubernetes-services/releases/download/${CIRCLE_TAG}" .
+
+      - run:
+          command: upload-github-release-assets ./assets/*
+
+
 workflows:
   version: 2
   test-and-deploy:
@@ -169,3 +206,12 @@ workflows:
         filters:
           tags:
             only: /^v.*/
+
+    - deploy:
+        requires:
+          - test
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore: /.*/
