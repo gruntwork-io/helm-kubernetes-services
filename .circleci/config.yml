@@ -174,7 +174,7 @@ jobs:
               chart_name=$(basename "$chart")
               echo "Packaging chart ${chart_name}"
               # TODO: Figure out provenance strategy
-              (cd "charts" && helm package "${chart_name}" -d "${assets_dir}")
+              (cd "charts" && helm package "${chart_name}" -d "${assets_dir}" --save=false)
             done
 
       - run:
