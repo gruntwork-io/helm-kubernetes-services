@@ -168,11 +168,10 @@ jobs:
             mkdir -p assets
             assets_dir=$(python -c "import os; print(os.path.abspath('./assets'))")
             for chart in charts/*/; do
-              real_chart_path="$(python -c "import os; print(os.path.abspath('${chart}'))")"
               chart_name=$(basename "$chart")
-              asset_name="${assets_dir}/${chart_name}-${CIRCLE_TAG}.tgz"
-              echo "Packaging chart ${chart_name} as ${asset_name}"
-              (cd "${chart}" && tar -vzcf "${asset_name}" -C "${real_chart_path}" ./*)
+              echo "Packaging chart ${chart_name}"
+              # TODO: Figure out provenance strategy
+              (cd "charts" && helm package "${chart_name}" -d "${assets_dir}")
             done
 
       - run:
