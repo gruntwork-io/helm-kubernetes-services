@@ -176,8 +176,6 @@ Get the application URL by running these commands:
   export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=nginx,app.kubernetes.io/instance=queenly-liger" -o jsonpath="{.items[0].metadata.name}")
   echo "Visit http://127.0.0.1:8080 to use your application container serving port http"
   kubectl port-forward $POD_NAME 8080:80
-  echo "Visit http://127.0.0.1:80443 to use your application container serving port https"
-  kubectl port-forward $POD_NAME 80443:443
 ```
 
 The install command will always output:
@@ -261,7 +259,7 @@ queenly-liger-nginx-7b7bb49d-zxpcm   1/1       Running   0          13m
 Here you can see that there are 3 `Pods` in the `READY` state that match that criteria. Pick one of them to access from
 the list above and record the name.
 
-Next, we need to see what ports are open on the `Pod`. The `k8s-service` Helm Chart will open ports 80 and 443 to the
+Next, we need to see what ports are open on the `Pod`. The `k8s-service` Helm Chart will open ports 80 to the
 container by default. However, if you do not know which ports are open, you can inspect the `Pod` to a list of the open
 ports. To get detailed information about a `Pod`, use `kubectl describe pod NAME`. In our example, we will pull detailed
 information about the `Pod` `queenly-liger-nginx-7b7bb49d-b8tf8`:
@@ -286,8 +284,8 @@ Containers:
     Container ID:   docker://ac921c94c8d5f9428815d64bfa541f0481ab37ddaf42a37f2ebec95eb61ef2c0
     Image:          nginx:1.14.2
     Image ID:       docker-pullable://nginx@sha256:d1eed840d5b357b897a872d17cdaa8a4fc8e6eb43faa8ad2febb31ce0c537910
-    Ports:          80/TCP, 443/TCP
-    Host Ports:     0/TCP, 0/TCP
+    Ports:          80/TCP
+    Host Ports:     0/TCP
     State:          Running
       Started:      Sat, 16 Feb 2019 09:15:09 -0800
     Ready:          True
@@ -328,10 +326,10 @@ related to the `Pod`. In the output, the `Containers` section shows addtional in
 ```
 Containers:
   nginx:
-    Ports:          80/TCP, 443/TCP
+    Ports:          80/TCP
 ```
 
-In the output, we confirm that indeed both ports 80 and 443 are open. So let's open a port forward!
+In the output, we confirm that indeed port 80 is open. So let's open a port forward!
 
 In this example, we will open a tunnel from port 8080 on our local machine to port 80 of the `Pod`:
 

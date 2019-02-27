@@ -59,7 +59,7 @@ You can read a more detailed description of `Services` in [the official
 documentation](https://kubernetes.io/docs/concepts/services-networking/service/). Here we will cover just enough to
 understand how to access your app.
 
-By default, this Helm Chart will deploy your application container in a `Pod` that exposes ports 80 and 443. These will
+By default, this Helm Chart will deploy your application container in a `Pod` that exposes ports 80. These will
 be exposed to the Kubernetes cluster behind the `Service` resource, which exposes port 80. You can modify this behavior
 by overriding the `containerPorts` input value and the `service` input value. See the corresponding section in the
 `values.yaml` file for more details.
@@ -498,8 +498,8 @@ Controlled By:      ReplicaSet/edge-service-nginx-844c978df7
 Containers:
   nginx:
     Image:        nginx:stable
-    Ports:        80/TCP, 443/TCP
-    Host Ports:   0/TCP, 0/TCP
+    Ports:        80/TCP
+    Host Ports:   0/TCP
     Environment:  <none>
     Mounts:
       /var/run/secrets/kubernetes.io/serviceaccount from default-token-mgkr9 (ro)
