@@ -48,16 +48,12 @@
 #   - protocol (string) (required) : The network protocol (e.g TCP or UDP) that is exposed.
 #   - disabled (bool)              : Whether or not this port is disabled. This defaults to false if unset. Provided as a
 #                                    convenience to override the default ports on the commandline. For example, to
-#                                    disable port 443, you can pass `--set containerPorts.https.disabled=true`.
+#                                    disable the default port, you can pass `--set containerPorts.https.disabled=true`.
 #
-# The default config exposes TCP port 80 and binds the name `http` to it, while also exposing TCP port 443 with the
-# bound name `https`:
+# The default config exposes TCP port 80 and binds the name `http` to it.
 containerPorts:
   http:
     port: 80
-    protocol: TCP
-  https:
-    port: 443
     protocol: TCP
 
 # livenessProbe is a map that specifies the liveness probe of the main application container. Liveness probes indicate
@@ -156,14 +152,14 @@ minPodsAvailable: 0
 #                                       key of `targetPort` to indicate which port of the container the service port
 #                                       should route to. The `targetPort` can be a name defined in `containerPorts`.
 #
-# The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to port 80
-# of the service, and names the binding as `app`:
+# The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to the
+# port 80 of the service, and names the binding as `app`:
 service:
   enabled: true
   ports:
     app:
       port: 80
-      targetPort: 80
+      targetPort: http
       protocol: TCP
 
 # ingress is a map that can be used to configure an Ingress resource for this service. By default, turn off ingress.
