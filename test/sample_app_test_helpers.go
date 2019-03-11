@@ -8,6 +8,7 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -25,12 +26,19 @@ type SampleAppResponse struct {
 // unique ID.
 func createSampleAppDockerImage(t *testing.T, uniqueID string, examplePath string) {
 	dockerWorkingDir := filepath.Join(examplePath, "docker")
-	cmdsToRun := []string{
-		// Build the docker environment to talk to minikube daemon
-		"eval $(minikube docker-env)",
+	cmdsToRun := []string{}
+	// Build the docker environment to talk to minikube daemon
+	// In CircleCI, we have to run minikube in none driver mode. In this mode, minikube runs directly on the machine
+	// using the existing docker, so no environment prep is necessary. For all other environments, this is necessary.
+	isInCircle := os.Getenv("CIRCLECI") == "true"
+	if !isInCircle {
+		cmdsToRun = append(cmdsToRun, "eval $(minikube docker-env)")
+	}
+	cmdsToRun = append(
+		cmdsToRun,
 		// Build the image and tag using the unique ID
 		fmt.Sprintf("docker build -t gruntwork-io/sample-sinatra-app:%s .", uniqueID),
-	}
+	)
 	cmd := shell.Command{
 		Command: "sh",
 		Args: []string{
