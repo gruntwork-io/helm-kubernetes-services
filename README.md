@@ -29,6 +29,8 @@ The following charts are available in this package:
   that will handle replication and self-healing capabilities for the application. Additionally, expose the Deployment
   behind a [Service](https://kubernetes.io/docs/concepts/services-networking/service/) for a consistent endpoint to
   access the application.
+
+<!-- NOT YET IMPLEMENTED
 - [k8s-daemon-set](/charts/k8s-daemon-set): Deploy a set of Docker containers as a
   [Kubernetes DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/),
   which provisions a Pod with a
@@ -40,6 +42,7 @@ The following charts are available in this package:
   [Controller](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/#pods-and-controllers)
   that will ensure the specified number of Pod instances run to completion.
   a working go environment.
+-->
 
 
 
