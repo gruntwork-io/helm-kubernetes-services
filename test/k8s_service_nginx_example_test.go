@@ -10,15 +10,11 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
-	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/require"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Test that:
@@ -53,73 +49,12 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	defer helm.Delete(t, options, releaseName, true)
 	helm.Install(t, options, helmChartPath, releaseName)
 
-	verifyPodsCreatedSuccessfully(t, kubectlOptions, releaseName)
-	verifyAllPodNginxAvailable(t, kubectlOptions, releaseName)
-	verifyServiceAvailable(t, kubectlOptions, releaseName)
+	verifyPodsCreatedSuccessfully(t, kubectlOptions, "nginx", releaseName)
+	verifyAllPodsAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
+	verifyServiceAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 }
 
-func verifyPodsCreatedSuccessfully(t *testing.T, kubectlOptions *k8s.KubectlOptions, releaseName string) {
-	// Get the pods and wait until they are all ready
-	filters := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=nginx,app.kubernetes.io/instance=%s", releaseName),
-	}
-	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, 3, 60, 1*time.Second)
-	pods := k8s.ListPods(t, kubectlOptions, filters)
-	for _, pod := range pods {
-		k8s.WaitUntilPodAvailable(t, kubectlOptions, pod.Name, 60, 1*time.Second)
-	}
-}
-
-func verifyAllPodNginxAvailable(t *testing.T, kubectlOptions *k8s.KubectlOptions, releaseName string) {
-	filters := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=nginx,app.kubernetes.io/instance=%s", releaseName),
-	}
-	pods := k8s.ListPods(t, kubectlOptions, filters)
-	for _, pod := range pods {
-		verifySinglePodNginxAvailable(t, kubectlOptions, pod)
-	}
-}
-
-func verifySinglePodNginxAvailable(t *testing.T, kubectlOptions *k8s.KubectlOptions, pod corev1.Pod) {
-	// Open a tunnel from any available port locally
-	localPort := k8s.GetAvailablePort(t)
-	tunnel := k8s.NewTunnel(kubectlOptions, k8s.ResourceTypePod, pod.Name, localPort, 80)
-	defer tunnel.Close()
-	tunnel.ForwardPort(t)
-
-	// Try to access the nginx service on the local port, retrying until we get a good response for up to 5 minutes
-	http_helper.HttpGetWithRetryWithCustomValidation(
-		t,
-		fmt.Sprintf("http://%s", tunnel.Endpoint()),
-		60,
-		5*time.Second,
-		func(statusCode int, body string) bool {
-			return statusCode == 200
-		},
-	)
-}
-
-func verifyServiceAvailable(t *testing.T, kubectlOptions *k8s.KubectlOptions, releaseName string) {
-	// Get the service and wait until it is available
-	filters := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=nginx,app.kubernetes.io/instance=%s", releaseName),
-	}
-	services := k8s.ListServices(t, kubectlOptions, filters)
-	require.Equal(t, len(services), 1)
-	service := services[0]
-	k8s.WaitUntilServiceAvailable(t, kubectlOptions, service.Name, 60, 5*time.Second)
-
-	// Now hit the service endpoint to verify it is accessible
-	// Refresh service object in memory
-	service = *k8s.GetService(t, kubectlOptions, service.Name)
-	serviceEndpoint := k8s.GetServiceEndpoint(t, &service, 80)
-	http_helper.HttpGetWithRetryWithCustomValidation(
-		t,
-		fmt.Sprintf("http://%s", serviceEndpoint),
-		60,
-		5*time.Second,
-		func(statusCode int, body string) bool {
-			return statusCode == 200
-		},
-	)
+// nginxValidationFunction checks that we get a 200 response with the nginx welcome page.
+func nginxValidationFunction(statusCode int, body string) bool {
+	return statusCode == 200 && strings.Contains(body, "Welcome to nginx")
 }

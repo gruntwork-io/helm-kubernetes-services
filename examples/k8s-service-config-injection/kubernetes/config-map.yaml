@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sample-sinatra-app-server-text
+data:
+  server_text: "Hello! I was configured using a ConfigMap!"

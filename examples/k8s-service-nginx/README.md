@@ -114,7 +114,7 @@ using the `k8s-service` chart.
 
 This folder contains predefined input values you can use with the `k8s-service` chart to deploy Nginx. These values
 define the container image to use as part of the deployment, and augments the default values of the chart by defining a
-`livenessProbe` and `readinessProbe` for the main container (whcih in this case will be `nginx:1.14.2`. Take a look at
+`livenessProbe` and `readinessProbe` for the main container (which in this case will be `nginx:1.14.2`). Take a look at
 the provided [`values.yaml`](./values.yaml) file to see how the values are defined.
 
 We will now instruct helm to install the `k8s-service` chart using these values. To do so, we will use the `helm
