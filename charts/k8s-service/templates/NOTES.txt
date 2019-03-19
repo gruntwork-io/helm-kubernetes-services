@@ -1,0 +1,43 @@
+
+Check the status of your Deployment by running this comamnd:
+
+kubectl get deployments --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "k8s-service.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+
+List the related Pods with the following command:
+
+kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "k8s-service.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+
+Use the following command to view information about the Service:
+
+kubectl get services --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "k8s-service.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+
+{{ if .Values.containerPorts -}}
+{{- $serviceType := .Values.service.type | default "ClusterIP" -}}
+Get the application URL by running these commands:
+
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ . }}{{ $.Values.ingress.path }}
+{{- end }}
+{{- else if contains "NodePort" $serviceType }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "k8s-service.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" $serviceType }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get svc -w {{ include "k8s-service.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "k8s-service.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" $serviceType }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "k8s-service.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  {{- range $portName, $portSpec := .Values.containerPorts }}
+  {{- if not $portSpec.disabled }}
+  echo "Visit http://127.0.0.1:80{{ $portSpec.port }} to use your application container serving port {{ $portName }}"
+  kubectl port-forward $POD_NAME 80{{ $portSpec.port }}:{{ $portSpec.port }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

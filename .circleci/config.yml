@@ -1,0 +1,217 @@
+defaults: &defaults
+  machine: true
+  environment:
+    GRUNTWORK_INSTALLER_VERSION: v0.0.21
+    TERRATEST_LOG_PARSER_VERSION: v0.13.13
+    HELM_VERSION: v2.12.2
+    MODULE_CI_VERSION: v0.13.3
+    TERRAFORM_VERSION: NONE
+    TERRAGRUNT_VERSION: NONE
+    PACKER_VERSION: NONE
+    GOLANG_VERSION: 1.11.2
+    K8S_VERSION: v1.10.0  # Same as EKS
+    KUBECONFIG: /home/circleci/.kube/config
+    MINIKUBE_VERSION: v0.28.2  # See https://github.com/kubernetes/minikube/issues/2704
+    MINIKUBE_WANTUPDATENOTIFICATION: "false"
+    MINIKUBE_WANTREPORTERRORPROMPT: "false"
+    MINIKUBE_HOME: /home/circleci
+    CHANGE_MINIKUBE_NONE_USER: "true"
+
+
+install_helm_client: &install_helm_client
+  name: install helm
+  command: |
+    # install helm
+    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz
+    tar -xvf helm.tar.gz
+    chmod +x linux-amd64/helm
+    sudo mv linux-amd64/helm /usr/local/bin/
+
+
+deploy_tiller: &deploy_tiller
+  name: deploy tiller
+  command: |
+    # Grant the default service account cluster admin rights so helm works
+    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
+    # Deploy Tiller
+    helm init --wait
+
+
+# Install and setup minikube
+# https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
+setup_minikube: &setup_minikube
+  name: install kubectl and minikube
+  command: |
+    # install kubectl
+    curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+    chmod +x kubectl
+    sudo mv kubectl /usr/local/bin/
+    mkdir -p ${HOME}/.kube
+    touch ${HOME}/.kube/config
+
+    # Install minikube
+    curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
+    chmod +x minikube
+    sudo mv minikube /usr/local/bin/
+
+    # start minikube and wait for it
+    # Ignore warnings on minikube start command, as it will log a warning due to using deprecated localkube
+    # bootstrapper. However, the localkube bootstrapper is necessary to run on CircleCI which doesn't have
+    # systemd.
+    sudo -E minikube start --vm-driver=none --kubernetes-version=${K8S_VERSION} --bootstrapper=localkube --extra-config=apiserver.Authorization.Mode=RBAC
+    # this for loop waits until kubectl can access the api server that Minikube has created
+    $(
+      for i in {1..150}; do # timeout for 5 minutes
+        kubectl get po &> /dev/null
+        if [ $? -ne 1 ]; then
+          break
+        fi
+        sleep 2
+      done
+      true
+    )
+
+
+install_gruntwork_utils: &install_gruntwork_utils
+  name: install gruntwork utils
+  command: |
+    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
+    gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
+    gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag "${TERRATEST_LOG_PARSER_VERSION}"
+    configure-environment-for-gruntwork-module \
+      --circle-ci-2-machine-executor \
+      --terraform-version ${TERRAFORM_VERSION} \
+      --terragrunt-version ${TERRAGRUNT_VERSION} \
+      --packer-version ${PACKER_VERSION} \
+      --use-go-dep \
+      --go-version ${GOLANG_VERSION} \
+      --go-src-path test
+
+
+version: 2
+jobs:
+  setup:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - dep-{{ checksum "test/Gopkg.lock" }}
+
+      # Install gruntwork utilities
+      - run:
+          <<: *install_gruntwork_utils
+
+      - run:
+          <<: *install_helm_client
+
+      - save_cache:
+          key: dep-{{ checksum "test/Gopkg.lock" }}
+          paths:
+          - ./test/vendor
+
+      # Fail the build if the pre-commit hooks don't pass. Note: if you run pre-commit install locally, these hooks will
+      # execute automatically every time before you commit, ensuring the build never fails at this step!
+      - run: pip install pre-commit==1.11.2
+      - run: pre-commit install
+      - run: pre-commit run --all-files
+
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project
+
+  test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+      - run:
+          <<: *install_gruntwork_utils
+
+      - run:
+          <<: *setup_minikube
+
+      - run:
+          <<: *install_helm_client
+
+      - run:
+          <<: *deploy_tiller
+
+      - run:
+          name: run tests
+          command: |
+            mkdir -p /tmp/logs
+            run-go-tests --packages "-tags all ./test" --timeout 60m | tee /tmp/logs/all.log
+          no_output_timeout: 3600s
+
+      - run:
+          command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
+          when: always
+      - store_artifacts:
+          path: /tmp/logs
+      - store_test_results:
+          path: /tmp/logs
+
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+      - run:
+          <<: *install_gruntwork_utils
+
+      - run:
+          <<: *install_helm_client
+
+      - run:
+          name: Generate chart packages
+          command: |
+            mkdir -p assets
+            assets_dir="$(python -c "import os; print(os.path.abspath('./assets'))")"
+            version_tag="$(echo "$CIRCLE_TAG" | sed "s/^v?//")"
+            for chart in charts/*/; do
+              chart_name="$(basename "$chart")"
+              echo "Packaging chart ${chart_name}"
+              # Update version tag
+              sed -i "s/0.0.1-replace/${version_tag}/" "${chart}/Chart.yaml"
+              # TODO: Figure out provenance strategy
+              (cd "charts" && helm package "${chart_name}" -d "${assets_dir}" --save=false)
+            done
+
+      - run:
+          name: Generate chart repo index
+          command: |
+            cd assets
+            helm repo index --url "https://github.com/gruntwork-io/helm-kubernetes-services/releases/download/${CIRCLE_TAG}" .
+
+      - run:
+          command: upload-github-release-assets ./assets/*
+
+
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+    - setup:
+        filters:
+          tags:
+            only: /^v.*/
+
+    - test:
+        requires:
+          - setup
+        filters:
+          tags:
+            only: /^v.*/
+
+    - deploy:
+        requires:
+          - test
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore: /.*/

@@ -1,0 +1,79 @@
+#----------------------------------------------------------------------------------------------------------------------
+# CHART PARAMETERS FOR CONFIG INJECTION EXAMPLE
+# This file declares the required values for the k8s-service helm chart to deploy the sample ruby app in the docker
+# folder.
+# This is a YAML-formatted file.
+#----------------------------------------------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------------------------------------------
+# REQUIRED VALUES OF CHART
+# These are the required values defined by the k8s-service chart. Here we will set them to deploy the container in the
+# docker folder, assuming it was tagged as "sample-sinatra-app".
+#----------------------------------------------------------------------------------------------------------------------
+
+# containerImage is a map that describes the container image that should be used to serve the application managed by
+# the k8s-service chart.
+# The expected keys are:
+#   - repository (string) (required) : The container image repository that should be used.
+#                                      E.g `nginx` ; `gcr.io/kubernetes-helm/tiller`
+#   - tag        (string) (required) : The tag of the image (e.g `latest`) that should be used. We recommend using a
+#                                      fixed tag or the SHA of the image. Avoid using the tags `latest`, `head`,
+#                                      `canary`, or other tags that are designed to be “floating”.
+#   - pullPolicy (string)            : The image pull policy to employ. Determines when the image will be pulled in. See
+#                                      the official Kubernetes docs for more info. If undefined, this will default to
+#                                      `IfNotPresent`.
+#
+# The following example deploys the `sample-sinatra-app:latest` image with a `IfNotPresent` image pull policy, which
+# indicates that the image should only be pulled if it has not been pulled previously.
+containerImage:
+  repository: gruntwork-io/sample-sinatra-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# applicationName is a string that names the application. This is used to label the pod and to name the main application
+# container in the pod spec.
+applicationName: "sample-sinatra-app"
+
+#----------------------------------------------------------------------------------------------------------------------
+# OVERRIDE OPTIONAL VALUES
+# These values have defaults in the k8s-service chart, but we override a few of them for the purposes of this demo.
+#----------------------------------------------------------------------------------------------------------------------
+
+# envVars can be used to configure the environment variables that should be set in the application container. Here,
+# we override the port that the application will listen on to use port 80, which is what the k8s-service chart assumes.
+envVars:
+  SERVER_PORT: 80
+
+# replicaCount can be used to configure the number of replica pods that should be deployed and maintained at any given
+# point in time. Here we set this to 3 to signal Kubernetes (via the Deployment contoller) to maintain 3 pods.
+replicaCount: 3
+
+# livenessProbe is a map that specifies the liveness probe of the main application container. Liveness probes indicate
+# when a container has reached a fatal state where it needs to be restarted to recover. When the liveness probe fails,
+# the container is automatically recreated. You can read more about container liveness probes in the official docs:
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+# NOTE: This variable is injected directly into the container spec.
+#
+# The following example specifies an http GET based liveness probe, that will base the probe on a http GET request to
+# the port bound to name `http` (port 80 in the default settings) on the path `/`.
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+
+# readinessProbe is a map that specifies the readiness probe of the main application container. Readiness probes
+# indicate when a container is unable to serve traffic. When the readiness probe fails, the container is cycled out of
+# the list of available containers to the `Service`. You can read more about readiness probes in the official docs:
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+# NOTE: This variable is injected directly into the container spec.
+#
+# The following example specifies an http GET based readiness probe, that will base the probe on a http GET request to
+# the port bound to name `http` (see description on `containerPorts`) on the path `/`.
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+# We override the service type to use NodePort so that we can access the Service from outside the Kubernetes cluster.
+service:
+  type: NodePort

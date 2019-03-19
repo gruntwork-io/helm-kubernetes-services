@@ -1,0 +1,48 @@
+{{- /*
+If the operator configures the ingress input variable, then also create an Ingress resource that will route to the
+service. Note that Ingress can only route to a Service, so the operator must also configure a Service.
+*/ -}}
+{{- if .Values.ingress.enabled -}}
+{{- /*
+We declare some variables defined on the Values. These are reused in `with` and `range` blocks where the scoped variable
+(`.`) is rebound within the block.
+*/ -}}
+{{- $fullName := include "k8s-service.fullname" . -}}
+{{- $ingressPath := .Values.ingress.path -}}
+{{- $servicePort := .Values.ingress.servicePort -}}
+apiVersion: extensions/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    gruntwork.io/app-name: {{ .Values.applicationName }}
+    # These labels are required by helm. You can read more about required labels in the chart best practices guide:
+    # https://docs.helm.sh/chart_best_practices/#standard-labels
+    app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+    helm.sh/chart: {{ include "k8s-service.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.service.annotations }}
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- end }}
+spec:
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          - path: {{ $ingressPath }}
+            backend:
+              serviceName: {{ $fullName }}
+              servicePort: {{ $servicePort }}
+    {{- end }}
+{{- end }}

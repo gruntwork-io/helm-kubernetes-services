@@ -1,6 +1,6 @@
 [![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_helm_services)
 
-# [NOT YET IMPLEMENTED] Kubernetes Services Helm Charts
+# Kubernetes Services Helm Charts
 
 This package contains Helm charts for deploying your applications on Kubernetes clusters with
 [Helm](https://helm.sh).
@@ -17,8 +17,7 @@ This repo provides a Gruntwork IaC Package and has the following folder structur
 
 * [charts](/charts): This folder contains the main implementation code for this Package, broken down into multiple
   standalone charts.
-* [examples](/examples): This folder contains examples of how to use the Charts. The [example root
-  README](/examples/README.md) provides a quickstart guide on how to use the Charts in this Package.
+* [examples](/examples): This folder contains examples of how to use the Charts.
 * [test](/test): Automated tests for the Charts and examples.
 
 The following charts are available in this package:
@@ -30,6 +29,8 @@ The following charts are available in this package:
   that will handle replication and self-healing capabilities for the application. Additionally, expose the Deployment
   behind a [Service](https://kubernetes.io/docs/concepts/services-networking/service/) for a consistent endpoint to
   access the application.
+
+<!-- NOT YET IMPLEMENTED
 - [k8s-daemon-set](/charts/k8s-daemon-set): Deploy a set of Docker containers as a
   [Kubernetes DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/),
   which provisions a Pod with a
@@ -41,6 +42,7 @@ The following charts are available in this package:
   [Controller](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/#pods-and-controllers)
   that will ensure the specified number of Pod instances run to completion.
   a working go environment.
+-->
 
 
 
@@ -112,7 +114,7 @@ lifecycle of a Pod. Using Controllers, you can schedule your Pods as:
 
 This Package and its Charts are maintained by [Gruntwork](http://www.gruntwork.io/). If you are looking for help or
 commercial support, send an email to
-[support@gruntwork.io](mailto:support@gruntwork.io?Subject=GKE%20Module).
+[support@gruntwork.io](mailto:support@gruntwork.io?Subject=Helm%20Kubernetes%20Services%20Module).
 
 Gruntwork can help with:
 

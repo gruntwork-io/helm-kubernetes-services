@@ -1,0 +1,23 @@
+#----------------------------------------------------------------------------------------------------------------------
+# CHART PARAMETERS TO AUGMENT values.yaml WITH CONFIG MAP
+# This file declares additional input parameters to set the SERVER_TEXT environment variable in the application
+# container from a ConfigMap.
+#
+# This values file is intended to be used with the values.yaml file:
+# helm install k8s-service -f values.yaml -f ./extensions/config_map_values.yaml
+#
+# See the README for more details
+#----------------------------------------------------------------------------------------------------------------------
+
+# configMaps is a map that specifies which ConfigMap resources should be injected into the application container. There
+# are two ways that a ConfigMap can be injected:
+# - as an environment variable
+# - as a file on the file system
+# In this example, we inject the sample-sinatra-app-server-text ConfigMap defined in kubernetes/config-map.yaml to set
+# the SERVER_TEXT environment variable on the application container.
+configMaps:
+  sample-sinatra-app-server-text:
+    as: environment
+    items:
+      server_text:
+        envVarName: SERVER_TEXT

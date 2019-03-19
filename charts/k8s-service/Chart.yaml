@@ -1,0 +1,11 @@
+apiVersion: v1
+name: k8s-service
+description: A Helm chart to package your application container for Kubernetes
+# This will be updated with the release tag in the CI/CD pipeline before publishing. This has to be a valid semver for
+# the linter to accept.
+version: 0.0.1-replace
+home: https://github.com/gruntwork-io/helm-kubernetes-services
+maintainers:
+  - name: Gruntwork
+    email: info@gruntwork.io
+    url: https://gruntwork.io
