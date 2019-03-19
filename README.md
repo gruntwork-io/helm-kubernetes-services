@@ -45,6 +45,39 @@ The following charts are available in this package:
 -->
 
 
+## How do you install the charts in this Package?
+
+The charts in this Package are distributed in the Gruntwork Helm Repo. You can access these charts by adding the
+Gruntwork Helm Repo to your client:
+
+```bash
+$ helm repo add gruntwork https://helmcharts.gruntwork.io
+```
+
+Then, you can access any of the charts under the `gruntwork` name. For example, you can find all the Gruntwork charts by
+searching for `gruntwork`:
+
+```bash
+$ helm search gruntwork
+```
+
+In general, each of the charts document the required and optional input values in the corresponding `values.yaml` file.
+You can access the `values.yaml` of a Chart either by inspecting this repository, or using the `helm inspect` command.
+For example, to see the values of the `k8s-service` chart, you can run:
+
+```bash
+$ helm inspect values gruntwork/k8s-service
+```
+
+Once you know what values the chart requires, you can install the chart by defining your own `values.yaml` file with the
+required values defined. Then, you can install the chart to your Kubernetes cluster using `helm install`:
+
+```bash
+$ helm install -f values.yaml gruntwork/k8s-service
+```
+
+See the `helm install` help text for more configuration options.
+
 
 ## What is Kubernetes?
 
@@ -79,6 +112,7 @@ provides the functionality to apply the Kubernetes resource descriptions to the 
 release, the helm client essentially packages up the values and charts as a release, which is submitted to Tiller.
 Tiller will then generate Kubernetes YAML files from the packaged release, and then apply the generated Kubernetes YAML
 file from the charts on the cluster.
+
 
 ## How do you run applications on Kubernetes?
 

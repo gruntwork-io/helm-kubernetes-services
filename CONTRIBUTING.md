@@ -10,11 +10,13 @@ https://help.github.com/articles/about-pull-requests/) for contributions, subjec
 1. [Create a pull request](#create-a-pull-request)
 1. [Merge and release](#merge-and-release)
 
+
 ## File a GitHub issue
 
 Before starting any work, we recommend filing a GitHub issue in this repo. This is your chance to ask questions and
 get feedback from the maintainers and the community before you sink a lot of time into writing (possibly the wrong)
 code. If there is anything you're unsure about, just ask!
+
 
 ## Update the documentation
 
@@ -22,6 +24,7 @@ We recommend updating the documentation *before* updating any code (see [Readme 
 Development](http://tom.preston-werner.com/2010/08/23/readme-driven-development.html)). This ensures the documentation
 stays up to date and allows you to think through the problem at a high level before you get lost in the weeds of
 coding.
+
 
 ## Update the tests
 
@@ -32,6 +35,7 @@ ensures the tests stay up to date and verify all the functionality in this Modul
 functionality you're adding in your contribution. Check out the
 [tests](https://github.com/gruntwork-io/helm-kubernetes-services/tree/master/test) folder for instructions on running
 the automated tests.
+
 
 ## Update the code
 
@@ -59,6 +63,25 @@ Bear in mind that the Helm charts in this Module are used by real companies to r
 production, and certain types of changes could cause downtime. If downtime cannot be avoided, please make sure to call
 that out when you submit a pull request.
 
+### Code style
+
+We follow [the official Chart best practices](https://docs.helm.sh/chart_best_practices/) documented by the community.
+Please read through the guidelines if you have not already.
+
+Additionally, Gruntwork has a few extra guidelines not stated in the best practices guide:
+
+- Chart `values.yaml` should separate required inputs from optional inputs. Required inputs should be documented as
+  comments.
+- Provide example required inputs in a separate `linter_values.yaml` file so that `helm lint` can be used to lint the
+  charts.
+- Any input value that is rendered directly in the yaml templates (using `toYaml`) should be explicitly called out in
+  the `values.yaml` file.
+- Any input value that is a map should explicitly call out the expected fields. Additionally, the fields should be
+  labeled by type and whether or not the value is required.
+- Any required input that is a map, or optional input that is a map with an empty default, should have an example in the
+  comments.
+- Every chart should have both helm tests and terratests. The helm tests test if the chart came up successfully in an
+  install, while the terratest is used for integration testing of the chart before releasing the chart.
 
 ### Formatting and pre-commit hooks
 
@@ -70,7 +93,7 @@ using pre-commit hooks managed using [pre-commit](http://pre-commit.com/):
 1. Make sure you have the helm client installed. See [the official docs](https://docs.helm.sh/using_helm/#install-helm)
    for instructions.
 
-That's it! Now just write your code, and every time you commit, `helm lint` will be run on the charts that you modify.
+Now write your code, and every time you commit, `helm lint` will be run on the charts that you modify.
 
 
 ## Create a pull request
@@ -84,6 +107,7 @@ to include the following:
    concerns](https://circleci.com/docs/fork-pr-builds/#security-implications), so we need you to manually provide this
    test output so we can verify that everything is working.
 1. Any notes on backwards incompatibility or downtime.
+
 
 ## Merge and release
 
