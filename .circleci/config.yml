@@ -66,6 +66,9 @@ setup_minikube: &setup_minikube
       true
     )
 
+    # Disable some addons we don't need
+    sudo -E minikube addons disable dashboard
+
     # This installs nginx ingress controller
     sudo -E minikube addons enable ingress
 
