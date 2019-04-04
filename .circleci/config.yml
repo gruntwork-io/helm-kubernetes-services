@@ -28,15 +28,6 @@ install_helm_client: &install_helm_client
     sudo mv linux-amd64/helm /usr/local/bin/
 
 
-deploy_tiller: &deploy_tiller
-  name: deploy tiller
-  command: |
-    # Grant the default service account cluster admin rights so helm works
-    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
-    # Deploy Tiller
-    helm init --wait
-
-
 # Install and setup minikube
 # https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
 setup_minikube: &setup_minikube
@@ -74,6 +65,9 @@ setup_minikube: &setup_minikube
       done
       true
     )
+
+    # Grant the default service account cluster admin rights so helm and ingress controller works
+    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
 
     # This installs nginx ingress controller
     sudo -E minikube addons enable ingress
@@ -167,7 +161,8 @@ jobs:
           <<: *install_helm_client
 
       - run:
-          <<: *deploy_tiller
+          name: deploy tiller
+          command: helm init --wait
 
       - run:
           name: run tests
