@@ -72,6 +72,7 @@ setup_minikube: &setup_minikube
     )
 
     # This installs nginx ingress controller
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
     sudo -E minikube addons enable ingress
 
 
