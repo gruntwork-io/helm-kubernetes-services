@@ -72,8 +72,15 @@ setup_minikube: &setup_minikube
     )
 
     # This installs nginx ingress controller
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
     sudo -E minikube addons enable ingress
+    # Next, we need to patch it so it exposes the nginx controller on the host network so that we get a valid endpoint to
+    # access it.
+    kubectl patch deployment -n ingress-nginx nginx-ingress-controller --patch << EOF
+    spec:
+      template:
+        spec:
+          hostNetwork: true
+    EOF
 
 
 install_gruntwork_utils: &install_gruntwork_utils
