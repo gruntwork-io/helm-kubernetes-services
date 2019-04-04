@@ -85,17 +85,17 @@ func verifyIngressAvailable(
 	}
 	ingresses := listIngress(t, kubectlOptions, filters)
 	require.Equal(t, len(ingresses), 1)
-	ingress := ingresses[0]
+	ingressName := ingresses[0].Name
 	waitUntilIngressAvailable(
 		t,
 		kubectlOptions,
-		ingress.Name,
+		ingressName,
 		WaitTimerRetries,
 		WaitTimerSleep,
 	)
 
 	// Now hit the service endpoint to verify it is accessible
-	ingress, err := getIngressE(t, kubectlOptions, ingress.Name)
+	ingress, err := getIngressE(t, kubectlOptions, ingressName)
 	require.NoError(t, err)
 	ingressEndpoint := ingress.Status.LoadBalancer.Ingress[0].IP
 	http_helper.HttpGetWithRetryWithCustomValidation(
