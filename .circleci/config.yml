@@ -66,9 +66,6 @@ setup_minikube: &setup_minikube
       true
     )
 
-    # Grant the default service account cluster admin rights so helm and ingress controller works
-    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
-
     # This installs nginx ingress controller
     sudo -E minikube addons enable ingress
 
@@ -84,6 +81,9 @@ setup_minikube: &setup_minikube
       done
       true
     )
+
+    # Make sure to grant the default service account cluster admin rights so helm and ingress controller works
+    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
 
     # Next, we need to patch it so it exposes the nginx controller on the host network so that we get a valid endpoint to
     # access it.
