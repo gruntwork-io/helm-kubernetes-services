@@ -42,6 +42,10 @@ deploy_tiller: &deploy_tiller
 setup_minikube: &setup_minikube
   name: install kubectl and minikube
   command: |
+    # Issues using addons with minikube due to hostpath failure
+    # See: https://github.com/kubernetes/kubernetes/issues/61058
+    mount --make-rshared /
+
     # install kubectl
     curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
     chmod +x kubectl
