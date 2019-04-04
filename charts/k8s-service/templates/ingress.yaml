@@ -10,7 +10,7 @@ We declare some variables defined on the Values. These are reused in `with` and 
 {{- $fullName := include "k8s-service.fullname" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
 {{- $servicePort := .Values.ingress.servicePort -}}
-apiVersion: extensions/v1
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
