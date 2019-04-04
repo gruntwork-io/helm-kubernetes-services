@@ -56,7 +56,8 @@ func TestK8SServiceNginxExample(t *testing.T) {
 			"ingress.enabled":     "true",
 			"ingress.path":        "/app",
 			"ingress.servicePort": "http",
-			"ingress.annotations.\"kubernetes\\.io/ingress\\.class\"": "nginx",
+			"ingress.annotations.\"kubernetes\\.io/ingress\\.class\"":        "nginx",
+			"ingress.annotations.\"ingress\\.kubernetes\\.io/ssl-redirect\"": "false",
 		},
 	}
 	defer helm.Delete(t, options, releaseName, true)
@@ -101,7 +102,7 @@ func verifyIngressAvailable(
 	ingressEndpoint := ingress.Status.LoadBalancer.Ingress[0].IP
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
-		fmt.Sprintf("http://%s", ingressEndpoint),
+		fmt.Sprintf("http://%s/app", ingressEndpoint),
 		WaitTimerRetries,
 		WaitTimerSleep,
 		validationFunction,
