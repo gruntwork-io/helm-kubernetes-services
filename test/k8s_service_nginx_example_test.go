@@ -137,6 +137,7 @@ func waitUntilIngressAvailable(t *testing.T, options *k8s.KubectlOptions, ingres
 			if err != nil {
 				return "", err
 			}
+			logger.Logf(t, "wtf %v", ingress)
 			if len(ingress.Status.LoadBalancer.Ingress) == 0 {
 				return "", fmt.Errorf("Ingress not available")
 			}
