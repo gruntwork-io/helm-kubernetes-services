@@ -84,8 +84,17 @@ func verifyIngressAvailable(
 	ingresses := listIngress(t, kubectlOptions, filters)
 	require.Equal(t, len(ingresses), 1)
 	ingress := ingresses[0]
+	waitUntilIngressAvailable(
+		t,
+		kubectlOptions,
+		ingress.Name,
+		WaitTimerRetries,
+		WaitTimerSleep,
+	)
 
 	// Now hit the service endpoint to verify it is accessible
+	ingress, err := getIngressE(t, kubectlOptions, ingress.Name)
+	require.NoError(t, err)
 	ingressEndpoint := ingress.Status.LoadBalancer.Ingress[0].IP
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
@@ -103,4 +112,36 @@ func listIngress(t *testing.T, options *k8s.KubectlOptions, filters metav1.ListO
 	resp, err := clientset.ExtensionsV1beta1().Ingresses(options.Namespace).List(filters)
 	require.NoError(t, err)
 	return resp.Items
+}
+
+func getIngressE(t *testing.T, options *k8s.KubectlOptions, ingressName string) (*extensionsv1beta1.Ingress, error) {
+	clientset, err := k8s.GetKubernetesClientFromOptionsE(t, options)
+	if err != nil {
+		return nil, err
+	}
+	return clientset.ExtensionsV1beta1().Ingresses(options.Namespace).Get(ingressName, metav1.GetOptions{})
+}
+
+func waitUntilIngressAvailable(t *testing.T, options *k8s.KubectlOptions, ingressName string, retries int, sleepBetweenRetries time.Duration) {
+	statusMsg := fmt.Sprintf("Wait for ingress %s to be provisioned.", ingressName)
+	message := retry.DoWithRetry(
+		t,
+		statusMsg,
+		retries,
+		sleepBetweenRetries,
+		func() (string, error) {
+			ingress, err := getIngressE(t, options, ingressName)
+			if err != nil {
+				return "", err
+			}
+			if ingress.Status.LoadBalancer == nil {
+				return "", fmt.Errorf("Ingress not available")
+			}
+			if len(ingress.Status.LoadBalancer.Ingress) == 0 {
+				return "", fmt.Errorf("Ingress not available")
+			}
+			return "Ingress is now available", nil
+		},
+	)
+	logger.Logf(t, message)
 }
