@@ -10,11 +10,13 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/stretchr/testify/require"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -133,9 +135,6 @@ func waitUntilIngressAvailable(t *testing.T, options *k8s.KubectlOptions, ingres
 			ingress, err := getIngressE(t, options, ingressName)
 			if err != nil {
 				return "", err
-			}
-			if ingress.Status.LoadBalancer == nil {
-				return "", fmt.Errorf("Ingress not available")
 			}
 			if len(ingress.Status.LoadBalancer.Ingress) == 0 {
 				return "", fmt.Errorf("Ingress not available")
