@@ -56,8 +56,8 @@ func TestK8SServiceNginxExample(t *testing.T) {
 			"ingress.enabled":     "true",
 			"ingress.path":        "/app",
 			"ingress.servicePort": "http",
-			"ingress.annotations.\"kubernetes\\.io/ingress\\.class\"":        "nginx",
-			"ingress.annotations.\"ingress\\.kubernetes\\.io/ssl-redirect\"": "false",
+			"ingress.annotations.\"kubernetes\\.io/ingress\\.class\"":                "nginx",
+			"ingress.annotations.\"nginx\\.ingress\\.kubernetes\\.io/ssl-redirect\"": "false",
 		},
 	}
 	defer helm.Delete(t, options, releaseName, true)
