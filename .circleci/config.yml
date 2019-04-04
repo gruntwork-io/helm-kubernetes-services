@@ -77,12 +77,29 @@ setup_minikube: &setup_minikube
 
     # This installs nginx ingress controller
     sudo -E minikube addons enable ingress
+
+    # Now we need to wait for the nginx-ingress-controller deployment to be created
+    $(
+      # Wait for deployment to show up
+      for i in {1..150}; do # timeout for 5 minutes
+        kubectl get deployment -n kube-system nginx-ingress-controller &> /dev/null
+        if [ $? -ne 1 ]; then
+          break
+        fi
+        sleep 2
+      done
+      true
+    )
+
     # Next, we need to patch it so it exposes the nginx controller on the host network so that we get a valid endpoint to
     # access it.
-    kubectl patch deployment -n ingress-nginx nginx-ingress-controller --patch "spec:
+    kubectl patch deployment -n kube-system nginx-ingress-controller --patch "spec:
       template:
         spec:
           hostNetwork: true"
+
+    # Finally we wait for the rollout
+    kubectl rollout status -n kube-system deployment/nginx-ingress-controller --watch
 
 
 install_gruntwork_utils: &install_gruntwork_utils
