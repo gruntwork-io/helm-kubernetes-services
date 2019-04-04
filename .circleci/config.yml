@@ -53,7 +53,13 @@ setup_minikube: &setup_minikube
     # Ignore warnings on minikube start command, as it will log a warning due to using deprecated localkube
     # bootstrapper. However, the localkube bootstrapper is necessary to run on CircleCI which doesn't have
     # systemd.
-    sudo -E minikube start --vm-driver=none --kubernetes-version=${K8S_VERSION} --bootstrapper=localkube --extra-config=apiserver.Authorization.Mode=RBAC
+    sudo -E minikube start \
+      --vm-driver=none \
+      --kubernetes-version=${K8S_VERSION} \
+      --bootstrapper=localkube \
+      --extra-config=apiserver.Authorization.Mode=RBAC \
+      --cpus 2 --memory 4096
+
     # this for loop waits until kubectl can access the api server that Minikube has created
     $(
       for i in {1..150}; do # timeout for 5 minutes
