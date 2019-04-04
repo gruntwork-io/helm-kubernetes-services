@@ -36,6 +36,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
+    {{- if .Values.ingress.hosts }}
     {{- range .Values.ingress.hosts }}
     - host: {{ . | quote }}
       http:
@@ -44,5 +45,14 @@ spec:
             backend:
               serviceName: {{ $fullName }}
               servicePort: {{ $servicePort }}
+    {{- end }}
+    {{- else }}
+    - http:
+        paths:
+          - path: {{ $ingressPath }}
+            backend:
+              serviceName: {{ $fullName }}
+              servicePort: {{ $servicePort }}
+
     {{- end }}
 {{- end }}

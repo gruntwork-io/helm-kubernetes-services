@@ -71,6 +71,9 @@ setup_minikube: &setup_minikube
       true
     )
 
+    # This installs nginx ingress controller
+    sudo -E minikube addons enable ingress
+
 
 install_gruntwork_utils: &install_gruntwork_utils
   name: install gruntwork utils
