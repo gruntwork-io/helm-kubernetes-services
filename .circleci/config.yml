@@ -35,6 +35,9 @@ install_helm_client: &install_helm_client
 setup_minikube: &setup_minikube
   name: install kubectl and minikube
   command: |
+    # Install yq so we can modify the configmap
+    sudo apt-get update && sudo apt-get install -y yq
+
     # Issues using addons with minikube due to hostpath failure
     # See: https://github.com/kubernetes/kubernetes/issues/61058
     sudo mount --make-rshared /
@@ -95,6 +98,9 @@ setup_minikube: &setup_minikube
 
     # Make sure to grant the default service account cluster admin rights so helm and ingress controller works
     kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
+
+    # Update the configmap to disable SSL since we won't have certs
+    kubectl get configmap -n kube-system nginx-load-balancer-conf -o yaml | yq write - data.ssl-redirect "\"false\"" | kubectl replace -f -
 
     # Finally we wait for the rollout
     kubectl rollout status -n kube-system deployment/nginx-ingress-controller --watch
