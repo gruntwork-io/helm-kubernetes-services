@@ -11,13 +11,7 @@ defaults: &defaults
     TERRAGRUNT_VERSION: NONE
     PACKER_VERSION: NONE
     GOLANG_VERSION: 1.11.2
-    K8S_VERSION: v1.10.0  # Same as EKS
     KUBECONFIG: /home/circleci/.kube/config
-    MINIKUBE_VERSION: v1.0.0
-    MINIKUBE_WANTUPDATENOTIFICATION: "false"
-    MINIKUBE_WANTREPORTERRORPROMPT: "false"
-    MINIKUBE_HOME: /home/circleci
-    CHANGE_MINIKUBE_NONE_USER: "true"
 
 
 install_helm_client: &install_helm_client
@@ -30,85 +24,12 @@ install_helm_client: &install_helm_client
     sudo mv linux-amd64/helm /usr/local/bin/
 
 
-# Install and setup minikube
-# https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
-setup_minikube: &setup_minikube
-  name: install kubectl and minikube
-  command: |
-    # Install yq so we can modify the configmap
-    sudo add-apt-repository ppa:rmescandon/yq
-    sudo apt-get update
-    sudo apt install -y yq
-
-    # Issues using addons with minikube due to hostpath failure
-    # See: https://github.com/kubernetes/kubernetes/issues/61058
-    sudo mount --make-rshared /
-
-    # install kubectl
-    curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
-    chmod +x kubectl
-    sudo mv kubectl /usr/local/bin/
-    mkdir -p ${HOME}/.kube
-    touch ${HOME}/.kube/config
-
-    # Install minikube
-    curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
-    chmod +x minikube
-    sudo mv minikube /usr/local/bin/
-
-    # start minikube and wait for it
-    sudo -E minikube start \
-      --vm-driver=none \
-      --kubernetes-version=${K8S_VERSION} \
-      --extra-config=apiserver.Authorization.Mode=RBAC \
-      --cpus 2 --memory 4096
-
-    # this for loop waits until kubectl can access the api server that Minikube has created
-    $(
-      for i in {1..150}; do # timeout for 5 minutes
-        kubectl get po &> /dev/null
-        if [ $? -ne 1 ]; then
-          break
-        fi
-        sleep 2
-      done
-      true
-    )
-
-    # Disable some addons we don't need
-    sudo -E minikube addons disable dashboard
-
-    # This installs nginx ingress controller
-    sudo -E minikube addons enable ingress
-
-    # Now we need to wait for the nginx-ingress-controller deployment to be created
-    $(
-      # Wait for deployment to show up
-      for i in {1..150}; do # timeout for 5 minutes
-        kubectl get deployment -n kube-system nginx-ingress-controller &> /dev/null
-        if [ $? -ne 1 ]; then
-          break
-        fi
-        sleep 2
-      done
-      true
-    )
-
-    # Make sure to grant the default service account cluster admin rights so helm and ingress controller works
-    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
-
-    # Update the configmap to disable SSL since we won't have certs
-    kubectl get configmap -n kube-system nginx-load-balancer-conf -o yaml | yq write - data.ssl-redirect "\"false\"" | kubectl replace -f -
-
-    # Finally we wait for the rollout
-    kubectl rollout status -n kube-system deployment/nginx-ingress-controller --watch
-
-
 install_gruntwork_utils: &install_gruntwork_utils
   name: install gruntwork utils
   command: |
     curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
     gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
+    gruntwork-install --module-name "kubernetes-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --branch yori-add-k8s
     gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag "${TERRATEST_LOG_PARSER_VERSION}"
     configure-environment-for-gruntwork-module \
       --circle-ci-2-machine-executor \
@@ -163,7 +84,7 @@ jobs:
           <<: *install_gruntwork_utils
 
       - run:
-          <<: *setup_minikube
+          command: setup-minikube
 
       - run:
           <<: *install_helm_client
