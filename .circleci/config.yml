@@ -13,7 +13,7 @@ defaults: &defaults
     GOLANG_VERSION: 1.11.2
     K8S_VERSION: v1.10.0  # Same as EKS
     KUBECONFIG: /home/circleci/.kube/config
-    MINIKUBE_VERSION: v0.28.2  # See https://github.com/kubernetes/minikube/issues/2704
+    MINIKUBE_VERSION: v1.0.0
     MINIKUBE_WANTUPDATENOTIFICATION: "false"
     MINIKUBE_WANTREPORTERRORPROMPT: "false"
     MINIKUBE_HOME: /home/circleci
@@ -57,13 +57,9 @@ setup_minikube: &setup_minikube
     sudo mv minikube /usr/local/bin/
 
     # start minikube and wait for it
-    # Ignore warnings on minikube start command, as it will log a warning due to using deprecated localkube
-    # bootstrapper. However, the localkube bootstrapper is necessary to run on CircleCI which doesn't have
-    # systemd.
     sudo -E minikube start \
       --vm-driver=none \
       --kubernetes-version=${K8S_VERSION} \
-      --bootstrapper=localkube \
       --extra-config=apiserver.Authorization.Mode=RBAC \
       --cpus 2 --memory 4096
 
