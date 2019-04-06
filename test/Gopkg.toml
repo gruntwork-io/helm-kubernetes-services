@@ -27,7 +27,8 @@
 
 [[constraint]]
   name = "github.com/gruntwork-io/terratest"
-  version = "0.13.28"
+  # TODO: use released version when PR merges
+  branch = "yori-k8s-ingress-functions"
 
 [prune]
   go-tests = true

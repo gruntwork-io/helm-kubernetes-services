@@ -85,10 +85,10 @@ func verifyIngressAvailable(
 	filters := metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s", appName, releaseName),
 	}
-	ingresses := listIngress(t, kubectlOptions, filters)
+	ingresses := k8s.ListIngresses(t, kubectlOptions, filters)
 	require.Equal(t, len(ingresses), 1)
 	ingressName := ingresses[0].Name
-	waitUntilIngressAvailable(
+	k8s.WaitUntilIngressAvailable(
 		t,
 		kubectlOptions,
 		ingressName,
@@ -97,8 +97,7 @@ func verifyIngressAvailable(
 	)
 
 	// Now hit the service endpoint to verify it is accessible
-	ingress, err := getIngressE(t, kubectlOptions, ingressName)
-	require.NoError(t, err)
+	ingress := k8s.GetIngress(t, kubectlOptions, ingressName)
 	ingressEndpoint := ingress.Status.LoadBalancer.Ingress[0].IP
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
@@ -107,42 +106,4 @@ func verifyIngressAvailable(
 		WaitTimerSleep,
 		validationFunction,
 	)
-
-}
-
-func listIngress(t *testing.T, options *k8s.KubectlOptions, filters metav1.ListOptions) []extensionsv1beta1.Ingress {
-	clientset, err := k8s.GetKubernetesClientFromOptionsE(t, options)
-	require.NoError(t, err)
-	resp, err := clientset.ExtensionsV1beta1().Ingresses(options.Namespace).List(filters)
-	require.NoError(t, err)
-	return resp.Items
-}
-
-func getIngressE(t *testing.T, options *k8s.KubectlOptions, ingressName string) (*extensionsv1beta1.Ingress, error) {
-	clientset, err := k8s.GetKubernetesClientFromOptionsE(t, options)
-	if err != nil {
-		return nil, err
-	}
-	return clientset.ExtensionsV1beta1().Ingresses(options.Namespace).Get(ingressName, metav1.GetOptions{})
-}
-
-func waitUntilIngressAvailable(t *testing.T, options *k8s.KubectlOptions, ingressName string, retries int, sleepBetweenRetries time.Duration) {
-	statusMsg := fmt.Sprintf("Wait for ingress %s to be provisioned.", ingressName)
-	message := retry.DoWithRetry(
-		t,
-		statusMsg,
-		retries,
-		sleepBetweenRetries,
-		func() (string, error) {
-			ingress, err := getIngressE(t, options, ingressName)
-			if err != nil {
-				return "", err
-			}
-			if len(ingress.Status.LoadBalancer.Ingress) == 0 {
-				return "", fmt.Errorf("Ingress not available")
-			}
-			return "Ingress is now available", nil
-		},
-	)
-	logger.Logf(t, message)
 }
