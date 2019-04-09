@@ -214,7 +214,6 @@
   version = "v0.4.2"
 
 [[projects]]
-  branch = "yori-k8s-ingress-functions"
   digest = "1:a10f2c49a4cdae2bfa8baff73872d3ac8163749a627d06746f9f373a0d7f4ad5"
   name = "github.com/gruntwork-io/terratest"
   packages = [
@@ -233,7 +232,8 @@
     "modules/ssh",
   ]
   pruneopts = "UT"
-  revision = "c6e25bd863c495d47592577bb919cebe00f1e0cb"
+  revision = "c3e1e0ab1e41a00e6c27d56216435f4b4c7311a3"
+  version = "v0.14.5"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
@@ -658,13 +658,11 @@
     "github.com/gruntwork-io/terratest/modules/k8s",
     "github.com/gruntwork-io/terratest/modules/logger",
     "github.com/gruntwork-io/terratest/modules/random",
-    "github.com/gruntwork-io/terratest/modules/retry",
     "github.com/gruntwork-io/terratest/modules/shell",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
-    "k8s.io/api/extensions/v1beta1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
   ]
   solver-name = "gps-cdcl"
