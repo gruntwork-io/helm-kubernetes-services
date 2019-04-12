@@ -10,7 +10,7 @@ We declare some variables defined on the Values. These are reused in `with` and 
 {{- $fullName := include "k8s-service.fullname" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
 {{- $servicePort := .Values.ingress.servicePort -}}
-apiVersion: extensions/v1
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -22,7 +22,7 @@ metadata:
     helm.sh/chart: {{ include "k8s-service.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- if .Values.service.annotations }}
+{{- if .Values.ingress.annotations }}
 {{- with .Values.ingress.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
@@ -36,6 +36,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
+    {{- if .Values.ingress.hosts }}
     {{- range .Values.ingress.hosts }}
     - host: {{ . | quote }}
       http:
@@ -44,5 +45,14 @@ spec:
             backend:
               serviceName: {{ $fullName }}
               servicePort: {{ $servicePort }}
+    {{- end }}
+    {{- else }}
+    - http:
+        paths:
+          - path: {{ $ingressPath }}
+            backend:
+              serviceName: {{ $fullName }}
+              servicePort: {{ $servicePort }}
+
     {{- end }}
 {{- end }}

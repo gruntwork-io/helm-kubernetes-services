@@ -12,9 +12,11 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
+	"github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Test that:
@@ -22,7 +24,8 @@ import (
 // 1. We can deploy the example
 // 2. The deployment succeeds without errors
 // 3. We can open a port forward to one of the Pods and access nginx
-// 4. We can access ngix via the service endpoint
+// 4. We can access nginx via the service endpoint
+// 5. We can access nginx via the ingress endpoint
 func TestK8SServiceNginxExample(t *testing.T) {
 	t.Parallel()
 
@@ -45,6 +48,13 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	options := &helm.Options{
 		KubectlOptions: kubectlOptions,
 		ValuesFiles:    []string{filepath.Join(examplePath, "values.yaml")},
+		SetValues: map[string]string{
+			"ingress.enabled":     "true",
+			"ingress.path":        "/app",
+			"ingress.servicePort": "http",
+			"ingress.annotations.kubernetes\\.io/ingress\\.class":                  "nginx",
+			"ingress.annotations.nginx\\.ingress\\.kubernetes\\.io/rewrite-target": "/",
+		},
 	}
 	defer helm.Delete(t, options, releaseName, true)
 	helm.Install(t, options, helmChartPath, releaseName)
@@ -52,9 +62,44 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	verifyPodsCreatedSuccessfully(t, kubectlOptions, "nginx", releaseName)
 	verifyAllPodsAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 	verifyServiceAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
+	verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 }
 
 // nginxValidationFunction checks that we get a 200 response with the nginx welcome page.
 func nginxValidationFunction(statusCode int, body string) bool {
 	return statusCode == 200 && strings.Contains(body, "Welcome to nginx")
+}
+
+func verifyIngressAvailable(
+	t *testing.T,
+	kubectlOptions *k8s.KubectlOptions,
+	appName string,
+	releaseName string,
+	validationFunction func(int, string) bool,
+) {
+	// Get the service and wait until it is available
+	filters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s", appName, releaseName),
+	}
+	ingresses := k8s.ListIngresses(t, kubectlOptions, filters)
+	require.Equal(t, len(ingresses), 1)
+	ingressName := ingresses[0].Name
+	k8s.WaitUntilIngressAvailable(
+		t,
+		kubectlOptions,
+		ingressName,
+		WaitTimerRetries,
+		WaitTimerSleep,
+	)
+
+	// Now hit the service endpoint to verify it is accessible
+	ingress := k8s.GetIngress(t, kubectlOptions, ingressName)
+	ingressEndpoint := ingress.Status.LoadBalancer.Ingress[0].IP
+	http_helper.HttpGetWithRetryWithCustomValidation(
+		t,
+		fmt.Sprintf("http://%s/app", ingressEndpoint),
+		WaitTimerRetries,
+		WaitTimerSleep,
+		validationFunction,
+	)
 }

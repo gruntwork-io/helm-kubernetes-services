@@ -10,7 +10,7 @@
   version = "v0.36.0"
 
 [[projects]]
-  digest = "1:f558d34644aea9acaaaa049c636cd613df451d5ca179949bc583bfda80ca6975"
+  digest = "1:2d440c27c25ac4569edb21b27d5cfcbeb383382d3384d7691347377fbfa1f9f6"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -52,6 +52,7 @@
     "service/autoscaling",
     "service/cloudwatchlogs",
     "service/ec2",
+    "service/ecs",
     "service/iam",
     "service/kms",
     "service/rds",
@@ -213,7 +214,7 @@
   version = "v0.4.2"
 
 [[projects]]
-  digest = "1:1028a3022d92b62fb4efb3216503834ebbeb38144d7ffdf4c4ee4acb0f069e35"
+  digest = "1:a10f2c49a4cdae2bfa8baff73872d3ac8163749a627d06746f9f373a0d7f4ad5"
   name = "github.com/gruntwork-io/terratest"
   packages = [
     "modules/aws",
@@ -231,8 +232,8 @@
     "modules/ssh",
   ]
   pruneopts = "UT"
-  revision = "b6077c8c1ecfd290ee1f37e1e51472a34d30cb38"
-  version = "v0.13.29"
+  revision = "c3e1e0ab1e41a00e6c27d56216435f4b4c7311a3"
+  version = "v0.14.5"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
@@ -655,7 +656,9 @@
     "github.com/gruntwork-io/terratest/modules/helm",
     "github.com/gruntwork-io/terratest/modules/http-helper",
     "github.com/gruntwork-io/terratest/modules/k8s",
+    "github.com/gruntwork-io/terratest/modules/logger",
     "github.com/gruntwork-io/terratest/modules/random",
+    "github.com/gruntwork-io/terratest/modules/shell",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "k8s.io/api/apps/v1",
