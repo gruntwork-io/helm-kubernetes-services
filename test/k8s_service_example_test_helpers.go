@@ -6,6 +6,7 @@
 package test
 
 import (
+	"crypto/tls"
 	"fmt"
 	"testing"
 	"time"
@@ -77,6 +78,7 @@ func verifySinglePodAvailable(
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s", tunnel.Endpoint()),
+		&tls.Config{},
 		WaitTimerRetries,
 		WaitTimerSleep,
 		validationFunction,
@@ -108,6 +110,7 @@ func verifyServiceAvailable(
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s", serviceEndpoint),
+		&tls.Config{},
 		WaitTimerRetries,
 		WaitTimerSleep,
 		validationFunction,

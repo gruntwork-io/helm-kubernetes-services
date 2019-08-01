@@ -6,6 +6,7 @@
 package test
 
 import (
+	"crypto/tls"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -98,6 +99,7 @@ func verifyIngressAvailable(
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s/app", ingressEndpoint),
+		&tls.Config{},
 		WaitTimerRetries,
 		WaitTimerSleep,
 		validationFunction,
