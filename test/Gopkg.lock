@@ -218,7 +218,6 @@
   version = "v0.4.2"
 
 [[projects]]
-  branch = "yori-fix-more-dep-issues"
   digest = "1:49d3dd06d2302cd364d8c291594df32d2dd6040d3f35c8f1c7d668ec01cdf435"
   name = "github.com/gruntwork-io/terratest"
   packages = [
@@ -237,7 +236,8 @@
     "modules/ssh",
   ]
   pruneopts = "UT"
-  revision = "6599dc07807996be005ac23bbbd5e6e222f9cd52"
+  revision = "242a06798c7d3babe30466ecb3a2e6b35a8ca66b"
+  version = "v0.18.2"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
