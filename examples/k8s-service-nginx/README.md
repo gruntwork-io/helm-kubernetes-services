@@ -13,7 +13,7 @@ In this guide we will walk through the steps necessary to deploy a vanilla Nginx
 Chart against a Kubernetes cluster. We will use `minikube` for this guide, but the chart is designed to work with many
 different Kubernetes clusters (e.g EKS or GKE).
 
-Here are the steps:
+Here are the steps, linked to the relevant sections of this doc:
 
 1. [Install and setup `minikube`](#setting-up-your-kubernetes-cluster-minikube)
 1. [Install and setup `helm`](#setting-up-helm-on-minikube)
@@ -31,15 +31,16 @@ cd examples/k8s-service-nginx
 
 ## Setting up your Kubernetes cluster: Minikube
 
-In this guide, we will use `minikube` as our Kubernetes cluster to deploy Tiller to.
-[Minikube](https://kubernetes.io/docs/setup/minikube/) is an official tool maintained by the Kubernetes community to be
-able to provision and run Kubernetes locally your machine. By having a local environment you can have fast iteration
-cycles while you develop and play with Kubernetes before deploying to production.
+In this guide, we will use `minikube` as our Kubernetes cluster to deploy Tiller to. Minikube is an official tool
+maintained by the Kubernetes community to be able to provision and run Kubernetes locally your machine. By having a
+local environment you can have fast iteration cycles while you develop and play with Kubernetes before deploying to
+production. You can learn more about Minikube in [the official docs](https://kubernetes.io/docs/setup/minikube/).
 
 To setup `minikube`:
 
-1. [Install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-1. [Install the minikube utility](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+1. Install kubectl by following [the official docs](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+1. Install the minikube utility by following [the official
+   docs](https://kubernetes.io/docs/tasks/tools/install-minikube/)
 1. Run `minikube start` to provision a new `minikube` instance on your local machine.
 1. Verify setup with `kubectl`: `kubectl cluster-info`
 
@@ -52,10 +53,10 @@ In order to install Helm Charts, we need to have a working version of Tiller (th
 Kubernetes cluster. Read [our guide on Helm](https://github.com/gruntwork-io/kubergrunt/blob/master/HELM_GUIDE.md) for
 more information.**
 
-To setup helm, first install the [`helm` client](https://docs.helm.sh/using_helm/#installing-helm). Make sure the binary
-is discoverble in your `PATH` variable. See [this stackoverflow
-post](https://stackoverflow.com/questions/14637979/how-to-permanently-set-path-on-linux-unix) for instructions on
-setting up your `PATH` on Unix, and [this
+To setup helm, first install the `helm` client by following [the official
+docs](https://docs.helm.sh/using_helm/#installing-helm). Make sure the binary is discoverble in your `PATH` variable.
+See [this stackoverflow post](https://stackoverflow.com/questions/14637979/how-to-permanently-set-path-on-linux-unix)
+for instructions on setting up your `PATH` on Unix, and [this
 post](https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows) for instructions on
 Windows.
 
@@ -115,7 +116,7 @@ using the `k8s-service` chart.
 This folder contains predefined input values you can use with the `k8s-service` chart to deploy Nginx. These values
 define the container image to use as part of the deployment, and augments the default values of the chart by defining a
 `livenessProbe` and `readinessProbe` for the main container (which in this case will be `nginx:1.14.2`). Take a look at
-the provided [`values.yaml`](./values.yaml) file to see how the values are defined.
+[the provided `values.yaml` file](./values.yaml) to see how the values are defined.
 
 We will now instruct helm to install the `k8s-service` chart using these values. To do so, we will use the `helm
 install` command:
@@ -225,9 +226,10 @@ from the `DESIRED` column, then that means either the deployment is still in pro
 process.
 
 You can further dig deeper using `describe`, or querying the different subresources such as the underlying Pods. For
-this guide, we are satisfied with the `Deployment` status output above. See [How do I check the status of the
-rollout?](/charts/k8s-service/README.md#how-do-i-check-the-status-of-the-rollout) for more details on how to check in on
-the detailed status of a rollout, and to help troubleshoot any issues in your environment.
+this guide, we are satisfied with the `Deployment` status output above. See the [How do I check the status of the
+rollout?](/charts/k8s-service/README.md#how-do-i-check-the-status-of-the-rollout) section of the chart README for
+more details on how to check in on the detailed status of a rollout, and to help troubleshoot any issues in your
+environment.
 
 Once you have confirmed the `Deployment` has rolled out successfully, the next step is to verify that Nginx is up and
 accessible.
@@ -380,6 +382,48 @@ echo http://$NODE_IP:$NODE_PORT
 The first command query the `Service` resource to find out the node port that was used to expose the service. The second
 command queries the ip address of `minikub`. The last command will `echo` out the endpoint where the service is
 available. Try hitting that endpoint in your browser and you should see the familiar nginx splash screen.
+
+## Undeploying Nginx
+
+Once you have tested and are satisfied with your Nginx service, you can undeploy it to clean up your cluster. To
+undeploy the service, you need to delete the corresponding Helm Release. Helm Releases are what tracks all the resources
+associated with a chart in a single deployment.
+
+To delete the Helm Release, you need to first identify the name of the release. The release name is outputted as part of
+the initial deployment. For our example in this guide, the name is `queenly-liger`.
+
+If you forget the release name, you can always look it up from the list of deployed charts using `helm ls`:
+
+```
+$ helm ls
+NAME            REVISION        UPDATED                         STATUS          CHART                           APP VERSION     NAMESPACE
+queenly-liger    1               Sat Feb 16 11:36:01 2019        DEPLOYED        k8s-service-0.0.1-replace                       default
+```
+
+Once you have the release name, you can use the `helm delete` command to delete a release and undeploy all the
+associated resources:
+
+```
+$ helm delete queenly-liger
+release "queenly-liger" deleted
+```
+
+To check, you can use `kubectl` to query for the resources. For example, now if you query for the `Service`, you will
+get an error:
+
+```
+$ kubectl get --namespace default services queenly-liger-nginx
+Error from server (NotFound): services "queenly-liger-nginx" not found
+```
+
+Note that metadata about the deleted release persist in the Tiller state. This means that you can't reuse the same
+release name when deploying new charts. If you would like to free up the name for another deployment, you can pass in
+the `--purge` option to `helm delete`:
+
+```
+$ helm delete --purge queenly-liger
+```
+
 
 ## Summary
 
