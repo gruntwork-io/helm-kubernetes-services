@@ -9,6 +9,8 @@ We declare some variables defined on the Values. These are reused in `with` and 
 */ -}}
 {{- $fullName := include "k8s-service.fullname" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
+{{- $additionalPathsHigherPriority := .Values.ingress.additionalPathsHigherPriority }}
+{{- $additionalPaths := .Values.ingress.additionalPaths }}
 {{- $servicePort := .Values.ingress.servicePort -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -41,18 +43,42 @@ spec:
     - host: {{ . | quote }}
       http:
         paths:
+          {{- range $additionalPathsHigherPriority }}
+          - path: {{ .path }}
+            backend:
+              serviceName: {{ .serviceName }}
+              servicePort: {{ .servicePort }}
+          {{- end }}
           - path: {{ $ingressPath }}
             backend:
               serviceName: {{ $fullName }}
               servicePort: {{ $servicePort }}
+          {{- range $additionalPaths }}
+          - path: {{ .path }}
+            backend:
+              serviceName: {{ .serviceName }}
+              servicePort: {{ .servicePort }}
+          {{- end }}
     {{- end }}
     {{- else }}
     - http:
         paths:
+          {{- range $additionalPathsHigherPriority }}
+          - path: {{ .path }}
+            backend:
+              serviceName: {{ .serviceName }}
+              servicePort: {{ .servicePort }}
+          {{- end }}
           - path: {{ $ingressPath }}
             backend:
               serviceName: {{ $fullName }}
               servicePort: {{ $servicePort }}
+          {{- range $additionalPaths }}
+          - path: {{ .path }}
+            backend:
+              serviceName: {{ .serviceName }}
+              servicePort: {{ .servicePort }}
+          {{- end }}
 
     {{- end }}
 {{- end }}

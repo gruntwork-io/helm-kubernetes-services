@@ -10,7 +10,7 @@
   version = "v0.36.0"
 
 [[projects]]
-  digest = "1:2d440c27c25ac4569edb21b27d5cfcbeb383382d3384d7691347377fbfa1f9f6"
+  digest = "1:5b3a4b76365fb5e04121ae71ae662c44b64fbec5cbccefaf5c997c6b7ebba6b2"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -24,6 +24,7 @@
     "aws/credentials/endpointcreds",
     "aws/credentials/processcreds",
     "aws/credentials/stscreds",
+    "aws/crr",
     "aws/csm",
     "aws/defaults",
     "aws/ec2metadata",
@@ -51,6 +52,7 @@
     "service/acm",
     "service/autoscaling",
     "service/cloudwatchlogs",
+    "service/dynamodb",
     "service/ec2",
     "service/ecs",
     "service/iam",
@@ -61,6 +63,7 @@
     "service/s3/s3manager",
     "service/sns",
     "service/sqs",
+    "service/ssm",
     "service/sts",
   ]
   pruneopts = "UT"
@@ -214,7 +217,7 @@
   version = "v0.4.2"
 
 [[projects]]
-  digest = "1:a10f2c49a4cdae2bfa8baff73872d3ac8163749a627d06746f9f373a0d7f4ad5"
+  digest = "1:de159f0ff408bb1d832f5da4b59e4cd3872d7b3b838761bba6ca29cebf11fe1d"
   name = "github.com/gruntwork-io/terratest"
   packages = [
     "modules/aws",
@@ -232,8 +235,8 @@
     "modules/ssh",
   ]
   pruneopts = "UT"
-  revision = "c3e1e0ab1e41a00e6c27d56216435f4b4c7311a3"
-  version = "v0.14.5"
+  revision = "367843c5fa8429d84d2e9b78402546316b54ee91"
+  version = "v0.17.6"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
@@ -663,6 +666,7 @@
     "github.com/stretchr/testify/require",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/api/extensions/v1beta1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
   ]
   solver-name = "gps-cdcl"

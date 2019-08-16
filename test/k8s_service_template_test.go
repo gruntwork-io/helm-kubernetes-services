@@ -201,3 +201,146 @@ func TestK8SServiceNonZeroShutdownDelayIncludesPreStopHook(t *testing.T) {
 	require.NotNil(t, appContainer.Lifecycle.PreStop.Exec)
 	require.Equal(t, appContainer.Lifecycle.PreStop.Exec.Command, []string{"sleep", "5"})
 }
+
+// Test that setting additionalPaths on ingress add paths after service path
+func TestK8SServiceIngressAdditionalPathsAfterMainServicePath(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithSetValues(
+		t,
+		map[string]string{
+			"ingress.enabled":                        "true",
+			"ingress.path":                           "/app",
+			"ingress.servicePort":                    "app",
+			"ingress.additionalPaths[0].path":        "/black-hole",
+			"ingress.additionalPaths[0].serviceName": "black-hole",
+			"ingress.additionalPaths[0].servicePort": "80",
+		},
+	)
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 2)
+
+	// The first path should be the main service path
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/app")
+	assert.Equal(t, firstPath.Backend.ServiceName, "RELEASE-NAME-linter")
+	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
+
+	// The second path should be the black hole
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/black-hole")
+	assert.Equal(t, secondPath.Backend.ServiceName, "black-hole")
+	assert.Equal(t, secondPath.Backend.ServicePort.IntVal, int32(80))
+}
+
+// Test that setting additionalPaths with multiple entries on ingress add paths after service path in order
+func TestK8SServiceIngressAdditionalPathsMultipleAfterMainServicePath(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithSetValues(
+		t,
+		map[string]string{
+			"ingress.enabled":                        "true",
+			"ingress.path":                           "/app",
+			"ingress.servicePort":                    "app",
+			"ingress.additionalPaths[0].path":        "/sun",
+			"ingress.additionalPaths[0].serviceName": "sun",
+			"ingress.additionalPaths[0].servicePort": "3000",
+			"ingress.additionalPaths[1].path":        "/black-hole",
+			"ingress.additionalPaths[1].serviceName": "black-hole",
+			"ingress.additionalPaths[1].servicePort": "80",
+		},
+	)
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 3)
+
+	// The first path should be the main service path
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/app")
+	assert.Equal(t, firstPath.Backend.ServiceName, "RELEASE-NAME-linter")
+	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
+
+	// The second path should be the sun
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/sun")
+	assert.Equal(t, secondPath.Backend.ServiceName, "sun")
+	assert.Equal(t, secondPath.Backend.ServicePort.IntVal, int32(3000))
+
+	// The third path should be the black hole
+	thirdPath := pathRules[2]
+	assert.Equal(t, thirdPath.Path, "/black-hole")
+	assert.Equal(t, thirdPath.Backend.ServiceName, "black-hole")
+	assert.Equal(t, thirdPath.Backend.ServicePort.IntVal, int32(80))
+}
+
+// Test that setting additionalPathsHigherPriority on ingress add paths before service path
+func TestK8SServiceIngressAdditionalPathsHigherPriorityBeforeMainServicePath(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithSetValues(
+		t,
+		map[string]string{
+			"ingress.enabled":     "true",
+			"ingress.path":        "/app",
+			"ingress.servicePort": "app",
+			"ingress.additionalPathsHigherPriority[0].path":        "/black-hole",
+			"ingress.additionalPathsHigherPriority[0].serviceName": "black-hole",
+			"ingress.additionalPathsHigherPriority[0].servicePort": "80",
+		},
+	)
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 2)
+
+	// The first path should be the black hole
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/black-hole")
+	assert.Equal(t, firstPath.Backend.ServiceName, "black-hole")
+	assert.Equal(t, firstPath.Backend.ServicePort.IntVal, int32(80))
+
+	// The second path should be the main service path
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/app")
+	assert.Equal(t, secondPath.Backend.ServiceName, "RELEASE-NAME-linter")
+	assert.Equal(t, secondPath.Backend.ServicePort.StrVal, "app")
+}
+
+// Test that setting additionalPathsHigherPriority with multiple entries on ingress add paths berfore service path in
+// order
+func TestK8SServiceIngressAdditionalPathsHigherPriorityMultipleBeforeMainServicePath(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithSetValues(
+		t,
+		map[string]string{
+			"ingress.enabled":     "true",
+			"ingress.path":        "/app",
+			"ingress.servicePort": "app",
+			"ingress.additionalPathsHigherPriority[0].path":        "/sun",
+			"ingress.additionalPathsHigherPriority[0].serviceName": "sun",
+			"ingress.additionalPathsHigherPriority[0].servicePort": "3000",
+			"ingress.additionalPathsHigherPriority[1].path":        "/black-hole",
+			"ingress.additionalPathsHigherPriority[1].serviceName": "black-hole",
+			"ingress.additionalPathsHigherPriority[1].servicePort": "80",
+		},
+	)
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 3)
+
+	// The first path should be the sun
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/sun")
+	assert.Equal(t, firstPath.Backend.ServiceName, "sun")
+	assert.Equal(t, firstPath.Backend.ServicePort.IntVal, int32(3000))
+
+	// The second path should be the black hole
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/black-hole")
+	assert.Equal(t, secondPath.Backend.ServiceName, "black-hole")
+	assert.Equal(t, secondPath.Backend.ServicePort.IntVal, int32(80))
+
+	// The last path should be the main service path
+	thirdPath := pathRules[2]
+	assert.Equal(t, thirdPath.Path, "/app")
+	assert.Equal(t, thirdPath.Backend.ServiceName, "RELEASE-NAME-linter")
+	assert.Equal(t, thirdPath.Backend.ServicePort.StrVal, "app")
+}

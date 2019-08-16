@@ -176,6 +176,13 @@ service:
 #                                             rule for each host defined in this list. If empty, will match all hosts.
 #   - path        (string)       (required) : The url path to match to route to the Service.
 #   - servicePort (int|string)   (required) : The port (as a number) or the name of the port on the Service to route to.
+#   - additionalPaths (list[map])           : Additional paths that should be added to the ingress which will be lower
+#                                             priority than the application service path. Each item corresponds to
+#                                             another path, and should define `path`, `serviceName`, and `servicePort`.
+#   - additionalPathsHigherPriority (list[map])
+#                                           : Additional paths that should be added to the ingress which will be higher
+#                                             priority than the application service path. Each item corresponds to
+#                                             another path, and should define `path`, `serviceName`, and `servicePort`.
 #
 # The following example specifies an Ingress rule that routes chart-example.local/app to the Service port `app` with
 # TLS configured using the certificate key pair in the Secret `chart-example-tls`:

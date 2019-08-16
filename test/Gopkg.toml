@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/gruntwork-io/terratest"
-  version = "0.14.5"
+  version = "0.17.6"
 
 [prune]
   go-tests = true

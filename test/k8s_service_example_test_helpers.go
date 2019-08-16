@@ -20,7 +20,11 @@ import (
 const (
 	WaitTimerRetries = 60
 	WaitTimerSleep   = 5 * time.Second
-	NumPodsExpected  = 3
+
+	// When expecting a timeout, do less tries to make tests go faster
+	ExpectTimeoutWaitTimerRetries = 20
+
+	NumPodsExpected = 3
 )
 
 // verifyPodsCreatedSuccessfully waits until the pods for the given helm release are created.
