@@ -7,6 +7,7 @@ package test
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ghodss/yaml"
@@ -223,7 +224,7 @@ func TestK8SServiceIngressAdditionalPathsAfterMainServicePath(t *testing.T) {
 	// The first path should be the main service path
 	firstPath := pathRules[0]
 	assert.Equal(t, firstPath.Path, "/app")
-	assert.Equal(t, firstPath.Backend.ServiceName, "RELEASE-NAME-linter")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
 	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
 
 	// The second path should be the black hole
@@ -257,7 +258,7 @@ func TestK8SServiceIngressAdditionalPathsMultipleAfterMainServicePath(t *testing
 	// The first path should be the main service path
 	firstPath := pathRules[0]
 	assert.Equal(t, firstPath.Path, "/app")
-	assert.Equal(t, firstPath.Backend.ServiceName, "RELEASE-NAME-linter")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
 	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
 
 	// The second path should be the sun
@@ -300,7 +301,7 @@ func TestK8SServiceIngressAdditionalPathsHigherPriorityBeforeMainServicePath(t *
 	// The second path should be the main service path
 	secondPath := pathRules[1]
 	assert.Equal(t, secondPath.Path, "/app")
-	assert.Equal(t, secondPath.Backend.ServiceName, "RELEASE-NAME-linter")
+	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
 	assert.Equal(t, secondPath.Backend.ServicePort.StrVal, "app")
 }
 
@@ -341,6 +342,6 @@ func TestK8SServiceIngressAdditionalPathsHigherPriorityMultipleBeforeMainService
 	// The last path should be the main service path
 	thirdPath := pathRules[2]
 	assert.Equal(t, thirdPath.Path, "/app")
-	assert.Equal(t, thirdPath.Backend.ServiceName, "RELEASE-NAME-linter")
+	assert.Equal(t, strings.ToLower(thirdPath.Backend.ServiceName), "release-name-linter")
 	assert.Equal(t, thirdPath.Backend.ServicePort.StrVal, "app")
 }
