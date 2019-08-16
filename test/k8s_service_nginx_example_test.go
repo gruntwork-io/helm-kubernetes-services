@@ -74,10 +74,10 @@ func TestK8SServiceNginxExample(t *testing.T) {
 
 	// We expect this to succeed, because the black hole service that overlaps with the nginx service is added as lower
 	// priority.
-	verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/app", nginxValidationFunction, false)
+	verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/app", nginxValidationFunction)
 
 	// On the other hand, we expect this to fail because the black hole service does not exist
-	verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/black-hole", serviceAvailableValidationFunction, true)
+	verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/black-hole", serviceUnavailableValidationFunction)
 
 	// Now redeploy with higher priority path and make sure it fails
 	options.SetValues["ingress.additionalPathsHigherPriority[0].path"] = "/app"
@@ -91,17 +91,17 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	verifyServiceAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 
 	// ... but now the nginx service via ingress should be unavailable because of the higher priority black hole path
-	verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/app", serviceAvailableValidationFunction, true)
+	verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/app", serviceUnavailableValidationFunction)
 }
 
 // nginxValidationFunction checks that we get a 200 response with the nginx welcome page.
 func nginxValidationFunction(statusCode int, body string) bool {
-	return serviceAvailableValidationFunction(statusCode, body) && strings.Contains(body, "Welcome to nginx")
+	return statusCode == 200 && strings.Contains(body, "Welcome to nginx")
 }
 
-// serviceAvailableValidationFunction checks that we get a 200 response
-func serviceAvailableValidationFunction(statusCode int, body string) bool {
-	return statusCode == 200
+// serviceUnavailableValidationFunction checks that we get a 503 response and the maintenance page
+func serviceUnavailableValidationFunction(statusCode int, body string) bool {
+	return statusCode == 503 && strings.Contains(body, "Service Temporarily Unavailable")
 }
 
 func verifyIngressAvailable(
@@ -111,15 +111,7 @@ func verifyIngressAvailable(
 	releaseName string,
 	path string,
 	validationFunction func(int, string) bool,
-	expectTimeout bool,
 ) {
-	var retries int
-	if expectTimeout {
-		retries = ExpectTimeoutWaitTimerRetries
-	} else {
-		retries = WaitTimerRetries
-	}
-
 	// Get the service and wait until it is available
 	filters := metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s", appName, releaseName),
@@ -131,23 +123,19 @@ func verifyIngressAvailable(
 		t,
 		kubectlOptions,
 		ingressName,
-		retries,
+		WaitTimerRetries,
 		WaitTimerSleep,
 	)
 
 	// Now hit the service endpoint to verify it is accessible
 	ingress := k8s.GetIngress(t, kubectlOptions, ingressName)
 	ingressEndpoint := ingress.Status.LoadBalancer.Ingress[0].IP
-	err := http_helper.HttpGetWithRetryWithCustomValidationE(
+	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s%s", ingressEndpoint, path),
-		retries,
+		WaitTimerRetries,
 		WaitTimerSleep,
 		validationFunction,
 	)
-	if expectTimeout {
-		assert.Error(t, err)
-	} else {
-		assert.NoError(t, err)
-	}
+	assert.NoError(t, err)
 }
