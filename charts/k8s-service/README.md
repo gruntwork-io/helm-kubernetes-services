@@ -406,6 +406,81 @@ prefix `app.yourco.com/app` to the `Service` on port 80. If `app.yourco.com` is 
 Controller` load balancer, then once you deploy the helm chart you should be able to start accessing your app on that
 endpoint.
 
+#### Registering additional paths
+
+Sometimes you might want to add additional path rules beyond the main service rule that is injected to the `Ingress`
+resource. For example, you might want a path that routes to the sidecar containers, or you might want to reuse a single
+`Ingress` for multiple different `Service` endpoints because to share load balancers. For these situations, you can use
+the `additionalPaths` and `additionalPathsHigherPriority` input values.
+
+Consider the following `Service`, where we have the `app` served on port 80, and the `sidecarMonitor` served on port
+3000:
+
+```yaml
+service:
+  enabled: true
+  type: NodePort
+  ports:
+    app:
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    sidecarMonitor:
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+```
+
+To route `/app` to the `app` service endpoint and `/sidecar` to the `sidecarMonitor` service endpoint, we will configure
+the `app` service path rules as the main service route and the `sidecarMonitor` as an additional path rule:
+
+```yaml
+ingress:
+   enabled: true
+   path: /app
+   servicePort: 80
+   additionalPaths:
+     - path: /sidecar
+       servicePort: 3000
+```
+
+Now suppose you had a sidecar service that will return a fixed response indicating server maintainance and you want to
+temporarily route all requests to that endpoint without taking down the pod. You can do this by creating a route that
+catches all paths as a higher priority path using the `additionalPathsHigherPriority` input value.
+
+Consider the following `Service`, where we have the `app` served on port 80, and the `sidecarFixedResponse` served on
+port 3000:
+
+```yaml
+service:
+  enabled: true
+  type: NodePort
+  ports:
+    app:
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    sidecarFixedResponse:
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+```
+
+To route all traffic to the fixed response port:
+
+```yaml
+ingress:
+   enabled: true
+   path: /app
+   servicePort: 80
+   additionalPathsHigherPriority:
+     - path: /*
+       servicePort: 3000
+```
+
+The `/*` rule which routes to port 3000 will always be used even when accessing the path `/app` because it will be
+evaluated first when routing requests.
+
 
 ## How do I check the status of the rollout?
 
