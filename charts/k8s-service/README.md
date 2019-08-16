@@ -981,3 +981,6 @@ using the `imagePullSecrets` input value:
 imagePullSecrets:
   - NAME
 ```
+
+You can learn more about using private registries with Kubernetes in [the official
+documentation](https://kubernetes.io/docs/concepts/containers/images/#using-a-private-registry).
