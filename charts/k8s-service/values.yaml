@@ -322,3 +322,7 @@ affinity: {}
 # NOTE: This variable is injected directly into the pod spec. See the official documentation for what this might look
 # like: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
+
+# imagePullSecrets lists the Secret resources that should be used for accessing private registries. Each item in the
+# list is a string that corresponds to the Secret name.
+imagePullSecrets: []

@@ -175,6 +175,37 @@ func TestK8SServiceContainerPortsSetPortsCorrectly(t *testing.T) {
 	assert.Equal(t, setPort.Protocol, corev1.Protocol("TCP"))
 }
 
+// Test that default imagePullSecrets do not render any
+func TestK8SServiceNoImagePullSecrets(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{},
+	)
+
+	renderedImagePullSecrets := deployment.Spec.Template.Spec.ImagePullSecrets
+	require.Equal(t, len(renderedImagePullSecrets), 0)
+}
+
+// Test that multiple imagePullSecrets renders each one correctly
+func TestK8SServiceMultipleImagePullSecrets(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"imagePullSecrets[0]": "docker-private-registry-key",
+			"imagePullSecrets[1]": "gcr-registry-key",
+		},
+	)
+
+	renderedImagePullSecrets := deployment.Spec.Template.Spec.ImagePullSecrets
+	require.Equal(t, len(renderedImagePullSecrets), 2)
+	assert.Equal(t, renderedImagePullSecrets[0].Name, "docker-private-registry-key")
+	assert.Equal(t, renderedImagePullSecrets[1].Name, "gcr-registry-key")
+}
+
 // Test that setting shutdownDelay to 0 will disable the preStop hook
 func TestK8SServiceShutdownDelayZeroDisablesPreStopHook(t *testing.T) {
 	t.Parallel()
