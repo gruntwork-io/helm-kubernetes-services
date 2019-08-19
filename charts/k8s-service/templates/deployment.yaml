@@ -206,6 +206,15 @@ spec:
 {{ toYaml $value | indent 12 }}
         {{- end }}
 
+    {{- /* START IMAGE PULL SECRETS LOGIC */ -}}
+    {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+    {{- end }}
+    {{- /* END IMAGE PULL SECRETS LOGIC */ -}}
+
     {{- /* START VOLUME LOGIC */ -}}
     {{- if index $hasInjectionTypes "hasVolume" }}
       volumes:
@@ -245,7 +254,7 @@ spec:
       {{- end }}
     {{- end }}
     {{- /* END VOLUME LOGIC */ -}}
-    
+
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}

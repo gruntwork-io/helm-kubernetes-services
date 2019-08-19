@@ -949,3 +949,38 @@ In this config, the side car containers are rendered as additional containers to
 container configured by the `containerImage`, `ports`, `livenessProbe`, etc input values. Note that the
 `sideCarContainers` variable directly renders the spec, meaning that the additional values for the side cars such as
 `livenessProbe` should be rendered directly within the `sideCarContainers` input value.
+
+
+## How do I use a private registry?
+
+To pull container images from a private registry, the Kubernetes cluster needs to be able to authenticate to the docker
+registry with a registry key. On managed Kubernetes clusters (e.g EKS, GKE, AKS), this is automated through the server
+IAM roles that are assigned to the instance VMs. In most cases, if the instance VM IAM role has the permissions to
+access the registry, the Kubernetes cluster will automatically be able to pull down images from the respective managed
+registry (e.g ECR on EKS or GCR on GKE).
+
+Alternatively, you can specify docker registry keys in the Kubernetes cluster as `Secret` resources. This is helpful in
+situations where you do not have the ability to assign registry access IAM roles to the node itself, or if you are
+pulling images off of a different registry (e.g accessing GCR from EKS cluster).
+
+You can use `kubectl` to create a `Secret` in Kubernetes that can be used as a docker registry key:
+
+```
+kubectl create secret docker-registry NAME \
+  --docker-server=DOCKER_REGISTRY_SERVER \
+  --docker-username=DOCKER_USER \
+  --docker-password=DOCKER_PASSWORD \
+  --docker-email=DOCKER_EMAIL
+```
+
+This command will create a `Secret` resource named `NAME` that holds the specified docker registry credentials. You can
+then specify the cluster to use this `Secret` when pulling down images for the service `Deployment` in this chart by
+using the `imagePullSecrets` input value:
+
+```
+imagePullSecrets:
+  - NAME
+```
+
+You can learn more about using private registries with Kubernetes in [the official
+documentation](https://kubernetes.io/docs/concepts/containers/images/#using-a-private-registry).
