@@ -62,7 +62,7 @@ func renderK8SServiceManagedCertificateWithSetValues(t *testing.T, setValues map
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   setValues,
 	}
-	// Render just the deployment resource
+	// Render just the google managed certificate resource
 	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/gmc.yaml"})
 
 	// Parse the deployment and verify the preStop hook is set
