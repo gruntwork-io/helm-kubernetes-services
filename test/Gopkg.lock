@@ -10,6 +10,14 @@
   version = "v0.36.0"
 
 [[projects]]
+  digest = "1:922753401f05c9559493ba0a690a446736c7f79f909c01654c9b71bd18fcde63"
+  name = "github.com/GoogleCloudPlatform/gke-managed-certs"
+  packages = ["pkg/apis/networking.gke.io/v1beta1"]
+  pruneopts = "UT"
+  revision = "04ab226c1b2747b74f3f622a0ef1277190b2c612"
+  version = "v0.3.4"
+
+[[projects]]
   digest = "1:5b3a4b76365fb5e04121ae71ae662c44b64fbec5cbccefaf5c997c6b7ebba6b2"
   name = "github.com/aws/aws-sdk-go"
   packages = [
@@ -655,6 +663,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/GoogleCloudPlatform/gke-managed-certs/pkg/apis/networking.gke.io/v1beta1",
     "github.com/ghodss/yaml",
     "github.com/gruntwork-io/terratest/modules/helm",
     "github.com/gruntwork-io/terratest/modules/http-helper",

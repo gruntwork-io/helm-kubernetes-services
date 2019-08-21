@@ -436,3 +436,42 @@ func TestK8SServiceIngressAdditionalPathsHigherPriorityNoServiceName(t *testing.
 	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
 	assert.Equal(t, secondPath.Backend.ServicePort.StrVal, "app")
 }
+
+// Test rendering Managed Certificate
+func TestK8SServiceManagedCertDomainName(t *testing.T) {
+	t.Parallel()
+
+	cert := renderK8SServiceManagedCertificateWithSetValues(
+		t,
+		map[string]string{
+			"google.managedCertificate.enabled":    "true",
+			"google.managedCertificate.domainName": "api.acme.io",
+		},
+	)
+
+	domains := cert.Spec.Domains
+	assert.Equal(t, len(domains), 1)
+	assert.Equal(t, domains[0], "api.acme.io")
+}
+
+// Test that setting ingress.enabled = false will cause the helm template to not render the ManagedCertificate resource
+func TestK8SServiceManagedCertificateDefaultsDoesNotCreateManagedCertificate(t *testing.T) {
+	t.Parallel()
+
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	// We then use SetValues to override all the defaults.
+	options := &helm.Options{
+		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+		SetValues:   map[string]string{},
+	}
+	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/gmc.yaml"})
+
+	// We take the output and render it to a map to validate it is an empty yaml
+	rendered := map[string]interface{}{}
+	err = yaml.Unmarshal([]byte(out), &rendered)
+	assert.NoError(t, err)
+	assert.Equal(t, len(rendered), 0)
+}
