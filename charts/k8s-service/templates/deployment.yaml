@@ -79,6 +79,10 @@ spec:
           {{- $tag := required "containerImage.tag is required" .Values.containerImage.tag }}
           image: "{{ $repo }}:{{ $tag }}"
           imagePullPolicy: {{ .Values.containerImage.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.containerCommand }}
+          command:
+{{ toYaml .Values.containerCommand | indent 12 }}
+          {{- end }}
 
           {{- if .Values.containerPorts }}
           ports:

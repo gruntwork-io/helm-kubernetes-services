@@ -40,6 +40,16 @@
 # These values have defaults, but may be overridden by the operator
 #----------------------------------------------------------------------------------------------------------------------
 
+# containerCommand is a list of strings that indicate a custom command to run for the container in place of the default
+# configured on the image. Omit to run the default command configured on the image.
+#
+# Example (run echo "Hello World"):
+#
+# containerCommand:
+#   - "echo"
+#   - "Hello World"
+containerCommand: null
+
 # containerPorts is a map that specifies the ports to open on the container. This is a nested map: the first map lists
 # the named ports, while the second layer lists the port spec. The named references can be used to refer to the specific
 # port of the container in other resources, like Service.
