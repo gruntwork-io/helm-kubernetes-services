@@ -334,7 +334,10 @@ tolerations: []
 # list is a string that corresponds to the Secret name.
 imagePullSecrets: []
 
+#----------------------------------------------------------------------------------------------------------------------
+# GOOGLE SPECIFIC VALUES
 # google specifies Google (GKE) specific configuration to be set via arguments/env. variables
+#----------------------------------------------------------------------------------------------------------------------
 google:
   # managedCertificate can be used to provision a Google Managed Certificate. Associate the ManagedCertificate object
   # to an Ingress by adding an annotation 'networking.gke.io/managed-certificates' to the Ingress.
