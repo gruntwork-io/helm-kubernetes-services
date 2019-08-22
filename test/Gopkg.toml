@@ -29,6 +29,10 @@
   name = "github.com/gruntwork-io/terratest"
   version = "0.17.6"
 
+[[constraint]]
+  name = "github.com/GoogleCloudPlatform/gke-managed-certs"
+  version = "0.3.4"
+
 [prune]
   go-tests = true
   unused-packages = true

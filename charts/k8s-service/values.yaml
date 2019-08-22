@@ -333,3 +333,29 @@ tolerations: []
 # imagePullSecrets lists the Secret resources that should be used for accessing private registries. Each item in the
 # list is a string that corresponds to the Secret name.
 imagePullSecrets: []
+
+#----------------------------------------------------------------------------------------------------------------------
+# GOOGLE SPECIFIC VALUES
+# google specifies Google (GKE) specific configuration to be set via arguments/env. variables
+#----------------------------------------------------------------------------------------------------------------------
+google:
+  # managedCertificate can be used to provision a Google Managed Certificate. Associate the ManagedCertificate object
+  # to an Ingress by adding an annotation 'networking.gke.io/managed-certificates' to the Ingress.
+  #
+  # The expected keys are:
+  #   - enabled      (bool)   (required) : Whether or not the ManagedCertificate resource should be created.
+  #   - domainName   (string)            : Specifies the domain that the SSL certificate will be created for
+  #
+  # The following example specifies a ManagedCertificate with a domain name 'api.acme.com':
+  #
+  # EXAMPLE:
+  #
+  # google:
+  #   managedCertificate:
+  #     enabled: true
+  #     domainName: api.acme.com
+  #
+  # NOTE: if you enable managedCertificate, then Ingress must also be enabled.
+  # Use a Google Managed Certificate. By default, turn off.
+  managedCertificate:
+    enabled: false

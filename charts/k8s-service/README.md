@@ -13,6 +13,8 @@ This Helm Chart can also be used to front the `Pods` of the `Deployment` resourc
 [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) rules to further configure complex routing
 rules in front of the `Service`.
 
+If you're using the chart to deploy to [GKE](https://cloud.google.com/kubernetes-engine/), you can also use the chart to deploy a [Google Managed SSL Certificate](https://cloud.google.com/kubernetes-engine/docs/how-to/managed-certs) and associate it with the Ingress.
+
 
 ## How to use this chart?
 
@@ -38,6 +40,8 @@ The following resources will be deployed with this Helm Chart, depending on whic
                          the `Deployment`. This manages how many pods can be disrupted by a voluntary disruption (e.g
                          node maintenance). Created if you specify a non-zero value for the `minPodsAvailable` input
                          value.
+- `ManagedCertificate`: The `ManagedCertificate` is a [GCP](https://cloud.google.com/) -specific resource that creates a Google Managed SSL certificate. Google-managed SSL certificates are provisioned, renewed, and managed for your domain names. Read more about Google-managed SSL certificates [here](https://cloud.google.com/load-balancing/docs/ssl-certificates#managed-certs). Created only if you configure the `google.managedCertificate` input (and set
+                         `google.managedCertificate.enabled = true` and `google.managedCertificate.domainName = your.domain.name`).
 
 
 ## How do I expose my application internally to the cluster?
