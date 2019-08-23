@@ -7,12 +7,12 @@ that will provision a Google managed SSL certificate.
 We declare some variables defined on the Values. These are reused in `with` and `range` blocks where the scoped variable
 (`.`) is rebound within the block.
 */ -}}
-{{- $fullName := include "k8s-service.fullname" . -}}
 {{- $domainName := .Values.google.managedCertificate.domainName -}}
+{{- $certificateName := .Values.google.managedCertificate.name -}}
 apiVersion: networking.gke.io/v1beta1
 kind: ManagedCertificate
 metadata:
-  name: {{ $fullName }}
+  name: {{ $certificateName }}
   labels:
     gruntwork.io/app-name: {{ .Values.applicationName }}
     # These labels are required by helm. You can read more about required labels in the chart best practices guide:
