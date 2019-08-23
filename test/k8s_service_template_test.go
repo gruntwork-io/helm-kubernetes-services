@@ -475,3 +475,31 @@ func TestK8SServiceManagedCertificateDefaultsDoesNotCreateManagedCertificate(t *
 	assert.NoError(t, err)
 	assert.Equal(t, len(rendered), 0)
 }
+
+// Test that omitting containerCommand does not set command attribute on the Deployment container spec.
+func TestK8SServiceDefaultHasNullCommandSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{})
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Nil(t, appContainer.Command)
+}
+
+// Test that setting containerCommand sets the command attribute on the Deployment container spec.
+func TestK8SServiceWithContainerCommandHasCommandSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"containerCommand[0]": "echo",
+			"containerCommand[1]": "Hello world",
+		},
+	)
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Equal(t, appContainer.Command, []string{"echo", "Hello world"})
+}
