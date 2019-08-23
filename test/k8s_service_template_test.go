@@ -438,7 +438,7 @@ func TestK8SServiceIngressAdditionalPathsHigherPriorityNoServiceName(t *testing.
 }
 
 // Test rendering Managed Certificate
-func TestK8SServiceManagedCertDomainName(t *testing.T) {
+func TestK8SServiceManagedCertDomainNameAndName(t *testing.T) {
 	t.Parallel()
 
 	cert := renderK8SServiceManagedCertificateWithSetValues(
@@ -446,12 +446,15 @@ func TestK8SServiceManagedCertDomainName(t *testing.T) {
 		map[string]string{
 			"google.managedCertificate.enabled":    "true",
 			"google.managedCertificate.domainName": "api.acme.io",
+			"google.managedCertificate.name":       "acme-cert",
 		},
 	)
 
 	domains := cert.Spec.Domains
+	certName := cert.ObjectMeta.Name
 	assert.Equal(t, len(domains), 1)
 	assert.Equal(t, domains[0], "api.acme.io")
+	assert.Equal(t, certName, "acme-cert")
 }
 
 // Test that setting ingress.enabled = false will cause the helm template to not render the ManagedCertificate resource

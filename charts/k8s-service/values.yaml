@@ -355,14 +355,17 @@ google:
   # The expected keys are:
   #   - enabled      (bool)   (required) : Whether or not the ManagedCertificate resource should be created.
   #   - domainName   (string)            : Specifies the domain that the SSL certificate will be created for
+  #   - name         (string)            : Specifies the name of the SSL certificate that you reference in Ingress with
+  #                                        networking.gke.io/managed-certificates: name
   #
-  # The following example specifies a ManagedCertificate with a domain name 'api.acme.com':
+  # The following example specifies a ManagedCertificate with a domain name 'api.acme.com' and name 'acme-cert':
   #
   # EXAMPLE:
   #
   # google:
   #   managedCertificate:
   #     enabled: true
+  #     name: acme-cert
   #     domainName: api.acme.com
   #
   # NOTE: if you enable managedCertificate, then Ingress must also be enabled.
