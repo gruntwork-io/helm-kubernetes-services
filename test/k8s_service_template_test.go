@@ -506,3 +506,40 @@ func TestK8SServiceWithContainerCommandHasCommandSpec(t *testing.T) {
 	appContainer := renderedPodContainers[0]
 	assert.Equal(t, appContainer.Command, []string{"echo", "Hello world"})
 }
+
+
+// Test that providing tls configuration to Ingress renders correctly
+func TestK8SServiceIngressMultiCert(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithSetValues(
+		t,
+		map[string]string{
+			"ingress.enabled":           "true",
+			"ingress.path":              "/app",
+			"ingress.servicePort":       "app",
+			"ingress.tls[0].secretName": "chart0-example-tls",
+			"ingress.tls[0].hosts[0]":   "chart0-example-tls-host",
+			"ingress.tls[1].secretName": "chart1-example-tls",
+			"ingress.tls[1].hosts[0]":   "chart1-example-tls-host",
+			"ingress.tls[1].hosts[1]":   "chart1-example-tls-host2",
+		},
+	)
+	tls := ingress.Spec.TLS
+	assert.Equal(t, len(tls), 2)
+
+	// The first tls should be chart0
+	firstTls := tls[0]
+	assert.Equal(t, firstTls.SecretName, "chart0-example-tls")
+	firstTlsHosts := firstTls.Hosts
+	assert.Equal(t, len(firstTlsHosts), 1)
+	assert.Equal(t, firstTlsHosts[0], "chart0-example-tls-host")
+
+	// The second tls should be chart1 with multiple hosts
+	secondTls := tls[1]
+	assert.Equal(t, secondTls.SecretName, "chart1-example-tls")
+	secondTlsHosts := secondTls.Hosts
+	assert.Equal(t, len(secondTlsHosts), 2)
+	assert.Equal(t, secondTlsHosts[0], "chart1-example-tls-host")
+	assert.Equal(t, secondTlsHosts[1], "chart1-example-tls-host2")
+}
