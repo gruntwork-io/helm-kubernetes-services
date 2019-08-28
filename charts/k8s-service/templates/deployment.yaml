@@ -141,6 +141,10 @@ spec:
           readinessProbe:
 {{ toYaml .Values.readinessProbe | indent 12 }}
           {{- end }}
+          {{- if .Values.securityContext }}
+          securityContext:
+{{ toYaml .Values.securityContext | indent 12 }}            
+          {{- end}}
           resources:
 {{ toYaml .Values.containerResources | indent 12 }}
 
