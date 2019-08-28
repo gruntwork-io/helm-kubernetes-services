@@ -31,12 +31,12 @@ metadata:
 {{- end }}
 {{- end }}
 spec:
-  {{- if .Values.ingress.tls }}
+{{- if .Values.ingress.tls }}
+{{- with .Values.ingress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
-{{ toYaml . | indent 4 }}
-    {{- end }}
-  {{- end }}
+{{ toYaml . | indent 4}}
+{{- end }}
+{{- end }}
   rules:
     {{- if .Values.ingress.hosts }}
     {{- range .Values.ingress.hosts }}
