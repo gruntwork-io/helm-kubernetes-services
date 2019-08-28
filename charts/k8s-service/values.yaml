@@ -100,6 +100,21 @@ livenessProbe: {}
 #     port: http
 readinessProbe: {}
 
+# securityContext is a map that specified the privillege and access control settings for a Pod of Container. Security Context
+# can be specified when the application requires additional access control permissions. More details on securityContext and supported
+# settings can be found at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+# 
+# EXAMPLE:
+# 1) To run a container in privilleged mode
+# securityContext:
+#   privilleged: true
+# 
+# 2) To run a container as a specific user
+# securityContext:
+#   runAsUser: 2000
+securityContext: {}
+
+
 # shutdownDelay is the number of seconds to delay the shutdown sequence of the Pod by. This is implemented as a sleep
 # call in the preStop hook. By default, this chart includes a preStop hook with a shutdown delay for eventual
 # consistency reasons. You can read more about why you might want to do this in
