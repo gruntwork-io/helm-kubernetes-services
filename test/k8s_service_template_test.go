@@ -142,7 +142,7 @@ func TestK8SServiceSecurityContextAnnotationRenderCorrectly(t *testing.T) {
 		t,
 		map[string]string{
 			"securityContext.privileged": "true",
-			"securityContext.runAsUser": "1000",
+			"securityContext.runAsUser":  "1000",
 		},
 	)
 	renderedContainers := deployment.Spec.Template.Spec.Containers
@@ -524,6 +524,58 @@ func TestK8SServiceWithContainerCommandHasCommandSpec(t *testing.T) {
 	assert.Equal(t, appContainer.Command, []string{"echo", "Hello world"})
 }
 
+// Test that omitting aws.irsa.role_arn does not render the IRSA vars
+func TestK8SServiceWithoutIRSA(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{},
+	)
+	renderedPodSpec := deployment.Spec.Template.Spec
+	assert.Equal(t, len(renderedPodSpec.Volumes), 0)
+	renderedPodContainers := renderedPodSpec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Equal(t, len(appContainer.Env), 0)
+}
+
+// Test that setting aws.irsa.role_arn renders the IRSA vars
+func TestK8SServiceWithIRSA(t *testing.T) {
+	t.Parallel()
+
+	testRoleArn := "arn:aws:iam::123456789012:role/test-role"
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"aws.irsa.role_arn": testRoleArn,
+		},
+	)
+	renderedPodSpec := deployment.Spec.Template.Spec
+
+	// Verify projected volume
+	require.Equal(t, len(renderedPodSpec.Volumes), 1)
+	volume := renderedPodSpec.Volumes[0]
+	assert.Equal(t, volume.Name, "aws-iam-token")
+	require.NotNil(t, volume.VolumeSource.Projected)
+	projectedVolume := volume.VolumeSource.Projected
+	require.Equal(t, len(projectedVolume.Sources), 1)
+	projectedVolumeSource := projectedVolume.Sources[0]
+	require.NotNil(t, projectedVolumeSource.ServiceAccountToken)
+	assert.Equal(t, projectedVolumeSource.ServiceAccountToken.Audience, "sts.amazonaws.com")
+
+	// Verify injected env vars
+	renderedPodContainers := renderedPodSpec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Equal(t, len(appContainer.Env), 2)
+	roleArnEnv := appContainer.Env[0]
+	assert.Equal(t, roleArnEnv.Name, "AWS_ROLE_ARN")
+	assert.Equal(t, roleArnEnv.Value, testRoleArn)
+	tokenEnv := appContainer.Env[1]
+	assert.Equal(t, tokenEnv.Name, "AWS_WEB_IDENTITY_TOKEN_FILE")
+	assert.Equal(t, tokenEnv.Value, "/var/run/secrets/eks.amazonaws.com/serviceaccount/token")
+}
 
 // Test that providing tls configuration to Ingress renders correctly
 func TestK8SServiceIngressMultiCert(t *testing.T) {
