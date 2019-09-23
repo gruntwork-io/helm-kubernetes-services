@@ -454,6 +454,69 @@ func TestK8SServiceIngressAdditionalPathsHigherPriorityNoServiceName(t *testing.
 	assert.Equal(t, secondPath.Backend.ServicePort.StrVal, "app")
 }
 
+// Test that omitting a serviceName on additionalPaths reuses the application service name even when hosts is set
+func TestK8SServiceIngressWithHostsAdditionalPathsNoServiceName(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithSetValues(
+		t,
+		map[string]string{
+			"ingress.enabled":                        "true",
+			"ingress.path":                           "/app",
+			"ingress.servicePort":                    "app",
+			"ingress.hosts[0]":                       "chart-example.local",
+			"ingress.additionalPaths[0].path":        "/black-hole",
+			"ingress.additionalPaths[0].servicePort": "3000",
+		},
+	)
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 2)
+
+	// The first path should be the main service path
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/app")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
+
+	// The second path should be the black hole
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/black-hole")
+	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, secondPath.Backend.ServicePort.IntVal, int32(3000))
+}
+
+// Test that omitting a serviceName on additionalPathsHigherPriority reuses the application service name even when hosts
+// is set
+func TestK8SServiceIngressWithHostsAdditionalPathsHigherPriorityNoServiceName(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithSetValues(
+		t,
+		map[string]string{
+			"ingress.enabled":     "true",
+			"ingress.path":        "/app",
+			"ingress.servicePort": "app",
+			"ingress.hosts[0]":    "chart-example.local",
+			"ingress.additionalPathsHigherPriority[0].path":        "/black-hole",
+			"ingress.additionalPathsHigherPriority[0].servicePort": "3000",
+		},
+	)
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 2)
+
+	// The first path should be the black hole
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/black-hole")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, firstPath.Backend.ServicePort.IntVal, int32(3000))
+
+	// The second path should be the main service path
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/app")
+	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, secondPath.Backend.ServicePort.StrVal, "app")
+}
+
 // Test rendering Managed Certificate
 func TestK8SServiceManagedCertDomainNameAndName(t *testing.T) {
 	t.Parallel()
