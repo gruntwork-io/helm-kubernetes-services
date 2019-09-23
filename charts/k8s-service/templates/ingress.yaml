@@ -46,7 +46,7 @@ spec:
           {{- range $additionalPathsHigherPriority }}
           - path: {{ .path }}
             backend:
-              serviceName: {{ .serviceName }}
+              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
               servicePort: {{ .servicePort }}
           {{- end }}
           - path: {{ $ingressPath }}
@@ -56,7 +56,7 @@ spec:
           {{- range $additionalPaths }}
           - path: {{ .path }}
             backend:
-              serviceName: {{ .serviceName }}
+              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
               servicePort: {{ .servicePort }}
           {{- end }}
     {{- end }}
