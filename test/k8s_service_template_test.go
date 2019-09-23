@@ -612,3 +612,17 @@ func TestK8SServiceIngressMultiCert(t *testing.T) {
 	assert.Equal(t, secondTlsHosts[0], "chart1-example-tls-host")
 	assert.Equal(t, secondTlsHosts[1], "chart1-example-tls-host2")
 }
+
+func TestK8SServiceSideCarContainersRendersCorrectly(t *testing.T) {
+	t.Parallel()
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"sideCarContainers.datadog.image": "datadog/agent:latest",
+		},
+	)
+	renderedContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedContainers), 2)
+	sideCarContainer := renderedContainers[1]
+	assert.Equal(t, sideCarContainer.Image, "datadog/agent:latest")
+}

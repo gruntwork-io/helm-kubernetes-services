@@ -148,7 +148,7 @@ spec:
           {{- end }}
           {{- if .Values.securityContext }}
           securityContext:
-{{ toYaml .Values.securityContext | indent 12 }}            
+{{ toYaml .Values.securityContext | indent 12 }}
           {{- end}}
           resources:
 {{ toYaml .Values.containerResources | indent 12 }}
@@ -227,7 +227,7 @@ spec:
 
         {{- range $key, $value := .Values.sideCarContainers }}
         - name: {{ $key }}
-{{ toYaml $value | indent 12 }}
+{{ toYaml $value | indent 10 }}
         {{- end }}
 
     {{- /* START IMAGE PULL SECRETS LOGIC */ -}}
