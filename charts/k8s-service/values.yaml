@@ -203,7 +203,6 @@ serviceMonitor:
   labels: {}
   scheme: http
   scrapeTimeout: 10s
-  selfMonitor: true
 
 # ingress is a map that can be used to configure an Ingress resource for this service. By default, turn off ingress.
 # NOTE: if you enable Ingress, then Service must also be enabled.
