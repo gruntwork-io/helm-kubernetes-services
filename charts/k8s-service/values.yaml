@@ -187,6 +187,31 @@ service:
       targetPort: http
       protocol: TCP
 
+## Create a servicemonitor for the operator
+##
+serviceMonitor:
+  ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+  ##
+  interval: ""
+  selfMonitor: true
+
+  ## metric relabel configs to apply to samples before ingestion.
+  ##
+  metricRelabelings: []
+  # - action: keep
+  #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+  #   sourceLabels: [__name__]
+
+  # 	relabel configs to apply to samples before ingestion.
+  ##
+  relabelings: []
+  # - sourceLabels: [__meta_kubernetes_pod_node_name]
+  #   separator: ;
+  #   regex: ^(.*)$
+  #   target_label: nodename
+  #   replacement: $1
+  #   action: replace
+
 # ingress is a map that can be used to configure an Ingress resource for this service. By default, turn off ingress.
 # NOTE: if you enable Ingress, then Service must also be enabled.
 # The expected keys are:
