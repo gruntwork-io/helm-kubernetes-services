@@ -33,6 +33,7 @@ The following resources will be deployed with this Helm Chart, depending on whic
 - `Service`: The `Service` resource providing a stable endpoint that can be used to address to `Pods` created by the
              `Deployment` controller. Created only if you configure the `service` input (and set
              `service.enabled = true`).
+- `ServiceMonitor`: The `ServiceMonitor` describes the set of targets to be monitored by Prometheus. Created only if you configure the service input (and set serviceMonitor.enabled = true).  
 - `Ingress`: The `Ingress` resource providing host and path routing rules to the `Service` for the deployed `Ingress`
              controller in the cluster. Created only if you configure the `ingress` input (and set
              `ingress.enabled = true`).

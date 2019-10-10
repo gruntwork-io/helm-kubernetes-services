@@ -192,6 +192,7 @@ service:
 serviceMonitor:
   ## Scrape interval. If not set, the Prometheus default scrape interval is used.
   ##
+  enabled: false
   interval: ""
   selfMonitor: true
 
