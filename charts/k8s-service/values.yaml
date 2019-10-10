@@ -198,9 +198,12 @@ serviceMonitor:
   ## If true, a ServiceMonitor CRD is created for a prometheus operator
   ##
   enabled: false
+  honorLabels: true
   interval: 10s
   #  namespace: monitoring
   labels: {}
+  port:
+    name: http
   scheme: http
   scrapeTimeout: 10s
 
