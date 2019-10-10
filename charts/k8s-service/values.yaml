@@ -187,11 +187,6 @@ service:
       targetPort: http
       protocol: TCP
 
-web:
-  ## Path under which to expose metrics.
-  ##
-  path: /metrics
-
 ## Create a servicemonitor for the operator
 ##
 serviceMonitor:
@@ -202,6 +197,7 @@ serviceMonitor:
   interval: 10s
   #  namespace: monitoring
   labels: {}
+  path: /metrics
   port:
     name: http
   scheme: http
