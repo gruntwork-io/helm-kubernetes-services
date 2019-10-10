@@ -26,9 +26,6 @@ spec:
       path: {{ .Values.web.path }}
       scheme: {{ .Values.serviceMonitor.scheme }}
   selector:
-    {{- if .Values.serviceMonitor.matchLabels }}
-    {{- with .Values.serviceMonitor.matchLabels }}
     matchLabels:
-    {{ toYaml . | indent 4 }}
-    {{- end }}
+      app.kubernetes.io/name: {{ template "k8s-service.name" . }}
 {{- end }}

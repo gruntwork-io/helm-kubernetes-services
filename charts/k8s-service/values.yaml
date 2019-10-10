@@ -202,7 +202,6 @@ serviceMonitor:
   interval: 10s
   #  namespace: monitoring
   labels: {}
-  matchLabels: {}
   port:
     name: http
   scheme: http
