@@ -10,7 +10,7 @@ metadata:
   labels:
     chart: {{ template "k8s-service.chart" . }}
     app: {{ template "k8s-service.name" . }}
-    release: "{{ .Release.Name }}"
+    release: prometheus
     heritage: "{{ .Release.Service }}"
     {{- if .Values.serviceMonitor.labels }}
     {{- toYaml .Values.serviceMonitor.labels | nindent 4 }}
@@ -25,12 +25,10 @@ spec:
       port: {{ .Values.serviceMonitor.port.name }}
       path: {{ .Values.web.path }}
       scheme: {{ .Values.serviceMonitor.scheme }}
-  jobLabel: "{{ .Release.Name }}"
   selector:
+    {{- if .Values.serviceMonitor.matchLabels }}
+    {{- with .Values.serviceMonitor.matchLabels }}
     matchLabels:
-      app: {{ template "k8s-service.name" . }}
-      release: "{{ .Release.Name }}"
-  namespaceSelector:
-    matchNames:
-      - {{ .Release.Namespace }}
+    {{ toYaml . | indent 4 }}
+    {{- end }}
 {{- end }}
