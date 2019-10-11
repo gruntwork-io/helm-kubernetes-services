@@ -689,3 +689,17 @@ func TestK8SServiceSideCarContainersRendersCorrectly(t *testing.T) {
 	sideCarContainer := renderedContainers[1]
 	assert.Equal(t, sideCarContainer.Image, "datadog/agent:latest")
 }
+
+func TestK8SServiceDisableDefaultPort(t *testing.T) {
+	t.Parallel()
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"containerPorts.http.disabled": "true",
+		},
+	)
+	renderedContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedContainers), 1)
+	mainContainer := renderedContainers[0]
+	assert.Equal(t, len(mainContainer.Ports), 0)
+}

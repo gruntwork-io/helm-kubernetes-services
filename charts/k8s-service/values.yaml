@@ -58,7 +58,7 @@ containerCommand: null
 #   - protocol (string) (required) : The network protocol (e.g TCP or UDP) that is exposed.
 #   - disabled (bool)              : Whether or not this port is disabled. This defaults to false if unset. Provided as a
 #                                    convenience to override the default ports on the commandline. For example, to
-#                                    disable the default port, you can pass `--set containerPorts.https.disabled=true`.
+#                                    disable the default port, you can pass `--set containerPorts.http.disabled=true`.
 #
 # The default config exposes TCP port 80 and binds the name `http` to it.
 containerPorts:

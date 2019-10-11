@@ -13,9 +13,18 @@ Similarly, we need to decide whether or not there are environment variables to a
 We need this because certain sections are omitted if there are no volumes or environment variables to add.
 */ -}}
 {{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
-{{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false "hasIRSA" false -}}
+{{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false "hasIRSA" false "exposePorts" false -}}
 {{- if .Values.envVars -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
+{{- end -}}
+{{- $allContainerPorts := values .Values.containerPorts -}}
+{{- range $allContainerPorts -}}
+  {{/* We are exposing ports if there is at least one key in containerPorts that is not disabled (disabled = false or
+       omitted)
+  */}}
+  {{- if or (not (hasKey . "disabled")) (not .disabled) -}}
+    {{- $_ := set $hasInjectionTypes "exposePorts" true -}}
+  {{- end -}}
 {{- end -}}
 {{- if gt (len .Values.aws.irsa.role_arn) 0 -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
@@ -96,7 +105,7 @@ spec:
 {{ toYaml .Values.containerCommand | indent 12 }}
           {{- end }}
 
-          {{- if .Values.containerPorts }}
+          {{- if index $hasInjectionTypes "exposePorts" }}
           ports:
             {{- /*
               NOTE: we check for a disabled flag here so that users of the helm
