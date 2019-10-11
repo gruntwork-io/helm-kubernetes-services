@@ -486,6 +486,27 @@ The `/*` rule which routes to port 3000 will always be used even when accessing 
 evaluated first when routing requests.
 
 
+## How do I deploy a worker service?
+
+Worker services typically do not have a RPC or web server interface to access it. Instead, worker services act on their
+own and typically reach out to get the data they need. These services should be deployed without any ports exposed.
+However, by default `k8s-service` will deploy an internally exposed service with port 80 open.
+
+To disable the default port, you can use the following `values.yaml` inputs:
+
+```
+containerPorts:
+  http:
+    disabled: true
+
+service:
+  enabled: false
+```
+
+This will override the default settings such that only the `Deployment` resource is created, with no ports exposed on
+the container.
+
+
 ## How do I check the status of the rollout?
 
 This Helm Chart packages your application into a `Deployment` controller. The `Deployment` controller will be
@@ -1013,7 +1034,7 @@ spec:
     spec:
       containers:
         ... The first entry relates to the application ...
-        - name: datadog 
+        - name: datadog
           image: datadog/agent:latest
           env:
             - name: DD_API_KEY
