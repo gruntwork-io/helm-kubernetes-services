@@ -234,6 +234,8 @@ ingress:
 # application container. The keys will be mapped to environment variable keys, with the values mapping to the
 # environment variable values.
 #
+# NOTE: If you wish to set environment variables using Secrets, see the `secrets` setting in this file.
+#
 # The following example configures two environment variables, DB_HOST and DB_PORT:
 #
 # EXAMPLE:
