@@ -78,6 +78,13 @@ spec:
 {{ toYaml . | indent 8 }}
       {{- end }}
     spec:
+      {{- if gt (len .Values.serviceAccount.name) 0 }}
+      serviceAccountName: "{{ .Values.serviceAccount.name }}"
+      {{- end }}
+      {{- if hasKey .Values.serviceAccount "automountServiceAccountToken" }}
+      automountServiceAccountToken : {{ .Values.serviceAccount.automountServiceAccountToken }}
+      {{- end }}
+
       containers:
         - name: {{ .Values.applicationName }}
           {{- $repo := required "containerImage.repository is required" .Values.containerImage.repository }}
