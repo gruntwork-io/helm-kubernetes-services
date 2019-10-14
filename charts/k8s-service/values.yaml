@@ -58,7 +58,7 @@ containerCommand: null
 #   - protocol (string) (required) : The network protocol (e.g TCP or UDP) that is exposed.
 #   - disabled (bool)              : Whether or not this port is disabled. This defaults to false if unset. Provided as a
 #                                    convenience to override the default ports on the commandline. For example, to
-#                                    disable the default port, you can pass `--set containerPorts.https.disabled=true`.
+#                                    disable the default port, you can pass `--set containerPorts.http.disabled=true`.
 #
 # The default config exposes TCP port 80 and binds the name `http` to it.
 containerPorts:
@@ -103,12 +103,12 @@ readinessProbe: {}
 # securityContext is a map that specified the privillege and access control settings for a Pod of Container. Security Context
 # can be specified when the application requires additional access control permissions. More details on securityContext and supported
 # settings can be found at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-# 
+#
 # EXAMPLE:
 # 1) To run a container in privilleged mode
 # securityContext:
 #   privilleged: true
-# 
+#
 # 2) To run a container as a specific user
 # securityContext:
 #   runAsUser: 2000
@@ -234,6 +234,8 @@ ingress:
 # application container. The keys will be mapped to environment variable keys, with the values mapping to the
 # environment variable values.
 #
+# NOTE: If you wish to set environment variables using Secrets, see the `secrets` setting in this file.
+#
 # The following example configures two environment variables, DB_HOST and DB_PORT:
 #
 # EXAMPLE:
@@ -358,6 +360,19 @@ tolerations: []
 # imagePullSecrets lists the Secret resources that should be used for accessing private registries. Each item in the
 # list is a string that corresponds to the Secret name.
 imagePullSecrets: []
+
+# serviceAccount is a map that configures the ServiceAccount information for the Pod.
+# The expected keys of serviceAccount are:
+#   - name                         (string) : The name of the ServiceAccount in the Namespace where the Pod is deployed
+#                                             that should be used. By default this is the default ServiceAccount of the
+#                                             Namespace.
+#   - automountServiceAccountToken (bool)   : Whether or not to automatically mount the ServiceAccount token as a volume
+#                                             into the Pod. Note that this can be used to override the equivalent config
+#                                             on the SerrviceAccount.
+#
+# The default config uses empty string to indicate that the default service account should be used.
+serviceAccount:
+  name: ""
 
 #----------------------------------------------------------------------------------------------------------------------
 # AWS SPECIFIC VALUES
