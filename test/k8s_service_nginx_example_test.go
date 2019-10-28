@@ -37,7 +37,7 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a test namespace to deploy resources into, to avoid colliding with other tests
-	kubectlOptions := k8s.NewKubectlOptions("", "")
+	kubectlOptions := k8s.NewKubectlOptions("", "", "")
 	uniqueID := random.UniqueId()
 	testNamespace := fmt.Sprintf("k8s-service-nginx-%s", strings.ToLower(uniqueID))
 	k8s.CreateNamespace(t, kubectlOptions, testNamespace)
@@ -132,6 +132,7 @@ func verifyIngressAvailable(
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s%s", ingressEndpoint, path),
+		nil,
 		WaitTimerRetries,
 		WaitTimerSleep,
 		validationFunction,
