@@ -16,22 +16,9 @@ metadata:
     {{- end }}
 spec:
   endpoints:
-    - interval: {{ .Values.serviceMonitor.interval }}
-      {{- if .Values.serviceMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
-      {{- end }}
-      {{- if .Values.serviceMonitor.honorLabels }}
-      honorLabels: {{ .Values.serviceMonitor.honorLabels }}
-      {{- end }}
-      {{- if .Values.serviceMonitor.port.name }}
-      port: {{ .Values.serviceMonitor.port.name }}
-      {{- end }}
-      {{- if .Values.serviceMonitor.path }}
-      path: {{ .Values.serviceMonitor.path }}
-      {{- end }}
-      {{- if .Values.serviceMonitor.scheme }}
-      scheme: {{ .Values.serviceMonitor.scheme }}
-      {{- end }}
+    {{- if .Values.serviceMonitor.endpoints }}
+    {{- toYaml .Values.serviceMonitor.endpoints | nindent 6 }}
+    {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ template "k8s-service.name" . }}
