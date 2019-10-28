@@ -187,6 +187,36 @@ service:
       targetPort: http
       protocol: TCP
 
+# servicemonitor is a map that can be used to configure a Service monitor for the operator. By default, service monitor is off.
+# The expected keys are:
+#   - enabled     (bool)         (required) : Whether or not the Service Monitor resource should be created. If false, no
+#                                             Service Monitor resource will be created.
+#   - namespace   (string)       (required) : Namespace of Endpoints object.
+#   - endpoints   (list[map])    (required) : An object used to discovers targets from listed endpoints of a service.
+#                                             For each endpoint address one target is discovered per port.
+#                                             If the endpoint is backed by a pod, all additional container ports of the pod,
+#                                             not bound to an endpoint port, are discovered as targets as well.
+#
+# The following example specifies a ServiceMonitor rule that describes the set of targets to be monitored by Prometheus.
+# EXAMPLE:
+#
+# serviceMonitor:
+#   enabled: true
+#   namespace: monitoring
+#   endpoints:
+#     default:
+#       interval: 10s
+#       scrapeTimeout: 10s
+#       honorLabels: true
+#       path: /metrics
+#       port: http
+#       scheme: http
+serviceMonitor:
+  enabled: false
+  namespace: monitoring
+  labels: {}
+  endpoints: {}
+
 # ingress is a map that can be used to configure an Ingress resource for this service. By default, turn off ingress.
 # NOTE: if you enable Ingress, then Service must also be enabled.
 # The expected keys are:
