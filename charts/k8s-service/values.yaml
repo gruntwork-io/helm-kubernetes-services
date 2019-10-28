@@ -187,15 +187,15 @@ service:
       targetPort: http
       protocol: TCP
 
-## Create a servicemonitor for the operator
-##
+# Create a servicemonitor for the operator
+#
 serviceMonitor:
-  ## If true, a ServiceMonitor CRD is created for a prometheus operator
-  ##
+  # If true, a ServiceMonitor CRD is created for a prometheus operator
+  #
   enabled: false
   honorLabels: true
   interval: 10s
-  #  namespace: monitoring
+  # namespace: monitoring
   labels: {}
   path: /metrics
   port:
