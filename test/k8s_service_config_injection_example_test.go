@@ -33,7 +33,7 @@ func TestK8SServiceConfigInjectionBaseExample(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a test namespace to deploy resources into, to avoid colliding with other tests
-	kubectlOptions := k8s.NewKubectlOptions("", "")
+	kubectlOptions := k8s.NewKubectlOptions("", "", "")
 	uniqueID := random.UniqueId()
 	testNamespace := fmt.Sprintf("k8s-service-config-injection-%s", strings.ToLower(uniqueID))
 	k8s.CreateNamespace(t, kubectlOptions, testNamespace)
@@ -82,7 +82,7 @@ func TestK8SServiceConfigInjectionConfigMapExample(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a test namespace to deploy resources into, to avoid colliding with other tests
-	kubectlOptions := k8s.NewKubectlOptions("", "")
+	kubectlOptions := k8s.NewKubectlOptions("", "", "")
 	uniqueID := random.UniqueId()
 	testNamespace := fmt.Sprintf("k8s-service-config-injection-%s", strings.ToLower(uniqueID))
 	k8s.CreateNamespace(t, kubectlOptions, testNamespace)
@@ -141,7 +141,7 @@ func TestK8SServiceConfigInjectionSecretExample(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a test namespace to deploy resources into, to avoid colliding with other tests
-	kubectlOptions := k8s.NewKubectlOptions("", "")
+	kubectlOptions := k8s.NewKubectlOptions("", "", "")
 	uniqueID := random.UniqueId()
 	testNamespace := fmt.Sprintf("k8s-service-config-injection-%s", strings.ToLower(uniqueID))
 	k8s.CreateNamespace(t, kubectlOptions, testNamespace)

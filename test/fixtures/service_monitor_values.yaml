@@ -1,0 +1,11 @@
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  endpoints:
+    default:
+      interval: 10s
+      scrapeTimeout: 10s
+      honorLabels: true
+      path: /metrics
+      port: http
+      scheme: http

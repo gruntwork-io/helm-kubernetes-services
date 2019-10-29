@@ -1,5 +1,4 @@
 {{- if .Values.serviceMonitor.enabled }}
----
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -16,9 +15,7 @@ metadata:
     {{- end }}
 spec:
   endpoints:
-    {{- if .Values.serviceMonitor.endpoints }}
-    {{- toYaml .Values.serviceMonitor.endpoints | nindent 6 }}
-    {{- end }}
+    {{- values .Values.serviceMonitor.endpoints | toYaml | nindent 6 }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ template "k8s-service.name" . }}
