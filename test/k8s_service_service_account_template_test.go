@@ -45,6 +45,7 @@ func TestK8SServiceAccountCreateTrueCreatesServiceAccount(t *testing.T) {
 // resource
 func TestK8SServiceAccountCreateFalse(t *testing.T) {
 	t.Parallel()
+	randomSAName := strings.ToLower(random.UniqueId())
 
 	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
 	require.NoError(t, err)
@@ -53,7 +54,7 @@ func TestK8SServiceAccountCreateFalse(t *testing.T) {
 	// We then use SetValues to override all the defaults.
 	options := &helm.Options{
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues:   map[string]string{"serviceAccount.name": "test-service", "serviceAccount.create": "false"},
+		SetValues:   map[string]string{"serviceAccount.name": randomSAName, "serviceAccount.create": "false"},
 	}
 	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/serviceaccount.yaml"})
 
