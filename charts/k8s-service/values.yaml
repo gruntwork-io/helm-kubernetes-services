@@ -411,6 +411,7 @@ serviceAccount:
 #   - minReplicas                  (int)    : The minimum amount of replicas allowed
 #   - maxReplicas                  (int)    : The maximum amount of replicas allowed
 #   - avgCpuUtilization            (int)    : The target average CPU utilization to be used with the metrics
+#   - avgMemoryUtilization         (int)    : The target average Memory utilization to be used with the metrics
 #
 # The default config will not create the Horizontal Pod Autoscaler by setting enabled = false, the default values are
 # set so if enabled is true the horizontalPodAutoscaler has valid values.
@@ -419,6 +420,7 @@ horizontalPodAutoscaler:
   minReplicas: 1
   maxReplicas: 10
   avgCpuUtilization: 50
+  avgMemoryUtilization: 50
 
 
 #----------------------------------------------------------------------------------------------------------------------

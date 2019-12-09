@@ -18,6 +18,12 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.horizontalPodAutoscaler.avgCpuUtilization }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
 status:
   observedGeneration: 1
   lastScaleTime: <some-time>
@@ -30,3 +36,4 @@ status:
         current:
           averageUtilization: 0
           averageValue: 0
+{{- end }}
