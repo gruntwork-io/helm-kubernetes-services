@@ -5,10 +5,6 @@ metadata:
   name: {{ template "k8s-service.fullname" . }}
   namespace: {{ $.Release.Namespace }}
 spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: php-apache
   minReplicas: {{ .Values.horizontalPodAutoscaler.minReplicas }}
   maxReplicas: {{ .Values.horizontalPodAutoscaler.maxReplicas }}
   metrics:
@@ -24,16 +20,4 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
-status:
-  observedGeneration: 1
-  lastScaleTime: <some-time>
-  currentReplicas: 1
-  desiredReplicas: 1
-  currentMetrics:
-    - type: Resource
-      resource:
-        name: cpu
-        current:
-          averageUtilization: 0
-          averageValue: 0
 {{- end }}
