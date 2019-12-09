@@ -404,6 +404,23 @@ imagePullSecrets: []
 serviceAccount:
   name: ""
 
+# horizontalPodAutoscaler is a map that configures the Horizontal Pod Autoscaler information for this pod
+# The expected keys of hpa are:
+#   - enabled                      (bool)   : Whether or not Horizontal Pod Autoscaler should be created, if false the
+#                                             Horizontal Pod Autoscaler will not be created
+#   - minReplicas                  (int)    : The minimum amount of replicas allowed
+#   - maxReplicas                  (int)    : The maximum amount of replicas allowed
+#   - avgCpuUtilization            (int)    : The target average CPU utilization to be used with the metrics
+#
+# The default config will not create the Horizontal Pod Autoscaler by setting enabled = false, the default values are
+# set so if enabled is true the horizontalPodAutoscaler has valid values.
+horizontalPodAutoscaler:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  avgCpuUtilization: 50
+
+
 #----------------------------------------------------------------------------------------------------------------------
 # AWS SPECIFIC VALUES
 # These input values relate to AWS specific features, such as those relating to EKS and the AWS ALB Ingress Controller.

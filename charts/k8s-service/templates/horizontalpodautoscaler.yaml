@@ -1,23 +1,23 @@
-{{- if .Values.hpa.enabled }}
+{{- if .Values.horizontalPodAutoscaler.enabled }}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ template "k8s-service.fullname" . }}
-  namespace: default
+  namespace: {{ $.Release.Namespace }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: php-apache
-  minReplicas: 1
-  maxReplicas: 10
+  minReplicas: {{ .Values.horizontalPodAutoscaler.minReplicas }}
+  maxReplicas: {{ .Values.horizontalPodAutoscaler.maxReplicas }}
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 50
+          averageUtilization: {{ .Values.horizontalPodAutoscaler.avgCpuUtilization }}
 status:
   observedGeneration: 1
   lastScaleTime: <some-time>
