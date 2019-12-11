@@ -5,6 +5,7 @@ metadata:
   name: {{ template "k8s-service.fullname" . }}
   namespace: {{ $.Release.Namespace }}
 spec:
+  scaleTargetRef: {{ .Values.horizontalPodAutoscaler.scaleTargetRef }}
   minReplicas: {{ .Values.horizontalPodAutoscaler.minReplicas }}
   maxReplicas: {{ .Values.horizontalPodAutoscaler.maxReplicas }}
   metrics:
