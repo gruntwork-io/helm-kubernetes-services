@@ -419,8 +419,6 @@ horizontalPodAutoscaler:
   enabled: false
   minReplicas: 1
   maxReplicas: 10
-  avgCpuUtilization: 50
-  avgMemoryUtilization: 50
 
 
 #----------------------------------------------------------------------------------------------------------------------
