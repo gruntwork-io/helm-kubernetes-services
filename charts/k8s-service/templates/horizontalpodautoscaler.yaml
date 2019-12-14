@@ -1,0 +1,31 @@
+{{- if .Values.horizontalPodAutoscaler.enabled }}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "k8s-service.fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "k8s-service.fullname" . }}
+  minReplicas: {{ .Values.horizontalPodAutoscaler.minReplicas }}
+  maxReplicas: {{ .Values.horizontalPodAutoscaler.maxReplicas }}
+  metrics:
+  {{ if .Values.horizontalPodAutoscaler.avgCpuUtilization }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.horizontalPodAutoscaler.avgCpuUtilization }}
+  {{- end }}
+  {{ if .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
+  {{- end }}
+{{- end }}

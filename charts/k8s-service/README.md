@@ -37,6 +37,9 @@ The following resources will be deployed with this Helm Chart, depending on whic
 - `Ingress`: The `Ingress` resource providing host and path routing rules to the `Service` for the deployed `Ingress`
              controller in the cluster. Created only if you configure the `ingress` input (and set
              `ingress.enabled = true`).
+- `Horizontal Pod Autoscaler`: The `Horizontal Pod Autoscaler` automatically scales the number of pods in a replication
+                                controller, deployment, replica set or stateful set based on observed CPU or memory utilization.
+                                Created only if the user sets `horizontalPodAutoscaler.enabled = true`.
 - `PodDisruptionBudget`: The `PodDisruptionBudget` resource that specifies a disruption budget for the `Pods` managed by
                          the `Deployment`. This manages how many pods can be disrupted by a voluntary disruption (e.g
                          node maintenance). Created if you specify a non-zero value for the `minPodsAvailable` input
