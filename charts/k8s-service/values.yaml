@@ -398,11 +398,17 @@ imagePullSecrets: []
 #                                             Namespace.
 #   - automountServiceAccountToken (bool)   : Whether or not to automatically mount the ServiceAccount token as a volume
 #                                             into the Pod. Note that this can be used to override the equivalent config
-#                                             on the SerrviceAccount.
+#                                             on the ServiceAccount.
+#   - create                        (bool)  : Whether or not to create a service account with the desired name
+#   - annotations                   (map)   : Annotations will add the provided map to the annotations for the service
+#                                             account created
 #
-# The default config uses empty string to indicate that the default service account should be used.
+# The default config uses empty string to indicate that the default service account should be used and one shouldn't
+# be created
 serviceAccount:
   name: ""
+  create: false
+  labels: {}
 
 # horizontalPodAutoscaler is a map that configures the Horizontal Pod Autoscaler information for this pod
 # The expected keys of hpa are:
