@@ -123,3 +123,32 @@ func TestK8SServiceServiceAccountOmitAutomountToken(t *testing.T) {
 	renderedServiceAccountTokenAutomountSetting := deployment.Spec.Template.Spec.AutomountServiceAccountToken
 	assert.Nil(t, renderedServiceAccountTokenAutomountSetting)
 }
+
+// Test that the Annotations of a service account are correctly rendered
+func TestK8SServiceAccountAnnotationRendering(t *testing.T) {
+	t.Parallel()
+
+	serviceAccountAnnotationKey := "testAnnotation"
+	serviceAccountAnnotationValue := strings.ToLower(random.UniqueId())
+
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	// We then use SetValues to override all the defaults.
+	options := &helm.Options{
+		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+		SetValues: map[string]string{
+			"serviceAccount.name":   "test",
+			"serviceAccount.create": "true",
+			"serviceAccount.annotations." + serviceAccountAnnotationKey: serviceAccountAnnotationValue,
+		},
+	}
+	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/serviceaccount.yaml"})
+
+	// We take the output and render it to a map to validate it has the annotations desired
+	rendered := map[string]interface{}{}
+	err = yaml.Unmarshal([]byte(out), &rendered)
+	assert.NoError(t, err)
+	assert.Equal(t, serviceAccountAnnotationValue, rendered["metadata"].(map[string]interface{})["annotations"].(map[string]interface{})[serviceAccountAnnotationKey])
+}
