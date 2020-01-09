@@ -152,10 +152,10 @@ sideCarContainers: {}
 #
 # canary:
 #   enabled: true
-#     replicaCount: 1
-#     containerImage:
-#       repository: nginx
-#       tag: 1.16.0
+#   replicaCount: 1
+#   containerImage:
+#     repository: nginx
+#     tag: 1.16.0
 canary: {}
 
 # replicaCount can be used to configure the number of replica pods that should be deployed and maintained at any given
