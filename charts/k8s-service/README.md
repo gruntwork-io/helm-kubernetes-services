@@ -30,6 +30,7 @@ The following resources will be deployed with this Helm Chart, depending on whic
 
 - `Deployment`: The main `Deployment` controller that will manage the application container image specified in the
                 `containerImage` input value.
+- `CanaryDeployment` An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`). 
 - `Service`: The `Service` resource providing a stable endpoint that can be used to address to `Pods` created by the
              `Deployment` controller. Created only if you configure the `service` input (and set
              `service.enabled = true`).
@@ -965,6 +966,20 @@ Note that certain changes will lead to a replacement of the `Deployment` resourc
 `applicationName` will cause the `Deployment` resource to be deleted, and then created. This can lead to down time
 because the resources are replaced in an uncontrolled fashion.
 
+## How do I create a canary deployment? 
+
+You may optionally configure a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of an arbitrary tag that will run as an individual deployment behind your configured service. This is useful for ensuring a new application tag runs without issues prior to fully rolling it out. 
+
+To configure a canary deployment, set `canary.enabled = true` and define the `containerImage` values. Typically, you will want to specify the tag of your next release candidate:
+
+```yaml
+canary:
+  enabled: true
+    containerImage:
+      repository: nginx
+      tag: 1.15.9 
+```
+Once deployed, your service will route traffic across both your stable and canary deployments, allowing you to monitor for and catch any issues early.
 
 ## How do I ensure a minimum number of Pods are available across node maintenance?
 
