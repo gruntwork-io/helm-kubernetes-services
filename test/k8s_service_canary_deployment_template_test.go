@@ -56,7 +56,7 @@ func TestK8SServiceCanaryEnabledCreatesCanaryDeployment(t *testing.T) {
 	}
 	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/canarydeployment.yaml"})
 
-	// We take the output and render it to a map to validate it has created a Horizontal Pod Autoscaler output or not
+	// We take the output and render it to a map to validate it has created a canary deployment or not
 	rendered := map[string]interface{}{}
 	err = yaml.Unmarshal([]byte(out), &rendered)
 	assert.NoError(t, err)
