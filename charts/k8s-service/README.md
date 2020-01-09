@@ -983,7 +983,7 @@ Once deployed, your service will route traffic across both your stable and canar
 
 ## How do I verify my canary deployment? 
 
-Canary deployment pods have the same name as your stable deployment pods, with the addition "-canary" appended to the end, like so: 
+Canary deployment pods have the same name as your stable deployment pods, with the additional "-canary" appended to the end, like so: 
 
 ```bash
 $ kubectl get pods -l "app.kubernetes.io/name=nginx,app.kubernetes.io/instance=edge-service"
