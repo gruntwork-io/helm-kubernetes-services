@@ -79,13 +79,15 @@ spec:
   replicas: {{ .Values.canary.replicaCount | default 1 }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "k8s-service.name" . }}-canary
+      app.kubernetes.io/name: {{ include "k8s-service.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
+      gruntwork.io/deployment-type: canary
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "k8s-service.name" . }}-canary
+        app.kubernetes.io/name: {{ include "k8s-service.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        gruntwork.io/deployment-type: canary
 
       {{- with .Values.podAnnotations }}
       annotations:
