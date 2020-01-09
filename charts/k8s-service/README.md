@@ -981,6 +981,30 @@ canary:
 ```
 Once deployed, your service will route traffic across both your stable and canary deployments, allowing you to monitor for and catch any issues early.
 
+## How do I verify my canary deployment? 
+
+Canary deployment pods have the same name as your stable deployment pods, with the addition "-canary" appended to the end, like so: 
+
+```bash
+$ kubectl get pods -l "app.kubernetes.io/name=nginx,app.kubernetes.io/instance=edge-service"
+NAME                                          READY     STATUS    RESTARTS   AGE
+edge-service-nginx-844c978df7-f5wc4           1/1       Running   0          52s
+edge-service-nginx-844c978df7-mln26           0/1       Pending   0          52s
+edge-service-nginx-844c978df7-rdsr8           0/1       Pending   0          52s
+edge-service-nginx-canary-844c978df7-bsr8     0/1       Pending   0          52s
+```
+
+Therefore, in this example, you could monitor your canary by running `kubectl logs -f edge-service-nginx-canary-844c978df7-bsr8`  
+
+## How do I roll back a canary deployment? 
+
+Update your values.yaml file, setting `canary.enabled = false` and then upgrade your helm installation:
+
+```bash
+$ helm upgrade -f values.yaml edge-service gruntwork/k8s-service
+```
+Following this update, Kubernetes will determine that your canary deployment is no longer desired and will delete it.
+
 ## How do I ensure a minimum number of Pods are available across node maintenance?
 
 Sometimes, you may want to ensure that a specific number of `Pods` are always available during [voluntary
