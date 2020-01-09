@@ -30,7 +30,7 @@ The following resources will be deployed with this Helm Chart, depending on whic
 
 - `Deployment`: The main `Deployment` controller that will manage the application container image specified in the
                 `containerImage` input value.
-- `CanaryDeployment` An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`). 
+- Secondary `Deployment` for use as canary: An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`). 
 - `Service`: The `Service` resource providing a stable endpoint that can be used to address to `Pods` created by the
              `Deployment` controller. Created only if you configure the `service` input (and set
              `service.enabled = true`).
