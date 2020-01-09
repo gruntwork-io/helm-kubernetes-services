@@ -3,6 +3,9 @@ The Canary Deployment Controller for the application being deployed. This resour
 of only the canary Pod(s) backing your application. It is intended to be used to test new release candidates
 and ensure they are free of issues prior to performing a full roll out.
 */ -}}
+
+{{- if .Values.canary.enabled -}}
+
 {{- /*
 We must decide whether or not there are volumes to inject. The logic to decide whether or not to inject is based on
 whether or not there are configMaps OR secrets that are specified as volume mounts (`as: volume` attributes). We do this
@@ -15,7 +18,6 @@ We need this because certain sections are omitted if there are no volumes or env
 */ -}}
 
 {{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
-{{- if .Values.canary.enabled -}}
 {{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false "hasIRSA" false "exposePorts" false -}}
 {{- if .Values.envVars -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
