@@ -174,7 +174,7 @@ Note that because this is built in the `minikube` virtual machine directly, the 
 is why `minikube` is able to use the built container when you reference it in `k8s-service`.
 
 
-## Deloy the sample app Docker container with k8s-service
+## Deploy the sample app Docker container with k8s-service
 
 Now that we have a working Kubernetes cluster with Helm installed and a sample Docker container to deploy, we are ready
 to deploy our application using the `k8s-service` chart.

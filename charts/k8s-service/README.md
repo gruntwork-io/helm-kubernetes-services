@@ -53,7 +53,7 @@ The following resources will be deployed with this Helm Chart, depending on whic
 
 In general, `Pods` are considered ephemeral in Kubernetes. `Pods` can come and go at any point in time, either because
 containers fail or the underlying instances crash. In either case, the dynamic nature of `Pods` make it difficult to
-consistently access your application if you individually addressing the `Pods` directly.
+consistently access your application if you are individually addressing the `Pods` directly.
 
 Traditionally, this is solved using service discovery, where you have a stateful system that the `Pods` would register
 to when they are available. Then, your other applications can query the system to find all the available `Pods` and
@@ -680,7 +680,7 @@ value pairs: one for the host (`dbhost`) and one for the port (`dbport`). You ca
 To directly create the `ConfigMap`:
 
 ```
-kubectl create configmap my-config --from-literal=dbhost=mysql.default.svc.cluster.local --from-liternal=dbport=3306
+kubectl create configmap my-config --from-literal=dbhost=mysql.default.svc.cluster.local --from-literal=dbport=3306
 ```
 
 Alternatively, you can manage the `ConfigMap` as code using a kubernetes resource config:
