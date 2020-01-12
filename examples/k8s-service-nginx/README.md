@@ -371,7 +371,7 @@ However, the `NOTES` output also contains instructions for directly getting the 
 Here, we will use those commands to extract the endpoint for the `Service`, with one modification. Because we are
 running the `Service` on `minikube`, there is one layer of indirection in the `minikube` VM. `minikube` runs in its own
 VM on your machine, which means that the ip of the node will be incorrect. So instead of querying for the registered
-node IP in Kubernetes, we will instead use `minikube` to get the ip address of the `minikub` VM to use ast the node IP:
+node IP in Kubernetes, we will instead use `minikube` to get the ip address of the `minikube` VM to use as the node IP:
 
 ```bash
 export NODE_PORT=$(kubectl get --namespace default -o jsonpath="{.spec.ports[0].nodePort}" services queenly-liger-nginx)
@@ -379,7 +379,7 @@ export NODE_IP=$(minikube ip)
 echo http://$NODE_IP:$NODE_PORT
 ```
 
-The first command query the `Service` resource to find out the node port that was used to expose the service. The second
+The first command queries the `Service` resource to find out the node port that was used to expose the service. The second
 command queries the ip address of `minikub`. The last command will `echo` out the endpoint where the service is
 available. Try hitting that endpoint in your browser and you should see the familiar nginx splash screen.
 
