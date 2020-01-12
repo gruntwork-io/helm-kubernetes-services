@@ -86,7 +86,5 @@ func TestK8SServiceCanaryDeployment(t *testing.T) {
 	mainPods := k8s.ListPods(t, kubectlOptions, mainFilters)
 	mainTag := mainPods[0].Spec.Containers[0].Image
 
-	fmt.Printf("Canary tag: %v and main tag: %v", canaryTag, mainTag)
-
 	assert.NotEqual(t, canaryTag, mainTag)
 }
