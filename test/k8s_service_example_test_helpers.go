@@ -34,11 +34,45 @@ func verifyPodsCreatedSuccessfully(
 	filters := metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s", appName, releaseName),
 	}
+
 	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, NumPodsExpected, WaitTimerRetries, WaitTimerSleep)
 	pods := k8s.ListPods(t, kubectlOptions, filters)
+
 	for _, pod := range pods {
 		k8s.WaitUntilPodAvailable(t, kubectlOptions, pod.Name, WaitTimerRetries, WaitTimerSleep)
 	}
+}
+
+// verifyCanaryAndMainPodsCreatedSuccessfully uses gruntwork.io/deployment-type labels to ensure availability of both main and canary pods of a given release
+func verifyCanaryAndMainPodsCreatedSuccessfully(
+	t *testing.T,
+	kubectlOptions *k8s.KubectlOptions,
+	appName string,
+	releaseName string,
+) {
+
+	filters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s,gruntwork.io/deployment-type=canary", appName, releaseName),
+	}
+
+	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, NumPodsExpected, WaitTimerRetries, WaitTimerSleep)
+	pods := k8s.ListPods(t, kubectlOptions, filters)
+
+	for _, pod := range pods {
+		k8s.WaitUntilPodAvailable(t, kubectlOptions, pod.Name, WaitTimerRetries, WaitTimerSleep)
+	}
+
+	mainDeploymentFilters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s,gruntwork.io/deployment-type=main", appName, releaseName),
+	}
+
+	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, mainDeploymentFilters, NumPodsExpected, WaitTimerRetries, WaitTimerSleep)
+	mainPods := k8s.ListPods(t, kubectlOptions, mainDeploymentFilters)
+
+	for _, mainPod := range mainPods {
+		k8s.WaitUntilPodAvailable(t, kubectlOptions, mainPod.Name, WaitTimerRetries, WaitTimerSleep)
+	}
+
 }
 
 // verifyAllPodsAvailable waits until all the pods from the release are up and ready to serve traffic. The
