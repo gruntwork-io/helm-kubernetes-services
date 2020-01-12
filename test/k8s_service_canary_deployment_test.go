@@ -14,12 +14,10 @@ import (
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/assert"
-
+	"github.com/stretchr/testify/require"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 )
 
 // Test that:
@@ -49,20 +47,20 @@ func TestK8SServiceCanaryDeployment(t *testing.T) {
 	options := &helm.Options{
 		KubectlOptions: kubectlOptions,
 		SetValues: map[string]string{
-			"containerImage.repository": "nginx",
-			"containerImage.tag": "1.14.2",
-			"containerImage.pullPolicy": "IfNotPresent",
-			"applicationName": "canary-test",
-			"replicaCount": "3",
-			"canary.enabled": "true",
-			"canary.replicaCount": "3",
+			"containerImage.repository":        "nginx",
+			"containerImage.tag":               "1.14.2",
+			"containerImage.pullPolicy":        "IfNotPresent",
+			"applicationName":                  "canary-test",
+			"replicaCount":                     "3",
+			"canary.enabled":                   "true",
+			"canary.replicaCount":              "3",
 			"canary.containerImage.repository": "nginx",
-			"canary.containerImage.tag": "1.16.0",
-			"livenessProbe.httpGet.path": "/",
-			"livenessProbe.httpGet.port": "http",
-			"readinessProbe.httpGet.path": "/",
-			"readinessProbe.httpGet.port": "http",
-			"service.type": "NodePort",
+			"canary.containerImage.tag":        "1.16.0",
+			"livenessProbe.httpGet.path":       "/",
+			"livenessProbe.httpGet.port":       "http",
+			"readinessProbe.httpGet.path":      "/",
+			"readinessProbe.httpGet.port":      "http",
+			"service.type":                     "NodePort",
 		},
 	}
 
@@ -72,7 +70,6 @@ func TestK8SServiceCanaryDeployment(t *testing.T) {
 	// Uses label filters including gruntwork.io/deployment-type=canary to ensure the correct pods were created
 	verifyCanaryAndMainPodsCreatedSuccessfully(t, kubectlOptions, "canary-test", releaseName)
 	verifyAllPodsAvailable(t, kubectlOptions, "canary-test", releaseName, nginxValidationFunction)
-
 
 	// Ensure that the canary deployment is running a separate tag from the main deployment, as configured
 	canaryFilters := metav1.ListOptions{
