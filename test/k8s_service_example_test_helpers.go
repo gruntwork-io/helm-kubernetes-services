@@ -20,6 +20,7 @@ import (
 
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
+	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -202,8 +203,8 @@ func verifyServiceRoutesToMainAndCanaryPods(
 	service := services[0]
 	k8s.WaitUntilServiceAvailable(t, kubectlOptions, service.Name, WaitTimerRetries, WaitTimerSleep)
 
-	service = *k8s.GetService(t, kubectlOptions, service.Name)
-	serviceEndpoint := k8s.GetServiceEndpoint(t, kubectlOptions, &service, 80)
+	var availableService = *k8s.GetService(t, kubectlOptions, service.Name)
+	serviceEndpoint := k8s.GetServiceEndpoint(t, kubectlOptions, &availableService, 80)
 
 	// Ensure that the service routes to both the main and canary deployment pods
 	// Read the latest values dynamically in case the fixtures file changes
@@ -222,7 +223,10 @@ func verifyServiceRoutesToMainAndCanaryPods(
 	seen[mainImageTag] = false
 	seen[canaryImageTag] = false
 
-	for seen[mainImageTag] == false || seen[canaryImageTag] == false {
+	maxRetries := 30
+	sleepDuration := 1 * time.Second
+
+	retry.DoWithRetry(t, "Read Server header returned by nginx", maxRetries, sleepDuration, func() (string, error) {
 		resp, err := http.Get(fmt.Sprintf("http://%s", serviceEndpoint))
 
 		assert.NoError(t, err)
@@ -234,6 +238,11 @@ func verifyServiceRoutesToMainAndCanaryPods(
 		// When we see a header value, update it as seen
 		seen[serverTag] = true
 
-		time.Sleep(1 * time.Second)
-	}
+		if seen[mainImageTag] == true && seen[canaryImageTag] == true {
+			fmt.Printf("Successfully saw both main and canary nginx tags via service: %v", seen)
+			return "", nil
+		}
+
+		return "", fmt.Errorf("Still waiting to see both nginx tags returned: %v", seen)
+	})
 }
