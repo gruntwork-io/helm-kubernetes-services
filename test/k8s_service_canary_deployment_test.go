@@ -46,21 +46,9 @@ func TestK8SServiceCanaryDeployment(t *testing.T) {
 	releaseName := fmt.Sprintf("k8s-service-canary-%s", strings.ToLower(uniqueID))
 	options := &helm.Options{
 		KubectlOptions: kubectlOptions,
-		SetValues: map[string]string{
-			"containerImage.repository":        "nginx",
-			"containerImage.tag":               "1.14.2",
-			"containerImage.pullPolicy":        "IfNotPresent",
-			"applicationName":                  "canary-test",
-			"replicaCount":                     "3",
-			"canary.enabled":                   "true",
-			"canary.replicaCount":              "3",
-			"canary.containerImage.repository": "nginx",
-			"canary.containerImage.tag":        "1.16.0",
-			"livenessProbe.httpGet.path":       "/",
-			"livenessProbe.httpGet.port":       "http",
-			"readinessProbe.httpGet.path":      "/",
-			"readinessProbe.httpGet.port":      "http",
-			"service.type":                     "NodePort",
+		ValuesFiles: []string{
+			filepath.Join("..", "charts", "k8s-service", "linter_values.yaml"),
+			filepath.Join("fixtures", "canary_and_main_deployment_values.yaml"),
 		},
 	}
 
