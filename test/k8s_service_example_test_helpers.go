@@ -238,7 +238,7 @@ func verifyServiceRoutesToMainAndCanaryPods(
 		// When we see a header value, update it as seen
 		seen[serverTag] = true
 
-		if seen[mainImageTag] == true && seen[canaryImageTag] == true {
+		if seen[mainImageTag] && seen[canaryImageTag] {
 			fmt.Printf("Successfully saw both main and canary nginx tags via service: %v", seen)
 			return "", nil
 		}
