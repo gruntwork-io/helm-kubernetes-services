@@ -20,8 +20,8 @@ import (
 
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
-	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -224,6 +224,7 @@ func verifyServiceRoutesToMainAndCanaryPods(
 	seen[mainImageTag] = false
 	seen[canaryImageTag] = false
 
+	// This will take 30 seconds to timeout (30 max tries with a 1 second sleep between each try)
 	maxRetries := 30
 	sleepDuration := 1 * time.Second
 
