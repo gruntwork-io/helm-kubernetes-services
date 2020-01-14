@@ -239,7 +239,7 @@ func verifyServiceRoutesToMainAndCanaryPods(
 		seen[serverTag] = true
 
 		if seen[mainImageTag] && seen[canaryImageTag] {
-			fmt.Printf("Successfully saw both main and canary nginx tags via service: %v", seen)
+			logger.Logf(t, "Successfully saw both main and canary nginx tags via service: %v", seen)
 			return "", nil
 		}
 
