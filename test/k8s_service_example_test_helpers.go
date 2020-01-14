@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/stretchr/testify/require"
@@ -73,6 +75,31 @@ func verifyCanaryAndMainPodsCreatedSuccessfully(
 		k8s.WaitUntilPodAvailable(t, kubectlOptions, mainPod.Name, WaitTimerRetries, WaitTimerSleep)
 	}
 
+}
+
+// verifyDifferentContainerTagsForCanaryPods ensures that the pods that comprise the main deployment
+// and the pods that comprise the canary deployment are running different image tags
+func verifyDifferentContainerTagsForCanaryPods(
+	t *testing.T,
+	kubectlOptions *k8s.KubectlOptions,
+	releaseName string,
+) {
+	// Ensure that the canary deployment is running a separate tag from the main deployment, as configured
+	canaryFilters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s,gruntwork.io/deployment-type=canary", "canary-test", releaseName),
+	}
+
+	canaryPods := k8s.ListPods(t, kubectlOptions, canaryFilters)
+	canaryTag := canaryPods[0].Spec.Containers[0].Image
+
+	mainFilters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s,gruntwork.io/deployment-type=main", "canary-test", releaseName),
+	}
+
+	mainPods := k8s.ListPods(t, kubectlOptions, mainFilters)
+	mainTag := mainPods[0].Spec.Containers[0].Image
+
+	assert.NotEqual(t, canaryTag, mainTag)
 }
 
 // verifyAllPodsAvailable waits until all the pods from the release are up and ready to serve traffic. The

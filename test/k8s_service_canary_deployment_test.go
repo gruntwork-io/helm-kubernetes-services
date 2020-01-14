@@ -14,10 +14,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Test that:
@@ -58,21 +55,5 @@ func TestK8SServiceCanaryDeployment(t *testing.T) {
 	// Uses label filters including gruntwork.io/deployment-type=canary to ensure the correct pods were created
 	verifyCanaryAndMainPodsCreatedSuccessfully(t, kubectlOptions, "canary-test", releaseName)
 	verifyAllPodsAvailable(t, kubectlOptions, "canary-test", releaseName, nginxValidationFunction)
-
-	// Ensure that the canary deployment is running a separate tag from the main deployment, as configured
-	canaryFilters := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s,gruntwork.io/deployment-type=canary", "canary-test", releaseName),
-	}
-
-	canaryPods := k8s.ListPods(t, kubectlOptions, canaryFilters)
-	canaryTag := canaryPods[0].Spec.Containers[0].Image
-
-	mainFilters := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s,gruntwork.io/deployment-type=main", "canary-test", releaseName),
-	}
-
-	mainPods := k8s.ListPods(t, kubectlOptions, mainFilters)
-	mainTag := mainPods[0].Spec.Containers[0].Image
-
-	assert.NotEqual(t, canaryTag, mainTag)
+	verifyDifferentContainerTagsForCanaryPods(t, kubectlOptions, releaseName)
 }
