@@ -7,10 +7,16 @@ package test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ghodss/yaml"
 
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
@@ -175,4 +181,59 @@ func verifyServiceAvailable(
 		WaitTimerSleep,
 		validationFunction,
 	)
+}
+
+// verifyServiceRoutesToMainAndCanaryPods ensures that the service is routing to both the main and the canary pods
+// It does this by repeatedly issuing requests to the service and inspecting the nginx Server header
+// Once both nginx tags have been seen in this header - we can be confident that we've reached both types of pod via the service
+func verifyServiceRoutesToMainAndCanaryPods(
+	t *testing.T,
+	kubectlOptions *k8s.KubectlOptions,
+	appName string,
+	releaseName string,
+) {
+
+	// Get the service and wait until it is available
+	filters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s", appName, releaseName),
+	}
+	services := k8s.ListServices(t, kubectlOptions, filters)
+	require.Equal(t, len(services), 1)
+	service := services[0]
+	k8s.WaitUntilServiceAvailable(t, kubectlOptions, service.Name, WaitTimerRetries, WaitTimerSleep)
+
+	service = *k8s.GetService(t, kubectlOptions, service.Name)
+	serviceEndpoint := k8s.GetServiceEndpoint(t, kubectlOptions, &service, 80)
+
+	// Ensure that the service routes to both the main and canary deployment pods
+	// Read the latest values dynamically in case the fixtures file changes
+	valuesFile, err := ioutil.ReadFile(filepath.Join("fixtures", "canary_and_main_deployment_values.yaml"))
+	assert.NoError(t, err)
+
+	rendered := map[string]interface{}{}
+	err = yaml.Unmarshal([]byte(valuesFile), &rendered)
+
+	mainImageTag := rendered["containerImage"].(map[string]interface{})["tag"].(string)
+
+	canaryImageTag := rendered["canary"].(map[string]interface{})["containerImage"].(map[string]interface{})["tag"].(string)
+
+	// We haven't seen either tag come back in the nginx Server header yet
+	seen := make(map[string]bool)
+	seen[mainImageTag] = false
+	seen[canaryImageTag] = false
+
+	for seen[mainImageTag] == false || seen[canaryImageTag] == false {
+		resp, err := http.Get(fmt.Sprintf("http://%s", serviceEndpoint))
+
+		assert.NoError(t, err)
+
+		serverNginxHeader := resp.Header.Get("Server")
+		// Nginx returns a server header in the format "nginx/1.16.0"
+		serverTag := strings.ReplaceAll(serverNginxHeader, "nginx/", "")
+
+		// When we see a header value, update it as seen
+		seen[serverTag] = true
+
+		time.Sleep(1 * time.Second)
+	}
 }

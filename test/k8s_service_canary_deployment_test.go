@@ -56,4 +56,5 @@ func TestK8SServiceCanaryDeployment(t *testing.T) {
 	verifyCanaryAndMainPodsCreatedSuccessfully(t, kubectlOptions, "canary-test", releaseName)
 	verifyAllPodsAvailable(t, kubectlOptions, "canary-test", releaseName, nginxValidationFunction)
 	verifyDifferentContainerTagsForCanaryPods(t, kubectlOptions, releaseName)
+	verifyServiceRoutesToMainAndCanaryPods(t, kubectlOptions, "canary-test", releaseName)
 }
