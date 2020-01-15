@@ -129,15 +129,14 @@ generally scheduled with
 [Controllers](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/#pods-and-controllers) that manage the
 lifecycle of a Pod. Using Controllers, you can schedule your Pods as:
 
-- Jobs, which are Pods with a controller that will guarantee the Pods run to completion. See the [k8s-job
-  chart](/charts/k8s-job) for more information.
+- Jobs, which are Pods with a controller that will guarantee the Pods run to completion.
 - Deployments behind a Service, which are Pods with a controller that implement lifecycle rules to provide replication
   and self-healing capabilities. Deployments will automatically reprovision failed Pods, or migrate Pods to healthy
   nodes off of failed nodes. A Service constructs a consistent endpoint that can be used to access the Deployment. See
   the [k8s-service chart](/charts/k8s-service) for more information.
 - Daemon Sets, which are Pods that are scheduled on all worker nodes. Daemon Sets schedule exactly one instance of a Pod
   on each node. Like Deployments, Daemon Sets will reprovision failed Pods and schedule new ones automatically on
-  new nodes that join the cluster. See the [k8s-daemon-set chart](/charts/k8s-daemon-set) for more information.
+  new nodes that join the cluster. 
 
 
 
