@@ -703,3 +703,31 @@ func TestK8SServiceDisableDefaultPort(t *testing.T) {
 	mainContainer := renderedContainers[0]
 	assert.Equal(t, len(mainContainer.Ports), 0)
 }
+
+func TestK8SServiceCanaryDeploymentContainersLabeledCorrectly(t *testing.T) {
+	t.Parallel()
+	deployment := renderK8SServiceCanaryDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"canary.enabled":                   "true",
+			"canary.replicaCount":              "1",
+			"canary.containerImage.repository": "nginx",
+			"canary.containerImage.tag":        "1.16.0",
+		},
+	)
+	// Ensure a canary deployment has the canary deployment-type label
+	assert.Equal(t, deployment.Spec.Selector.MatchLabels["gruntwork.io/deployment-type"], "canary")
+}
+
+func TestK8SServiceMainDeploymentContainersLabeledCorrectly(t *testing.T) {
+	t.Parallel()
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"containerImage.repository": "nginx",
+			"containerImage.tag":        "1.16.0",
+		},
+	)
+	// Ensure a "main" type deployment is properly labeled as such
+	assert.Equal(t, deployment.Spec.Selector.MatchLabels["gruntwork.io/deployment-type"], "main")
+}
