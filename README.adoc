@@ -1,0 +1,128 @@
+:type: service
+:name: Kubernetes Service
+:description: Deploy a Kubernetes service with zero-downtime, rolling deployment, RBAC, auto scaling, secrets management, and more.
+:icon: /_docs/kubernetes-service.png
+:category: docker-services
+:cloud: k8s
+:tags: docker, orchestration, kubernetes, containers
+:license: gruntwork
+:built-with: helm
+
+// AsciiDoc TOC settings
+:toc:
+:toc-placement!:
+:toc-title:
+
+// GitHub specific settings. See https://gist.github.com/dcode/0cfbf2699a1fe9b46ff04c41721dda74 for details.
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= Kubernetes Service
+
+image:https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg[link="https://gruntwork.io/?ref=repo_k8s_service"]
+
+This repo contains Helm Charts for deploying your applications on Kubernetes clusters with
+https://helm.sh[Helm].
+
+image::/_docs/k8s-service-architecture.png?raw=true[K8S Service architecture]
+
+toc::[]
+
+
+
+
+== Features
+
+* Deploy your application containers on to Kubernetes
+* Zero-downtime rolling deployments
+* Auto scaling and auto healing
+* Configuration management and Secrets management
+* Ingress and Service endpoints
+
+
+
+
+== Learn
+
+NOTE: This repo is a part of https://gruntwork.io/infrastructure-as-code-library/[the Gruntwork Infrastructure as Code
+Library], a collection of reusable, battle-tested, production ready infrastructure code. If you've never used the Infrastructure as Code Library before, make sure to read https://gruntwork.io/guides/foundations/how-to-use-gruntwork-infrastructure-as-code-library/[How to use the Gruntwork Infrastructure as Code Library]!
+
+=== Core concepts
+
+* https://gruntwork.io/guides/kubernetes/how-to-deploy-production-grade-kubernetes-cluster-aws/#core_concepts[Kubernetes core concepts]: learn about Kubernetes architecture (control plane, worker nodes), access control (authentication, authorization), resources (pods, controllers, services, config, secrets), and more.
+* link:/core-concepts.md#how-do-you-run-applications-on-kubernetes[How do you run applications on Kubernetes?]
+* link:/core-concepts.md#what-is-helm[What is Helm?]
+* _https://www.manning.com/books/kubernetes-in-action[Kubernetes in Action]_: the best book we've found for getting up and running with Kubernetes.
+
+=== Repo organization
+
+* link:/charts[charts]: the main implementation code for this repo, broken down into multiple standalone, orthogonal Helm charts.
+* link:/examples[examples]: This folder contains working examples of how to use the submodules.
+* link:/test[test]: Automated tests for the modules and examples.
+
+=== Gruntwork analysis
+
+* link:/_docs/faq.md#why-kubernetes[Why Kubernetes]: Learn why you may want to use Kubernetes in the first place.
+
+
+
+
+== Deploy
+
+=== Non-production deployment (quick start for learning)
+
+If you just want to try this repo out for experimenting and learning, check out the following resources:
+
+* link:/examples[examples folder]: The `examples` folder contains sample code optimized for learning, experimenting, and testing (but not production usage).
+
+=== Production deployment
+
+If you want to deploy this repo in production, check out the following resources:
+
+* **Gruntwork Subscriber Only** https://github.com/gruntwork-io/infrastructure-modules-multi-account-acme/tree/master/services/k8s-service[k8s-service in the Acme example Reference Architecture]: Production-ready sample code from the Acme Reference Architecture examples.
+
+
+
+
+== Manage
+
+=== Day-to-day operations
+
+* link:/charts/k8s-service/README.md#how-do-i-expose-my-application-internally-to-the-cluster[How do I expose my application internally to the cluster?]
+* link:/charts/k8s-service/README.md#how-do-i-expose-my-application-externally-outside-of-the-cluster[How do I expose my application externally, outside of the cluster?]
+* link:/charts/k8s-service/README.md#how-do-i-deploy-a-worker-service[How do I deploy a worker service?]
+* link:/charts/k8s-service/README.md#how-do-i-check-the-status-of-the-rollout[How do I check the status of the rollout?]
+* link:/charts/k8s-service/README.md#how-do-i-set-and-share-configurations-with-the-application[How do I set and share configurations with the application?]
+
+=== Major changes
+
+* link:/charts/k8s-service/README.md#how-do-you-update-the-application-to-a-new-version[How do you update the application to a new version?]
+* link:/charts/k8s-service/README.md#how-do-i-ensure-a-minimum-number-of-pods-are-available-across-node-maintenance[How do I ensure a minimum number of Pods are available across node maintenance?]
+
+
+
+
+== Support
+
+If you need help with this repo or anything else related to infrastructure or DevOps, Gruntwork offers https://gruntwork.io/support/[Commercial Support] via Slack, email, and phone/video. If you're already a Gruntwork customer, hop on Slack and ask away! If not, https://www.gruntwork.io/pricing/[subscribe now]. If you're not sure, feel free to email us at link:mailto:support@gruntwork.io[support@gruntwork.io].
+
+
+
+
+== Contributions
+
+Contributions to this repo are very welcome and appreciated! If you find a bug or want to add a new feature or even contribute an entirely new module, we are very happy to accept pull requests, provide feedback, and run your changes through our automated test suite.
+
+Please see https://gruntwork.io/guides/foundations/how-to-use-gruntwork-infrastructure-as-code-library/#contributing-to-the-gruntwork-infrastructure-as-code-library[Contributing to the Gruntwork Infrastructure as Code Library] for instructions.
+
+
+
+
+== License
+
+Please see link:LICENSE[LICENSE] for details on how the code in this repo is licensed.
