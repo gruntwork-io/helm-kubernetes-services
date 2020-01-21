@@ -65,12 +65,6 @@ Library], a collection of reusable, battle-tested, production ready infrastructu
 * link:/examples[examples]: This folder contains working examples of how to use the submodules.
 * link:/test[test]: Automated tests for the modules and examples.
 
-=== Gruntwork analysis
-
-* link:/_docs/faq.md#why-kubernetes[Why Kubernetes]: Learn why you may want to use Kubernetes in the first place.
-
-
-
 
 == Deploy
 
