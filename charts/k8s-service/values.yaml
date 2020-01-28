@@ -297,11 +297,11 @@ ingress:
 #   DB_PORT: 3306
 envVars: {}
 
-# additional_container_env is a list of additional environment variables
+# additionalContainerEnv is a list of additional environment variables
 # definitions that will be inserted into the Container's environment YAML.
 #
 # Example:
-# additional_container_env:
+# additionalContainerEnv:
 #   - name: DD_AGENT_HOST
 #     valueFrom:
 #       fieldRef:
@@ -310,7 +310,7 @@ envVars: {}
 #     valueFrom:
 #       fieldRef:
 #         fieldPath: metadata.uid
-additional_container_env: {}
+additionalContainerEnv: {}
 
 # configMaps is a map that specifies the ConfigMap resources that should be exposed to the main application container. Each
 # entry in the map represents a ConfigMap resource. The key refers to the name of the ConfigMap that should be exposed,
