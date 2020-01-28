@@ -22,7 +22,7 @@ We need this because certain sections are omitted if there are no volumes or env
 {{- if .Values.envVars -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
 {{- end -}}
-{{- if .Values.additional_container_env -}}
+{{- if .Values.additionalContainerEnv -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
 {{- end -}}
 {{- $allContainerPorts := values .Values.containerPorts -}}
@@ -204,8 +204,8 @@ spec:
             - name: {{ $key }}
               value: {{ quote $value }}
           {{- end }}
-          {{- if .Values.additional_container_env }}
-{{ toYaml .Values.additional_container_env | indent 12 }}
+          {{- if .Values.additionalContainerEnv }}
+{{ toYaml .Values.additionalContainerEnv | indent 12 }}
           {{- end }}
           {{- range $name, $value := .Values.configMaps }}
             {{- if eq $value.as "environment" }}
