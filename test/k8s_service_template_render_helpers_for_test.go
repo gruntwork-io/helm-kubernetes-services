@@ -27,7 +27,7 @@ func renderK8SServiceDeploymentWithSetValues(t *testing.T, setValues map[string]
 		SetValues:   setValues,
 	}
 	// Render just the deployment resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "deployment", []string{"templates/deployment.yaml"})
 
 	// Parse the deployment and verify the preStop hook is set
 	var deployment appsv1.Deployment
@@ -45,7 +45,7 @@ func renderK8SServiceCanaryDeploymentWithSetValues(t *testing.T, setValues map[s
 		SetValues:   setValues,
 	}
 	// Render just the deployment resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/canarydeployment.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "canarydeployment", []string{"templates/canarydeployment.yaml"})
 
 	// Parse the deployment and verify the preStop hook is set
 	var canarydeployment appsv1.Deployment
@@ -63,7 +63,7 @@ func renderK8SServiceIngressWithSetValues(t *testing.T, setValues map[string]str
 		SetValues:   setValues,
 	}
 	// Render just the deployment resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/ingress.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "ingress", []string{"templates/ingress.yaml"})
 
 	// Parse the deployment and verify the preStop hook is set
 	var ingress extv1beta1.Ingress
@@ -81,7 +81,7 @@ func renderK8SServiceManagedCertificateWithSetValues(t *testing.T, setValues map
 		SetValues:   setValues,
 	}
 	// Render just the google managed certificate resource
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/gmc.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "gmc", []string{"templates/gmc.yaml"})
 
 	// Parse the deployment and verify the preStop hook is set
 	var cert certapi.ManagedCertificate

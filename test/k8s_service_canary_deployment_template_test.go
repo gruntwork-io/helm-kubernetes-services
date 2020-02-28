@@ -30,13 +30,8 @@ func TestK8SServiceCanaryEnabledFalseDoesNotCreateCanaryDeployment(t *testing.T)
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   map[string]string{"canary.enabled": "false"},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/canarydeployment.yaml"})
-
-	// We take the output and render it to a map to validate it is an empty yaml
-	rendered := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(out), &rendered)
-	assert.NoError(t, err)
-	assert.Equal(t, len(rendered), 0)
+	_, err = helm.RenderTemplateE(t, options, helmChartPath, "canary", []string{"templates/canarydeployment.yaml"})
+	require.Error(t, err)
 }
 
 // Test that configuring a canary deployment will render to a manifest with a container that is clearly a canary
@@ -54,7 +49,7 @@ func TestK8SServiceCanaryEnabledCreatesCanaryDeployment(t *testing.T) {
 			filepath.Join("fixtures", "canary_deployment_values.yaml"),
 		},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/canarydeployment.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "canary", []string{"templates/canarydeployment.yaml"})
 
 	// We take the output and render it to a map to validate it has created a canary deployment or not
 	rendered := map[string]interface{}{}

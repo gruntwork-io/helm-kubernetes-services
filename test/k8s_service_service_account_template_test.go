@@ -31,7 +31,7 @@ func TestK8SServiceAccountCreateTrueCreatesServiceAccount(t *testing.T) {
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   map[string]string{"serviceAccount.name": randomSAName, "serviceAccount.create": "true"},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/serviceaccount.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "serviceaccount", []string{"templates/serviceaccount.yaml"})
 
 	// We take the output and render it to a map to validate it has created a service account output or not
 	rendered := map[string]interface{}{}
@@ -56,13 +56,8 @@ func TestK8SServiceAccountCreateFalse(t *testing.T) {
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   map[string]string{"serviceAccount.name": randomSAName, "serviceAccount.create": "false"},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/serviceaccount.yaml"})
-
-	// We take the output and render it to a map to validate it has created a service account output or not
-	rendered := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(out), &rendered)
-	assert.NoError(t, err)
-	assert.Equal(t, 0, len(rendered))
+	_, err = helm.RenderTemplateE(t, options, helmChartPath, "serviceaccount", []string{"templates/serviceaccount.yaml"})
+	require.Error(t, err)
 }
 
 func TestK8SServiceServiceAccountInjection(t *testing.T) {
@@ -144,7 +139,7 @@ func TestK8SServiceAccountAnnotationRendering(t *testing.T) {
 			"serviceAccount.annotations." + serviceAccountAnnotationKey: serviceAccountAnnotationValue,
 		},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/serviceaccount.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "serviceaccount", []string{"templates/serviceaccount.yaml"})
 
 	// We take the output and render it to a map to validate it has the annotations desired
 	rendered := map[string]interface{}{}
