@@ -57,9 +57,11 @@ jobs:
 
       # Fail the build if the pre-commit hooks don't pass. Note: if you run pre-commit install locally, these hooks will
       # execute automatically every time before you commit, ensuring the build never fails at this step!
-      - run: pip install pre-commit==1.11.2
-      - run: pre-commit install
-      - run: pre-commit run --all-files
+      - run:
+          command: |
+            pip install pre-commit==1.11.2 cfgv==2.0.1 yapf
+            pre-commit install
+            pre-commit run --all-files
 
       - persist_to_workspace:
           root: /home/circleci
