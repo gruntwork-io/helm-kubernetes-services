@@ -59,7 +59,7 @@ jobs:
       # execute automatically every time before you commit, ensuring the build never fails at this step!
       - run:
           command: |
-            pip install pre-commit==1.11.2 cfgv==2.0.1 yapf
+            pip install pre-commit==1.11.2 cfgv==2.0.1
             pre-commit install
             pre-commit run --all-files
 
