@@ -40,7 +40,7 @@ func TestK8SServiceHorizontalPodAutoscalerCreateTrueCreatesHorizontalPodAutoscal
 			"horizontalPodAutoscaler.avgMemoryUtilization": avgMemoryUtil,
 		},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/horizontalpodautoscaler.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "hpa", []string{"templates/horizontalpodautoscaler.yaml"})
 
 	// We take the output and render it to a map to validate it has created a Horizontal Pod Autoscaler output or not
 	rendered := map[string]interface{}{}
@@ -73,13 +73,8 @@ func TestK8SServiceHorizontalPodAutoscalerCreateFalse(t *testing.T) {
 			"horizontalPodAutoscaler.enabled": "false",
 		},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/horizontalpodautoscaler.yaml"})
-
-	// We take the output and render it to a map to validate it has created a Horizontal Pod Autoscaler output or not
-	rendered := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(out), &rendered)
-	assert.NoError(t, err)
-	assert.Equal(t, 0, len(rendered))
+	_, err = helm.RenderTemplateE(t, options, helmChartPath, "hpa", []string{"templates/horizontalpodautoscaler.yaml"})
+	require.Error(t, err)
 }
 
 // Test that setting horizontalPodAutoscaler.enabled = true will cause the helm template to render the Horizontal Pod
@@ -104,7 +99,7 @@ func TestK8SServiceHorizontalPodAutoscalerCreateTrueCreatesHorizontalPodAutoscal
 			"horizontalPodAutoscaler.avgCpuUtilization": avgCpuUtil,
 		},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/horizontalpodautoscaler.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "hpa", []string{"templates/horizontalpodautoscaler.yaml"})
 
 	// We take the output and render it to a map to validate it has created a Horizontal Pod Autoscaler output or not
 	rendered := map[string]interface{}{}
@@ -141,7 +136,7 @@ func TestK8SServiceHorizontalPodAutoscalerCreateTrueCreatesHorizontalPodAutoscal
 			"horizontalPodAutoscaler.avgMemoryUtilization": avgMemoryUtil,
 		},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/horizontalpodautoscaler.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "hpa", []string{"templates/horizontalpodautoscaler.yaml"})
 
 	// We take the output and render it to a map to validate it has created a Horizontal Pod Autoscaler output or not
 	rendered := map[string]interface{}{}
@@ -176,7 +171,7 @@ func TestK8SServiceHorizontalPodAutoscalerCreateTrueCreatesHorizontalPodAutoscal
 			"horizontalPodAutoscaler.maxReplicas": maxReplicas,
 		},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/horizontalpodautoscaler.yaml"})
+	out := helm.RenderTemplate(t, options, helmChartPath, "hpa", []string{"templates/horizontalpodautoscaler.yaml"})
 
 	// We take the output and render it to a map to validate it has created a Horizontal Pod Autoscaler output or not
 	rendered := map[string]interface{}{}

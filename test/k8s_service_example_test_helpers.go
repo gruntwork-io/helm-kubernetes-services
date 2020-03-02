@@ -230,8 +230,7 @@ func verifyServiceRoutesToMainAndCanaryPods(
 
 	retry.DoWithRetry(t, "Read Server header returned by nginx", maxRetries, sleepDuration, func() (string, error) {
 		resp, err := http.Get(fmt.Sprintf("http://%s", serviceEndpoint))
-
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		serverNginxHeader := resp.Header.Get("Server")
 		// Nginx returns a server header in the format "nginx/1.16.0"

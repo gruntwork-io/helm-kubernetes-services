@@ -8,6 +8,7 @@ package test
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
@@ -419,7 +420,7 @@ func TestK8SServiceFileModeOctalToDecimalAssertions(t *testing.T) {
 				},
 			}
 			// Render just the deployment resource
-			_, err := helm.RenderTemplateE(t, options, helmChartPath, []string{"templates/deployment.yaml"})
+			_, err := helm.RenderTemplateE(t, options, helmChartPath, strings.ToLower(t.Name()), []string{"templates/deployment.yaml"})
 			assert.Error(t, err)
 		})
 	}

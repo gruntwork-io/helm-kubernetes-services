@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghodss/yaml"
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
@@ -31,13 +30,8 @@ func TestK8SServiceIngressEnabledFalseDoesNotCreateIngress(t *testing.T) {
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   map[string]string{"ingress.enabled": "false"},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/ingress.yaml"})
-
-	// We take the output and render it to a map to validate it is an empty yaml
-	rendered := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(out), &rendered)
-	assert.NoError(t, err)
-	assert.Equal(t, len(rendered), 0)
+	_, err = helm.RenderTemplateE(t, options, helmChartPath, "ingress", []string{"templates/ingress.yaml"})
+	require.Error(t, err)
 }
 
 // Test that setting service.enabled = false will cause the helm template to not render the Service resource
@@ -53,13 +47,8 @@ func TestK8SServiceServiceEnabledFalseDoesNotCreateService(t *testing.T) {
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   map[string]string{"service.enabled": "false"},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/service.yaml"})
-
-	// We take the output and render it to a map to validate it is an empty yaml
-	rendered := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(out), &rendered)
-	assert.NoError(t, err)
-	assert.Equal(t, len(rendered), 0)
+	_, err = helm.RenderTemplateE(t, options, helmChartPath, "service", []string{"templates/service.yaml"})
+	require.Error(t, err)
 }
 
 // Test each of the required values. Here, we take advantage of the fact that linter_values.yaml is supposed to define
@@ -88,7 +77,7 @@ func TestK8SServiceRequiredValuesAreRequired(t *testing.T) {
 				ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 				SetValues:   map[string]string{requiredVal: "null"},
 			}
-			_, err := helm.RenderTemplateE(t, options, helmChartPath, []string{})
+			_, err := helm.RenderTemplateE(t, options, helmChartPath, strings.ToLower(t.Name()), []string{})
 			assert.Error(t, err)
 		})
 	}
@@ -120,7 +109,7 @@ func TestK8SServiceOptionalValuesAreOptional(t *testing.T) {
 				SetValues:   map[string]string{optionalVal: "null"},
 			}
 			// Make sure it renders without error
-			helm.RenderTemplate(t, options, helmChartPath, []string{})
+			helm.RenderTemplate(t, options, helmChartPath, "all", []string{})
 		})
 	}
 }
@@ -272,7 +261,7 @@ func TestK8SServiceIngressAdditionalPathsAfterMainServicePath(t *testing.T) {
 	// The first path should be the main service path
 	firstPath := pathRules[0]
 	assert.Equal(t, firstPath.Path, "/app")
-	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
 
 	// The second path should be the black hole
@@ -306,7 +295,7 @@ func TestK8SServiceIngressAdditionalPathsMultipleAfterMainServicePath(t *testing
 	// The first path should be the main service path
 	firstPath := pathRules[0]
 	assert.Equal(t, firstPath.Path, "/app")
-	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
 
 	// The second path should be the sun
@@ -342,13 +331,13 @@ func TestK8SServiceIngressAdditionalPathsNoServiceName(t *testing.T) {
 	// The first path should be the main service path
 	firstPath := pathRules[0]
 	assert.Equal(t, firstPath.Path, "/app")
-	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
 
 	// The second path should be the black hole
 	secondPath := pathRules[1]
 	assert.Equal(t, secondPath.Path, "/black-hole")
-	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, secondPath.Backend.ServicePort.IntVal, int32(3000))
 }
 
@@ -379,7 +368,7 @@ func TestK8SServiceIngressAdditionalPathsHigherPriorityBeforeMainServicePath(t *
 	// The second path should be the main service path
 	secondPath := pathRules[1]
 	assert.Equal(t, secondPath.Path, "/app")
-	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, secondPath.Backend.ServicePort.StrVal, "app")
 }
 
@@ -420,7 +409,7 @@ func TestK8SServiceIngressAdditionalPathsHigherPriorityMultipleBeforeMainService
 	// The last path should be the main service path
 	thirdPath := pathRules[2]
 	assert.Equal(t, thirdPath.Path, "/app")
-	assert.Equal(t, strings.ToLower(thirdPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(thirdPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, thirdPath.Backend.ServicePort.StrVal, "app")
 }
 
@@ -444,13 +433,13 @@ func TestK8SServiceIngressAdditionalPathsHigherPriorityNoServiceName(t *testing.
 	// The first path should be the black hole
 	firstPath := pathRules[0]
 	assert.Equal(t, firstPath.Path, "/black-hole")
-	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, firstPath.Backend.ServicePort.IntVal, int32(3000))
 
 	// The second path should be the main service path
 	secondPath := pathRules[1]
 	assert.Equal(t, secondPath.Path, "/app")
-	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, secondPath.Backend.ServicePort.StrVal, "app")
 }
 
@@ -475,13 +464,13 @@ func TestK8SServiceIngressWithHostsAdditionalPathsNoServiceName(t *testing.T) {
 	// The first path should be the main service path
 	firstPath := pathRules[0]
 	assert.Equal(t, firstPath.Path, "/app")
-	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, firstPath.Backend.ServicePort.StrVal, "app")
 
 	// The second path should be the black hole
 	secondPath := pathRules[1]
 	assert.Equal(t, secondPath.Path, "/black-hole")
-	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, secondPath.Backend.ServicePort.IntVal, int32(3000))
 }
 
@@ -507,13 +496,13 @@ func TestK8SServiceIngressWithHostsAdditionalPathsHigherPriorityNoServiceName(t 
 	// The first path should be the black hole
 	firstPath := pathRules[0]
 	assert.Equal(t, firstPath.Path, "/black-hole")
-	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, firstPath.Backend.ServicePort.IntVal, int32(3000))
 
 	// The second path should be the main service path
 	secondPath := pathRules[1]
 	assert.Equal(t, secondPath.Path, "/app")
-	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "release-name-linter")
+	assert.Equal(t, strings.ToLower(secondPath.Backend.ServiceName), "ingress-linter")
 	assert.Equal(t, secondPath.Backend.ServicePort.StrVal, "app")
 }
 
@@ -550,13 +539,8 @@ func TestK8SServiceManagedCertificateDefaultsDoesNotCreateManagedCertificate(t *
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   map[string]string{},
 	}
-	out := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/gmc.yaml"})
-
-	// We take the output and render it to a map to validate it is an empty yaml
-	rendered := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(out), &rendered)
-	assert.NoError(t, err)
-	assert.Equal(t, len(rendered), 0)
+	_, err = helm.RenderTemplateE(t, options, helmChartPath, "gmc", []string{"templates/gmc.yaml"})
+	require.Error(t, err)
 }
 
 // Test that omitting containerCommand does not set command attribute on the Deployment container spec.
