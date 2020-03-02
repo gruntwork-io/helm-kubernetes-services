@@ -6,6 +6,7 @@ defaults: &defaults
     GRUNTWORK_INSTALLER_VERSION: v0.0.21
     TERRATEST_LOG_PARSER_VERSION: v0.13.13
     HELM_VERSION: v3.1.1
+    MINIKUBE_VERSION: 1.7.3
     MODULE_CI_VERSION: v0.16.0
     TERRAFORM_VERSION: NONE
     TERRAGRUNT_VERSION: NONE
@@ -78,7 +79,7 @@ jobs:
           <<: *install_gruntwork_utils
 
       - run:
-          command: setup-minikube
+          command: setup-minikube --minikube-version "${MINIKUBE_VERSION}"
 
       - run:
           <<: *install_helm_client
