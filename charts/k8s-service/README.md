@@ -18,7 +18,7 @@ If you're using the chart to deploy to [GKE](https://cloud.google.com/kubernetes
 
 ## How to use this chart?
 
-* See the [root README](/README.md) for general instructions on using Gruntwork Helm Charts.
+* See the [root README](/README.adoc) for general instructions on using Gruntwork Helm Charts.
 * See the [examples](/examples) folder for example usage.
 * See the provided [values.yaml](./values.yaml) file for the required and optional configuration values that you can set
   on this chart.
