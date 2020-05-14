@@ -321,3 +321,24 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  activeDeadlineSeconds: 300
+  template:
+    name: db-migrate
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: db-migrate
+          image: "{{ $repo }}:{{ $tag }}"
+          command:
+            - bundle
+            - exec
+            - rails
+            - db:migrate:primary
