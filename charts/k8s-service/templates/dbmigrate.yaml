@@ -6,7 +6,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: db-migrate
+  name: "{{ .Values.applicationName }}-db-migrate"
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-delete-policy": hook-succeeded
@@ -14,7 +14,7 @@ spec:
   activeDeadlineSeconds: 300
   backoffLimit: 1
   template:
-    name: db-migrate
+    name: "{{ .Values.applicationName }}-db-migrate"
     spec:
       restartPolicy: Never
       containers:
