@@ -12,12 +12,13 @@ metadata:
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   activeDeadlineSeconds: 300
+  backoffLimit: 1
   template:
     name: db-migrate
     spec:
       restartPolicy: Never
       containers:
-        - name: db-migrate
+        - name: "{{ .Values.applicationName }}-db-migrate"
           {{- $repo := required "containerImage.repository is required" .Values.containerImage.repository }}
           {{- $tag := required "containerImage.tag is required" .Values.containerImage.tag }}
           image: "{{ $repo }}:{{ $tag }}"
@@ -25,7 +26,7 @@ spec:
             - bundle
             - exec
             - rails
-            - db:migrate:primary
+            - db:migrate
           {{- /* START ENV VAR LOGIC */ -}}
           {{- if index $hasInjectionTypes "hasEnvVars" }}
           env:
