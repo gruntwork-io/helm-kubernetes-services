@@ -1,3 +1,8 @@
+{{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
+{{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false "hasIRSA" false "exposePorts" false -}}
+{{- if .Values.envVars -}}
+  {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
+{{- end -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
