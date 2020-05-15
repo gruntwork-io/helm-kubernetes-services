@@ -1,5 +1,5 @@
 {{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
-{{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false "hasIRSA" false "exposePorts" false -}}
+{{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false -}}
 {{- if .Values.envVars -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
 {{- end -}}
@@ -22,11 +22,10 @@ spec:
           {{- $repo := required "containerImage.repository is required" .Values.containerImage.repository }}
           {{- $tag := required "containerImage.tag is required" .Values.containerImage.tag }}
           image: "{{ $repo }}:{{ $tag }}"
+          {{- if .Values.hookCommand }}
           command:
-            - bundle
-            - exec
-            - rails
-            - db:migrate
+{{ toYaml .Values.hookCommand | indent 12 }}
+          {{- end }}
           {{- /* START ENV VAR LOGIC */ -}}
           {{- if index $hasInjectionTypes "hasEnvVars" }}
           env:
