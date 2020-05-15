@@ -342,3 +342,11 @@ spec:
             - exec
             - rails
             - db:migrate:primary
+          {{- /* START ENV VAR LOGIC */ -}}
+          {{- if index $hasInjectionTypes "hasEnvVars" }}
+          env:
+          {{- end }}
+          {{- range $key, $value := .Values.envVars }}
+          - name: {{ $key }}
+            value: {{ quote $value }}
+          {{- end }}
