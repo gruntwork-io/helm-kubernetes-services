@@ -13,6 +13,8 @@ spec:
       restartPolicy: Never
       containers:
         - name: db-migrate
+          {{- $repo := required "containerImage.repository is required" .Values.containerImage.repository }}
+          {{- $tag := required "containerImage.tag is required" .Values.containerImage.tag }}
           image: "{{ $repo }}:{{ $tag }}"
           command:
             - bundle
