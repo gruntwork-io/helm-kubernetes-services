@@ -1,4 +1,4 @@
-{{- if .Values.runMigrations }}
+{{- if .Values.enableMigrationsHook }}
 
 {{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
 {{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false -}}
