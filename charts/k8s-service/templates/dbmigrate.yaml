@@ -17,10 +17,11 @@ spec:
   backoffLimit: 1
   template:
     name: "{{ .Values.applicationName }}-db-migrate"
-    {{- with .Values.podAnnotations }}
-    annotations:
-    {{ toYaml . | indent 8 }}
-    {{- end }}
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
     spec:
       {{- if gt (len .Values.serviceAccount.name) 0 }}
       serviceAccountName: "{{ .Values.serviceAccount.name }}"
