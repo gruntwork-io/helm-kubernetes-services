@@ -17,7 +17,19 @@ spec:
   backoffLimit: 1
   template:
     name: "{{ .Values.applicationName }}-db-migrate"
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
     spec:
+      {{- if gt (len .Values.serviceAccount.name) 0 }}
+      serviceAccountName: "{{ .Values.serviceAccount.name }}"
+      {{- end }}
+      {{- if hasKey .Values.serviceAccount "automountServiceAccountToken" }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      {{- end }}
+
       restartPolicy: Never
       containers:
         - name: "{{ .Values.applicationName }}-db-migrate"
