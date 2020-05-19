@@ -1,0 +1,39 @@
+{{- if .Values.enableMigrationsHook }}
+
+{{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
+{{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false -}}
+{{- if .Values.envVars -}}
+  {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
+{{- end -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Values.applicationName }}-db-migrate"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  activeDeadlineSeconds: 300
+  backoffLimit: 1
+  template:
+    name: "{{ .Values.applicationName }}-db-migrate"
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: "{{ .Values.applicationName }}-db-migrate"
+          {{- $repo := required "containerImage.repository is required" .Values.containerImage.repository }}
+          {{- $tag := required "containerImage.tag is required" .Values.containerImage.tag }}
+          image: "{{ $repo }}:{{ $tag }}"
+          {{- if .Values.migrateCommand }}
+          command:
+{{ toYaml .Values.migrateCommand | indent 12 }}
+          {{- end }}
+          {{- /* START ENV VAR LOGIC */ -}}
+          {{- if index $hasInjectionTypes "hasEnvVars" }}
+          env:
+          {{- end }}
+          {{- range $key, $value := .Values.envVars }}
+          - name: {{ $key }}
+            value: {{ quote $value }}
+          {{- end }}
+{{- end }}
