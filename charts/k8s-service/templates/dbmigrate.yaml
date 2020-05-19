@@ -22,9 +22,9 @@ spec:
           {{- $repo := required "containerImage.repository is required" .Values.containerImage.repository }}
           {{- $tag := required "containerImage.tag is required" .Values.containerImage.tag }}
           image: "{{ $repo }}:{{ $tag }}"
-          {{- if .Values.hookCommand }}
+          {{- if .Values.migrateCommand }}
           command:
-{{ toYaml .Values.hookCommand | indent 12 }}
+{{ toYaml .Values.migrateCommand | indent 12 }}
           {{- end }}
           {{- /* START ENV VAR LOGIC */ -}}
           {{- if index $hasInjectionTypes "hasEnvVars" }}
@@ -34,3 +34,4 @@ spec:
           - name: {{ $key }}
             value: {{ quote $value }}
           {{- end }}
+
