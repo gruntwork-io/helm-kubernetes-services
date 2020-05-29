@@ -12,7 +12,11 @@ We declare some variables defined on the Values. These are reused in `with` and 
 {{- $additionalPathsHigherPriority := .Values.ingress.additionalPathsHigherPriority }}
 {{- $additionalPaths := .Values.ingress.additionalPaths }}
 {{- $servicePort := .Values.ingress.servicePort -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
+apiVersion: networking.k8s.io/v1beta1
+{{- else }}
 apiVersion: extensions/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
