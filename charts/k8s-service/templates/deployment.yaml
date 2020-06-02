@@ -1,4 +1,4 @@
-{{- if !.Values.disableDeployment }}
+{{- if .Values.enableDeployment }}
 
 {{- /*
 The main Deployment Controller for the application being deployed. This resource manages the creation and replacement
