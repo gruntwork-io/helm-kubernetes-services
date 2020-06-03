@@ -1,3 +1,6 @@
+{{- /* In some cases, like in CI/CD, we may want to skip the main Deployment and just let the dbmigrate hook to run. */ -}}
+{{- if .Values.enableDeployment }}
+
 {{- /*
 The main Deployment Controller for the application being deployed. This resource manages the creation and replacement
 of the Pods backing your application.
@@ -321,3 +324,5 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+
+{{- end }}
