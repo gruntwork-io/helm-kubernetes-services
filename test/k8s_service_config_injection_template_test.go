@@ -67,10 +67,17 @@ func TestK8SServiceEnvVarAddsEnvVarsToPod(t *testing.T) {
 	assert.Equal(t, renderedEnvVar["DB_PORT"], "3306")
 }
 
-// Test that setting the `envVars` input value will include those environment vars
-// We test by injecting to the envVars:
-// DB_HOST: "mysql.default.svc.cluster.local"
-// DB_PORT: 3306
+// Test that setting the `additionalContainerEnv` input value will include those environment vars
+// We test by injecting:
+// additionalContainerEnv:
+//   - name: DD_AGENT_HOST
+//     valueFrom:
+//       fieldRef:
+//         fieldPath: status.hostIP
+//   - name: DD_ENTITY_ID
+//     valueFrom:
+//       fieldRef:
+//         fieldPath: metadata.uid
 func TestK8SServiceAdditionalEnvVarAddsEnvVarsToPod(t *testing.T) {
 	t.Parallel()
 
