@@ -126,7 +126,7 @@ jobs:
               # Update version tag
               sed -i "s/0.0.1-replace/${version_tag}/" "${chart}/Chart.yaml"
               # TODO: Figure out provenance strategy
-              (cd "charts" && helm package "${chart_name}" -d "${assets_dir}" --save=false)
+              (cd "charts" && helm package "${chart_name}" -d "${assets_dir}")
             done
 
       - run:
