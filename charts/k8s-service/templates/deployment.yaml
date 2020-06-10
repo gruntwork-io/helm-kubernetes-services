@@ -17,6 +17,9 @@ We need this because certain sections are omitted if there are no volumes or env
 {{- if .Values.envVars -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
 {{- end -}}
+{{- if .Values.additionalContainerEnv -}}
+  {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
+{{- end -}}
 {{- $allContainerPorts := values .Values.containerPorts -}}
 {{- range $allContainerPorts -}}
   {{/* We are exposing ports if there is at least one key in containerPorts that is not disabled (disabled = false or
@@ -195,6 +198,9 @@ spec:
           {{- range $key, $value := .Values.envVars }}
             - name: {{ $key }}
               value: {{ quote $value }}
+          {{- end }}
+          {{- if .Values.additionalContainerEnv }}
+{{ toYaml .Values.additionalContainerEnv | indent 12 }}
           {{- end }}
           {{- range $name, $value := .Values.configMaps }}
             {{- if eq $value.as "environment" }}
