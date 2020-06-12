@@ -27,7 +27,7 @@ endif::[]
 image:https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg[link="https://gruntwork.io/?ref=repo_k8s_service"]
 
 This repo contains Helm Charts for deploying your applications on Kubernetes clusters with
-https://helm.sh[Helm] (hosted at helmcharts.gruntwork.io , implemented with https://github.com/gruntwork-io/helmcharts).
+https://helm.sh[Helm] (hosted at https://helmcharts.gruntwork.io[helmcharts.gruntwork.io], implemented via https://github.com/gruntwork-io/helmcharts[gruntwork-io/helmcharts]).
 
 image::/_docs/k8s-service-architecture.png?raw=true[K8S Service architecture]
 
