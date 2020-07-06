@@ -67,6 +67,45 @@ func TestK8SServiceEnvVarAddsEnvVarsToPod(t *testing.T) {
 	assert.Equal(t, renderedEnvVar["DB_PORT"], "3306")
 }
 
+// Test that setting the `additionalContainerEnv` input value will include those environment vars
+// We test by injecting:
+// additionalContainerEnv:
+//   - name: DD_AGENT_HOST
+//     valueFrom:
+//       fieldRef:
+//         fieldPath: status.hostIP
+//   - name: DD_ENTITY_ID
+//     valueFrom:
+//       fieldRef:
+//         fieldPath: metadata.uid
+func TestK8SServiceAdditionalEnvVarAddsEnvVarsToPod(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"additionalContainerEnv[0].name":                         "DD_AGENT_HOST",
+			"additionalContainerEnv[0].valueFrom.fieldRef.fieldPath": "status.hostIP",
+			"additionalContainerEnv[1].name":                         "DD_ENTITY_ID",
+			"additionalContainerEnv[1].valueFrom.fieldRef.fieldPath": "metadata.uid",
+		},
+	)
+
+	// Verify that there is only one container and that the environments section is populated.
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	environments := appContainer.Env
+	assert.Equal(t, len(environments), 2)
+
+	renderedEnvVar := map[string]string{}
+	for _, env := range environments {
+		renderedEnvVar[env.Name] = env.ValueFrom.FieldRef.FieldPath
+	}
+	assert.Equal(t, renderedEnvVar["DD_AGENT_HOST"], "status.hostIP")
+	assert.Equal(t, renderedEnvVar["DD_ENTITY_ID"], "metadata.uid")
+}
+
 // Test that setting the `configMaps` input value with environment include those environment vars
 // We test by injecting to configMaps:
 // configMaps:

@@ -17,22 +17,10 @@ Kubernetes applications as reusable packages called Charts. Helm provides suppor
 repository that contains various applications such as Jenkins, MySQL, and Consul to name a few. Gruntwork uses Helm
 under the hood for the Kubernetes modules in this package.
 
-Helm consists of two components: the Helm Client, and the Helm Server (Tiller)
-
-### What is the Helm Client?
-
-The Helm client is a command line utility that provides a way to interact with Tiller. It is the primary interface to
-installing and managing Charts as releases in the Helm ecosystem. In addition to providing operational interfaces (e.g
-install, upgrade, list, etc), the client also provides utilities to support local development of Charts in the form of a
-scaffolding command and repository management (e.g uploading a Chart).
-
-### What is the Helm Server?
-
-The Helm Server (Tiller) is a component of Helm that runs inside the Kubernetes cluster. Tiller is what
-provides the functionality to apply the Kubernetes resource descriptions to the Kubernetes cluster. When you install a
-release, the helm client essentially packages up the values and charts as a release, which is submitted to Tiller.
-Tiller will then generate Kubernetes YAML files from the packaged release, and then apply the generated Kubernetes YAML
-file from the charts on the cluster.
+The Helm client is a command line utility that is the primary interface for installing and managing Charts as releases
+in the Helm ecosystem. In addition to providing operational interfaces (e.g install, upgrade, list, etc), the client
+also provides utilities to support local development of Charts in the form of a scaffolding command and repository
+management (e.g uploading a Chart).
 
 
 ## How do you run applications on Kubernetes?
