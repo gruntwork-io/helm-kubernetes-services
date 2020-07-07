@@ -168,10 +168,20 @@ canary: {}
 # point in time. For example, setting to 3 will signal Kubernetes (via the Deployment contoller) to maintain 3 pods.
 replicaCount: 1
 
+# deploymentLables will add the provided map to the labels for the Deployment resource created by this chart.
+# The keys and values are free form, but subject to the limitations of Kubernetes resource labels.
+# NOTE: This variable is injected directly into the deployment spec.
+deploymentLabels: {}
+
 # deploymentAnnotations will add the provided map to the annotations for the Deployment resource created by this chart.
 # The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
 # NOTE: This variable is injected directly into the deployment spec.
 deploymentAnnotations: {}
+
+# podLabels will add the provided map to the labels for the Pod resource created by the Deployment.
+# The keys and values are free form, but subject to the limitations of Kubernetes resource lables.
+# NOTE: This variable is injected directly into the pod spec.
+podLabels: {}
 
 # podAnnotations will add the provided map to the annotations for the Pod resource created by the Deployment.
 # The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
