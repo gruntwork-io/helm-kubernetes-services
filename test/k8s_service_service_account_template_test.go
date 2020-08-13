@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ghodss/yaml"
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
@@ -22,30 +21,21 @@ func TestK8SServiceAccountCreateTrueCreatesServiceAccount(t *testing.T) {
 	t.Parallel()
 	randomSAName := strings.ToLower(random.UniqueId())
 
-	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
-	require.NoError(t, err)
+	serviceaccount := renderK8SServiceAccountWithSetValues(
+		t,
+		map[string]string{
+			"serviceAccount.create": "true",
+			"serviceAccount.name":   randomSAName,
+		},
+	)
 
-	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// We then use SetValues to override all the defaults.
-	options := &helm.Options{
-		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues:   map[string]string{"serviceAccount.name": randomSAName, "serviceAccount.create": "true"},
-	}
-	out := helm.RenderTemplate(t, options, helmChartPath, "serviceaccount", []string{"templates/serviceaccount.yaml"})
-
-	// We take the output and render it to a map to validate it has created a service account output or not
-	rendered := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(out), &rendered)
-	assert.NoError(t, err)
-	assert.NotEqual(t, 0, len(rendered))
-	assert.Equal(t, randomSAName, rendered["metadata"].(map[string]interface{})["name"])
+	assert.Equal(t, serviceaccount.Name, randomSAName)
 }
 
 // Test that setting serviceAccount.create = false will cause the helm template to not render the Service Account
 // resource
 func TestK8SServiceAccountCreateFalse(t *testing.T) {
 	t.Parallel()
-	randomSAName := strings.ToLower(random.UniqueId())
 
 	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
 	require.NoError(t, err)
@@ -54,7 +44,9 @@ func TestK8SServiceAccountCreateFalse(t *testing.T) {
 	// We then use SetValues to override all the defaults.
 	options := &helm.Options{
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues:   map[string]string{"serviceAccount.name": randomSAName, "serviceAccount.create": "false"},
+		SetValues: map[string]string{
+			"serviceAccount.create": "false",
+		},
 	}
 	_, err = helm.RenderTemplateE(t, options, helmChartPath, "serviceaccount", []string{"templates/serviceaccount.yaml"})
 	require.Error(t, err)
@@ -126,24 +118,49 @@ func TestK8SServiceAccountAnnotationRendering(t *testing.T) {
 	serviceAccountAnnotationKey := "testAnnotation"
 	serviceAccountAnnotationValue := strings.ToLower(random.UniqueId())
 
-	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
-	require.NoError(t, err)
-
-	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// We then use SetValues to override all the defaults.
-	options := &helm.Options{
-		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues: map[string]string{
-			"serviceAccount.name":   "test",
+	serviceaccount := renderK8SServiceAccountWithSetValues(
+		t,
+		map[string]string{
 			"serviceAccount.create": "true",
 			"serviceAccount.annotations." + serviceAccountAnnotationKey: serviceAccountAnnotationValue,
 		},
-	}
-	out := helm.RenderTemplate(t, options, helmChartPath, "serviceaccount", []string{"templates/serviceaccount.yaml"})
+	)
 
-	// We take the output and render it to a map to validate it has the annotations desired
-	rendered := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(out), &rendered)
-	assert.NoError(t, err)
-	assert.Equal(t, serviceAccountAnnotationValue, rendered["metadata"].(map[string]interface{})["annotations"].(map[string]interface{})[serviceAccountAnnotationKey])
+	renderedAnnotation := serviceaccount.Annotations
+	assert.Equal(t, len(renderedAnnotation), 1)
+	assert.Equal(t, renderedAnnotation[serviceAccountAnnotationKey], serviceAccountAnnotationValue)
+}
+
+// Test that default imagePullSecrets do not render any
+func TestK8SServiceAccountNoImagePullSecrets(t *testing.T) {
+	t.Parallel()
+
+	serviceaccount := renderK8SServiceAccountWithSetValues(
+		t,
+		map[string]string{
+			"serviceAccount.create": "true",
+		},
+	)
+
+	renderedImagePullSecrets := serviceaccount.ImagePullSecrets
+	require.Equal(t, len(renderedImagePullSecrets), 0)
+}
+
+// Test that multiple imagePullSecrets renders each one correctly
+func TestK8SServiceAccountMultipleImagePullSecrets(t *testing.T) {
+	t.Parallel()
+
+	serviceaccount := renderK8SServiceAccountWithSetValues(
+		t,
+		map[string]string{
+			"serviceAccount.create": "true",
+			"imagePullSecrets[0]":   "docker-private-registry-key",
+			"imagePullSecrets[1]":   "gcr-registry-key",
+		},
+	)
+
+	renderedImagePullSecrets := serviceaccount.ImagePullSecrets
+	require.Equal(t, len(renderedImagePullSecrets), 2)
+	assert.Equal(t, renderedImagePullSecrets[0].Name, "docker-private-registry-key")
+	assert.Equal(t, renderedImagePullSecrets[1].Name, "gcr-registry-key")
 }
