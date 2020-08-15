@@ -12,6 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 
 	certapi "github.com/GoogleCloudPlatform/gke-managed-certs/pkg/apis/networking.gke.io/v1beta1"
@@ -29,7 +30,7 @@ func renderK8SServiceDeploymentWithSetValues(t *testing.T, setValues map[string]
 	// Render just the deployment resource
 	out := helm.RenderTemplate(t, options, helmChartPath, "deployment", []string{"templates/deployment.yaml"})
 
-	// Parse the deployment and verify the preStop hook is set
+	// Parse the deployment and return it
 	var deployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(t, out, &deployment)
 	return deployment
@@ -44,10 +45,10 @@ func renderK8SServiceCanaryDeploymentWithSetValues(t *testing.T, setValues map[s
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   setValues,
 	}
-	// Render just the deployment resource
+	// Render just the canary deployment resource
 	out := helm.RenderTemplate(t, options, helmChartPath, "canarydeployment", []string{"templates/canarydeployment.yaml"})
 
-	// Parse the deployment and verify the preStop hook is set
+	// Parse the canary deployment and return it
 	var canarydeployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(t, out, &canarydeployment)
 	return canarydeployment
@@ -62,10 +63,10 @@ func renderK8SServiceIngressWithSetValues(t *testing.T, setValues map[string]str
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   setValues,
 	}
-	// Render just the deployment resource
+	// Render just the ingress resource
 	out := helm.RenderTemplate(t, options, helmChartPath, "ingress", []string{"templates/ingress.yaml"})
 
-	// Parse the deployment and verify the preStop hook is set
+	// Parse the ingress and return it
 	var ingress extv1beta1.Ingress
 	helm.UnmarshalK8SYaml(t, out, &ingress)
 	return ingress
@@ -83,8 +84,26 @@ func renderK8SServiceManagedCertificateWithSetValues(t *testing.T, setValues map
 	// Render just the google managed certificate resource
 	out := helm.RenderTemplate(t, options, helmChartPath, "gmc", []string{"templates/gmc.yaml"})
 
-	// Parse the deployment and verify the preStop hook is set
+	// Parse the google managed certificate and return it
 	var cert certapi.ManagedCertificate
 	helm.UnmarshalK8SYaml(t, out, &cert)
 	return cert
+}
+
+func renderK8SServiceAccountWithSetValues(t *testing.T, setValues map[string]string) corev1.ServiceAccount {
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	options := &helm.Options{
+		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+		SetValues:   setValues,
+	}
+	// Render just the service account resource
+	out := helm.RenderTemplate(t, options, helmChartPath, "serviceaccount", []string{"templates/serviceaccount.yaml"})
+
+	// Parse the service account and return it
+	var serviceaccount corev1.ServiceAccount
+	helm.UnmarshalK8SYaml(t, out, &serviceaccount)
+	return serviceaccount
 }
