@@ -28,4 +28,22 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
   {{- end }}
+  {{ range .Values.horizontalPodAutoscaler.externalMetrics }}
+    - type: External
+      external:
+        metric:
+          name: {{ .metricName }}
+          selector:
+            matchLabels: 
+{{ toYaml .matchLabels | indent 14 }}
+        target:
+        {{ if .targetAverageValue }}
+          type: "AverageValue"
+          averageValue: {{ .targetAverageValue }}
+        {{- end }}
+        {{ if .targetValue }}
+          type: "Value"
+          value: {{ .targetValue }}
+        {{- end }}
+  {{- end }}
 {{- end }}
