@@ -715,3 +715,28 @@ func TestK8SServiceMainDeploymentContainersLabeledCorrectly(t *testing.T) {
 	// Ensure a "main" type deployment is properly labeled as such
 	assert.Equal(t, deployment.Spec.Selector.MatchLabels["gruntwork.io/deployment-type"], "main")
 }
+
+func TestK8SServiceDeploymentAddingAdditionalLabels(t *testing.T) {
+	t.Parallel()
+	first_custom_deployment_label_value := "first-custom-value"
+	second_custom_deployment_label_value := "second-custom-value"
+	deployment := renderK8SServiceDeploymentWithSetValues(t,
+		map[string]string{"additionalDeploymentLabels.first-label": first_custom_deployment_label_value,
+			"additionalDeploymentLabels.second-label":second_custom_deployment_label_value})
+
+	assert.Equal(t, deployment.Labels["first-label"], first_custom_deployment_label_value)
+	assert.Equal(t, deployment.Labels["second-label"], second_custom_deployment_label_value)
+}
+
+func TestK8SServicePodAddingAdditionalLabels(t *testing.T) {
+	t.Parallel()
+	first_custom_pod_label_value := "first-custom-value"
+	second_custom_pod_label_value := "second-custom-value"
+	deployment := renderK8SServiceDeploymentWithSetValues(t,
+		map[string]string{"additionalPodLabels.first-label":  first_custom_pod_label_value,
+			"additionalPodLabels.second-label": second_custom_pod_label_value})
+
+	assert.Equal(t, deployment.Spec.Template.Labels["first-label"], first_custom_pod_label_value)
+	assert.Equal(t, deployment.Spec.Template.Labels["second-label"], second_custom_pod_label_value)
+}
+
