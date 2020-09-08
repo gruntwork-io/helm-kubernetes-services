@@ -173,10 +173,23 @@ replicaCount: 1
 # NOTE: This variable is injected directly into the deployment spec.
 deploymentAnnotations: {}
 
+# additionalDeploymentLabels will add the provided map to the labels for the Deployment resource created by this chart.
+# this is in addition to the helm template related labels created by the chart
+# The keys and values are free form, but subject to the limitations of Kubernetes labelling.
+# NOTE: This variable is injected directly into the deployment spec.
+additionalDeploymentLabels: {}
+
 # podAnnotations will add the provided map to the annotations for the Pod resource created by the Deployment.
 # The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
 # NOTE: This variable is injected directly into the pod spec.
 podAnnotations: {}
+
+# additionalDeploymentLabels will add the provided map to the labels for the Pods created by the deployment resource.
+# this is in addition to the helm template related labels created by the chart
+# The keys and values are free form, but subject to the limitations of Kubernetes labelling.
+# The match labels for the deployment aren't affected by these additional labels
+# NOTE: This variable is injected directly into the deployment spec.
+additionalPodLabels: {}
 
 # minPodsAvailable specifies the minimum number of pods that should be available at any given point in time. This is
 # used to configure a PodDisruptionBudget for the included pod. See

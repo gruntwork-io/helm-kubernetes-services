@@ -69,6 +69,9 @@ metadata:
     app.kubernetes.io/name: {{ include "k8s-service.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $value := .Values.additionalDeploymentLabels }}
+    {{ $key }}: {{ $value }}
+    {{- end}}
 {{- with .Values.deploymentAnnotations }}
   annotations:
 {{ toYaml . | indent 4 }}
@@ -86,7 +89,9 @@ spec:
         app.kubernetes.io/name: {{ include "k8s-service.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         gruntwork.io/deployment-type: main
-
+        {{- range $key, $value := .Values.additionalPodLabels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
       {{- with .Values.podAnnotations }}
       annotations:
 {{ toYaml . | indent 8 }}
