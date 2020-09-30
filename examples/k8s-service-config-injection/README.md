@@ -50,10 +50,10 @@ cd examples/k8s-service-config-injection
 
 ## Setting up your Kubernetes cluster: Minikube
 
-In this guide, we will use `minikube` as our Kubernetes cluster to deploy Tiller to.
-[Minikube](https://kubernetes.io/docs/setup/minikube/) is an official tool maintained by the Kubernetes community to be
-able to provision and run Kubernetes locally your machine. By having a local environment you can have fast iteration
-cycles while you develop and play with Kubernetes before deploying to production.
+In this guide, we will use `minikube` as our Kubernetes cluster. [Minikube](https://kubernetes.io/docs/setup/minikube/)
+is an official tool maintained by the Kubernetes community to be able to provision and run Kubernetes locally your
+machine. By having a local environment you can have fast iteration cycles while you develop and play with Kubernetes
+before deploying to production.
 
 To setup `minikube`:
 
@@ -65,67 +65,19 @@ To setup `minikube`:
 
 ## Setting up Helm on Minikube
 
-In order to install Helm Charts, we need to have a working version of Tiller (the Helm server) deployed on our
-`minikube` cluster. In this guide, we will use a barebones helm install with the defaults to get up and running quickly.
-
-**WARNING: the barebones Tiller has no security context. Be sure to enable a stronger security context in any production
-Kubernetes cluster. Read [our guide on Helm](https://github.com/gruntwork-io/kubergrunt/blob/master/HELM_GUIDE.md) for
-more information.**
-
-To setup helm, first install the [`helm` client](https://docs.helm.sh/using_helm/#installing-helm). Make sure the binary
-is discoverble in your `PATH` variable. See [this stackoverflow
-post](https://stackoverflow.com/questions/14637979/how-to-permanently-set-path-on-linux-unix) for instructions on
-setting up your `PATH` on Unix, and [this
+In order to install Helm Charts, we need to have the Helm CLI. First install the [`helm`
+client](https://docs.helm.sh/using_helm/#installing-helm). Make sure the binary is discoverble in your `PATH` variable.
+See [this stackoverflow post](https://stackoverflow.com/questions/14637979/how-to-permanently-set-path-on-linux-unix)
+for instructions on setting up your `PATH` on Unix, and [this
 post](https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows) for instructions on
 Windows.
 
-Next, use the `helm` client to setup Tiller. This is done through the `init` command. Run the following command to
-deploy Tiller to `minikube`:
-
-```bash
-helm init --wait
-```
-
-For this guide, we are using the defaults to get up and running quicky on the local environment. In production, you will
-want to turn on security features so that you don't expose your system.
-
-The `--wait` option instructs the initializer to wait for Tiller to come up before exiting. When the command finishes
-without errors, it means Tiller has been deployed and is available.
-
-When you run this command, you should see output similar to below:
-
-```
-Creating /home/ubuntu/.helm
-Creating /home/ubuntu/.helm/repository
-Creating /home/ubuntu/.helm/repository/cache
-Creating /home/ubuntu/.helm/repository/local
-Creating /home/ubuntu/.helm/plugins
-Creating /home/ubuntu/.helm/starters
-Creating /home/ubuntu/.helm/cache/archive
-Creating /home/ubuntu/.helm/repository/repositories.yaml
-Adding stable repo with URL: https://kubernetes-charts.storage.googleapis.com
-Adding local repo with URL: http://127.0.0.1:8879/charts
-$HELM_HOME has been configured at /Users/yoriy/.helm.
-
-Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
-
-Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
-To prevent this, run `helm init` with the --tiller-tls-verify flag.
-For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
-Happy Helming!
-```
-
-Verify you can access the server using `helm version`, which will list both the client and server versions.
+Verify your installation by running `helm version`:
 
 ```bash
 $ helm version
-Client: &version.Version{SemVer:"v2.11.0", GitCommit:"2e55dbe1fdb5fdb96b75ff144a339489417b146b", GitTreeState:"clean"}
-Server: &version.Version{SemVer:"v2.11.0", GitCommit:"2e55dbe1fdb5fdb96b75ff144a339489417b146b", GitTreeState:"clean"}
+version.BuildInfo{Version:"v3.1+unreleased", GitCommit:"c12a9aee02ec07b78dce07274e4816d9863d765e", GitTreeState:"clean", GoVersion:"go1.13.9"}
 ```
-
-If you have any problems in your setup, the `Server` version will fail to output. Refer to [the official installation
-FAQ](https://docs.helm.sh/using_helm/#installation-frequently-asked-questions) for common issues and problems during the
-installation step.
 
 
 ## Package the sample app docker container for Minikube
@@ -151,8 +103,6 @@ below, listing a bunch of docker containers related to Kubernetes:
 
 ```
 CONTAINER ID        IMAGE                                     COMMAND                  CREATED             STATUS              PORTS               NAMES
-6ec6576eeb7e        gcr.io/kubernetes-helm/tiller             "/tiller"                29 minutes ago      Up 29 minutes                           k8s_tiller_tiller-deploy-6f4dbc6d67-dthjc_kube-system_a55f2873-41c7-11e9-af90-0800274e6ff3_0
-1147669c0de6        k8s.gcr.io/pause:3.1                      "/pause"                 29 minutes ago      Up 29 minutes                           k8s_POD_tiller-deploy-6f4dbc6d67-dthjc_kube-system_a55f2873-41c7-11e9-af90-0800274e6ff3_0
 5f6131b6b3ca        gcr.io/k8s-minikube/storage-provisioner   "/storage-provisioner"   About an hour ago   Up About an hour                        k8s_storage-provisioner_storage-provisioner_kube-system_2c2465d6-41c3-11e9-af90-0800274e6ff3_0
 481b954a22b6        k8s.gcr.io/pause:3.1                      "/pause"                 About an hour ago   Up About an hour                        k8s_POD_storage-provisioner_kube-system_2c2465d6-41c3-11e9-af90-0800274e6ff3_0
 8ec108f9948f        f59dcacceff4                              "/coredns -conf /etc…"   About an hour ago   Up About an hour                        k8s_coredns_coredns-86c58d9df4-rr262_kube-system_2a971ff2-41c3-11e9-af90-0800274e6ff3_0
