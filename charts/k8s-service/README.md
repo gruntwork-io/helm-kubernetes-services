@@ -280,7 +280,7 @@ $ kubectl describe service edge-service-nginx
 Name:                     edge-service-nginx
 Namespace:                default
 Labels:                   app.kubernetes.io/instance=edge-service
-                          app.kubernetes.io/managed-by=Tiller
+                          app.kubernetes.io/managed-by=helm
                           app.kubernetes.io/name=nginx
                           gruntwork.io/app-name=nginx
                           helm.sh/chart=k8s-service-0.1.0
