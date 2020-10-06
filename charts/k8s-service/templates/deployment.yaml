@@ -58,6 +58,9 @@ We need this because certain sections are omitted if there are no volumes or env
     {{- fail printf "configMaps config has unknown type: %s" (index . "as") -}}
   {{- end -}}
 {{- end -}}
+{{- if gt (len .Values.persistentVolumes) 0 -}}
+  {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
