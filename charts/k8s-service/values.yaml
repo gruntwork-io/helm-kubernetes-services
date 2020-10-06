@@ -372,6 +372,53 @@ additionalContainerEnv: {}
 #         envVarName: CONFIG_FOO
 configMaps: {}
 
+# peristantVolumes is a map that specifies the PeristantVolumes that should be mounted on the main application container. Each
+# entry in the map represents a persistant volume. The key refers to the name of the persistant volume that should be exposed,
+# with the value specifying how to configure the volume. The value is also a map and has the following attributes:
+#   - mountPath (string) (required)
+#     : The path within the container upon which this volume should be mounted.
+#   - accessModes (list(string)) (required)
+#     : TODO
+#   - storageCapacity (string) (required)
+#     : TODO
+#   - volumeMode (string) (required)
+#     : TODO
+#   - persistentVolumeReclaimPolicy (string) (required)
+#     : TODO
+#   - storageClassName (string) (required)
+#     : TODO
+#   - csi (map[CSIConfig]) (required)
+#     : TODO
+# The expected attributes of the `CSIConfig` map are:
+#   - driver   (string)
+#     : TODO
+#   - voume_handle   (string)
+#     : TODO
+#
+# NOTE: These config values are only automatically injected to the main application container. To add them to the side
+# car containers, use the official Kubernetes Pod syntax:
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+#
+# The following example exposes the ConfigMap `myconfig` as a volume mounted to `/etc/myconfig`, while it exposes the
+# ConfigMap `myotherconfig` as an environment variable.
+#
+# EXAMPLE:
+#
+# persistantVolumes:
+#   myVolume:
+#     mountPath: /mnt/myVol
+#     storageCapacity: 5Gi
+#     accessModes:
+#       - ReadWriteMany
+#     volumeMode: Filesystem
+#     persistentVolumeReclaimPolicy: Retain
+#     storageClassName: efs-sc
+#     csi:
+#       driver: "efs.csi.aws.com"
+#       volume_handle: fs-123abc
+#
+persistantVolumes: {}
+
 # secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
 # the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value
 # specifying how to expose the Secret. The value is also a map and has the following attributes:
