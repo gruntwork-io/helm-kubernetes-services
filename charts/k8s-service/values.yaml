@@ -372,8 +372,8 @@ additionalContainerEnv: {}
 #         envVarName: CONFIG_FOO
 configMaps: {}
 
-# peristantVolumes is a map that specifies the PeristantVolumes that should be mounted on the main application container. Each
-# entry in the map represents a persistant volume. The key refers to the name of the persistant volume that should be exposed,
+# persistentVolumes is a map that specifies the PeristantVolumes that should be mounted on the main application container. Each
+# entry in the map represents a persistent volume. The key refers to the name of the persistent volume that should be exposed,
 # with the value specifying how to configure the volume. The value is also a map and has the following attributes:
 #   - mountPath (string) (required)
 #     : The path within the container upon which this volume should be mounted.
@@ -404,7 +404,7 @@ configMaps: {}
 #
 # EXAMPLE:
 #
-# persistantVolumes:
+# persistentVolumes:
 #   myVolume:
 #     mountPath: /mnt/myVol
 #     storageCapacity: 5Gi
@@ -417,7 +417,7 @@ configMaps: {}
 #       driver: "efs.csi.aws.com"
 #       volume_handle: fs-123abc
 #
-persistantVolumes: {}
+persistentVolumes: {}
 
 # secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
 # the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value

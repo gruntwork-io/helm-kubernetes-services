@@ -255,6 +255,10 @@ spec:
               mountPath: {{ quote $value.mountPath }}
             {{- end }}
           {{- end }}
+          {{- range $name, $value := .Values.peristentVolumes }}
+            - name: {{ $name }}-volume
+              mountPath: {{ quote $value.mountPath }}
+          {{- end }}
           {{- /* END VOLUME MOUNT LOGIC */ -}}
 
         {{- range $key, $value := .Values.sideCarContainers }}
@@ -318,6 +322,10 @@ spec:
               {{- end }}
             {{- end }}
       {{- end }}
+    {{- end }}
+    {{- range $name, $value := .Values.persistentVolumes }}
+        - name: {{ $name }}-volume
+          persistentVolumeClaim: {{ $name }}-claim
     {{- end }}
     {{- /* END VOLUME LOGIC */ -}}
 
