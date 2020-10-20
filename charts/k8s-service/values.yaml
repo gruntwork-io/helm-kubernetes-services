@@ -373,11 +373,11 @@ additionalContainerEnv: {}
 configMaps: {}
 
 # persistentVolumes is a list of maps that specifies PeristantVolumes that should be mounted on the pod.
-# Each entry represents a persistent volume.  The value is also a map and has the following attributes:
+# Each entry represents a persistent volume which should already exist within your cluster. The value is also a map and has the following attributes:
 #   - mountPath (string) (required)
 #     : The path within the container upon which this volume should be mounted.
 #   - claimName (string) (required)
-#     : TODO
+#     : The name of the Persistent Volume Claim on which this Persistent Volume in bound.
 #
 # EXAMPLE:
 #
