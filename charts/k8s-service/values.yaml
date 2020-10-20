@@ -372,55 +372,25 @@ additionalContainerEnv: {}
 #         envVarName: CONFIG_FOO
 configMaps: {}
 
-# persistentVolume is a map that specifies a PeristantVolumes that should be mounted on the pod. Each
-# entry in the map represents a persistent volume. The key refers to the name of the persistent volume that should be exposed,
-# with the value specifying how to configure the volume. The value is also a map and has the following attributes:
-#   - name (string) (required)
-#     : TODO
+# persistentVolumes is a list of maps that specifies PeristantVolumes that should be mounted on the pod.
+# Each entry represents a persistent volume.  The value is also a map and has the following attributes:
 #   - mountPath (string) (required)
 #     : The path within the container upon which this volume should be mounted.
-#   - accessModes (list(string)) (required)
+#   - claimName (string) (required)
 #     : TODO
-#   - storageCapacity (string) (required)
-#     : TODO
-#   - volumeMode (string) (required)
-#     : TODO
-#   - persistentVolumeReclaimPolicy (string) (required)
-#     : TODO
-#   - storageClassName (string) (required)
-#     : TODO
-#   - csi (map[CSIConfig]) (required)
-#     : TODO
-# The expected attributes of the `CSIConfig` map are:
-#   - driver   (string)
-#     : TODO
-#   - voumeHandle   (string)
-#     : TODO
-#
-# NOTE: These config values are only automatically injected to the main application container. To add them to the side
-# car containers, use the official Kubernetes Pod syntax:
-# https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
-#
-# The following example exposes the ConfigMap `myconfig` as a volume mounted to `/etc/myconfig`, while it exposes the
-# ConfigMap `myotherconfig` as an environment variable.
 #
 # EXAMPLE:
 #
-# persistentVolume:
-#   name: example-pv
-#   mountPath: /mnt/myVol
-#   storageCapacity: 5Gi
-#   accessModes:
-#     - ReadWriteMany
-#   volumeMode: Filesystem
-#   persistentVolumeReclaimPolicy: Retain
-#   storageClassName: "efs-sc"
-#   storageClassProvisioner: "efs.csi.aws.com"
-#   csi:
-#     driver: "efs.csi.aws.com"
-#     volumeHandle: "fs-123abc"
+# persistentVolumes:
+#   example-pv:
+#     mountPath: /mnt/myVol
+#     claimName: example-pv-claim
+#   example-pv-2:
+#     mountPath: /mnt/myOtherVol
+#     claimName: example-pv2-claim
 #
-persistentVolume: {}
+#
+persistentVolumes: {}
 
 # secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
 # the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value

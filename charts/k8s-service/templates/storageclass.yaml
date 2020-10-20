@@ -1,7 +1,0 @@
-{{- if .Values.persistentVolume }}
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: {{ .Values.persistentVolume.storageClassName }}
-provisioner: {{ .Values.persistentVolume.storageClassProvisioner }}
-{{- end }}
