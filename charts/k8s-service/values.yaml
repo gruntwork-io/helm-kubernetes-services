@@ -372,10 +372,9 @@ additionalContainerEnv: {}
 #         envVarName: CONFIG_FOO
 configMaps: {}
 
-# persistentVolumes is a list of maps that specifies PeristantVolumes that should be mounted on the pod.
-# Each entry represents a persistent volume which should already exist within your cluster. The value is also a map and has the following attributes:
-#   - volumeName (string) (required)
-#     : The logical name of the Persistent Volume, as it will be registered in kubernetes.
+# persistentVolumes is a map that specifies PeristantVolumes that should be mounted on the pod.  Each entry represents a
+# persistent volume which should already exist within your cluster. They Key is the name of the persistent volume. 
+# The value is also a map and has the following attributes:
 #   - mountPath (string) (required)
 #     : The path within the container upon which this volume should be mounted.
 #   - claimName (string) (required)
@@ -383,15 +382,15 @@ configMaps: {}
 #
 # EXAMPLE:
 # persistentVolumes:
-# - volumeName: example-pv
-#   mountPath: /mnt/myVol
-#   claimName: example-pv-claim
-# - volumeName: example-pv-2:
-#   mountPath: /mnt/myOtherVol
-#   claimName: example-pv2-claim
+#   example-pv:
+#     mountPath: /mnt/myVol
+#     claimName: example-pv-claim
+#   example-pv-2:
+#     mountPath: /mnt/myOtherVol
+#     claimName: example-pv2-claim
 #
 #
-persistentVolumes: []
+persistentVolumes: {}
 
 # secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
 # the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value
