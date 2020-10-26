@@ -449,8 +449,10 @@ imagePullSecrets: []
 #   - automountServiceAccountToken (bool)   : Whether or not to automatically mount the ServiceAccount token as a volume
 #                                             into the Pod. Note that this can be used to override the equivalent config
 #                                             on the ServiceAccount.
-#   - create                        (bool)  : Whether or not to create a service account with the desired name
-#   - annotations                   (map)   : Annotations will add the provided map to the annotations for the service
+#   - create                       (bool)   : Whether or not to create a service account with the desired name
+#   - annotations                  (map)    : Annotations will add the provided map to the annotations for the service
+#                                             account created
+#   - labels                       (map)    : Labels will add the provided map to the annotations for the service
 #                                             account created
 #
 # The default config uses empty string to indicate that the default service account should be used and one shouldn't
@@ -458,16 +460,17 @@ imagePullSecrets: []
 serviceAccount:
   name: ""
   create: false
+  annotations: {}
   labels: {}
 
 # horizontalPodAutoscaler is a map that configures the Horizontal Pod Autoscaler information for this pod
 # The expected keys of hpa are:
-#   - enabled                      (bool)   : Whether or not Horizontal Pod Autoscaler should be created, if false the
+#   - enabled              (bool) : Whether or not Horizontal Pod Autoscaler should be created, if false the
 #                                             Horizontal Pod Autoscaler will not be created
-#   - minReplicas                  (int)    : The minimum amount of replicas allowed
-#   - maxReplicas                  (int)    : The maximum amount of replicas allowed
-#   - avgCpuUtilization            (int)    : The target average CPU utilization to be used with the metrics
-#   - avgMemoryUtilization         (int)    : The target average Memory utilization to be used with the metrics
+#   - minReplicas          (int)  : The minimum amount of replicas allowed
+#   - maxReplicas          (int)  : The maximum amount of replicas allowed
+#   - avgCpuUtilization    (int)  : The target average CPU utilization to be used with the metrics
+#   - avgMemoryUtilization (int)  : The target average Memory utilization to be used with the metrics
 #
 # The default config will not create the Horizontal Pod Autoscaler by setting enabled = false, the default values are
 # set so if enabled is true the horizontalPodAutoscaler has valid values.
@@ -476,6 +479,39 @@ horizontalPodAutoscaler:
   minReplicas: 1
   maxReplicas: 10
 
+# customObjects is a map that lets you define Kubernetes objects you want installed and configured as part of this chart.
+# The expected keys of customObjects are:
+#   - enabled     (bool) : Whether or not the provided definitions should be created.
+#   - definitions (map)  : A map of custom Kubernetes object you want to install during the installation of the chart.
+#
+# NOTE: The default config will not create any custom object, by setting enabled = false. If you provide any definitions,
+# please make sure you provide them as quoted using "|".
+#
+# The following example creates a custom ConfigMap and a Secret.
+#
+# EXAMPLE:
+#
+# customObjects:
+#   enabled: true
+#   definitions:
+#     custom_configmap: |
+#       apiVersion: v1
+#       kind: ConfigMap
+#       metadata:
+#         name: example
+#       data:
+#         key: value
+#     custom_secret: |
+#       apiVersion: v1
+#       kind: Secret
+#       metadata:
+#         name: example
+#       type: Opaque
+#       data:
+#         key: dmFsdWU=
+customObjects:
+  enabled: false
+  definitions: {}
 
 #----------------------------------------------------------------------------------------------------------------------
 # AWS SPECIFIC VALUES
