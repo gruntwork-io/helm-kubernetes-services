@@ -58,6 +58,9 @@ We need this because certain sections are omitted if there are no volumes or env
     {{- fail printf "configMaps config has unknown type: %s" (index . "as") -}}
   {{- end -}}
 {{- end -}}
+{{- if gt (len .Values.persistentVolumes) 0 -}}
+  {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -252,6 +255,10 @@ spec:
               mountPath: {{ quote $value.mountPath }}
             {{- end }}
           {{- end }}
+          {{- range $name, $value := .Values.persistentVolumes }}
+            - name: {{ $name }}
+              mountPath: {{ quote $value.mountPath }}
+          {{- end }}
           {{- /* END VOLUME MOUNT LOGIC */ -}}
 
         {{- range $key, $value := .Values.sideCarContainers }}
@@ -315,6 +322,11 @@ spec:
               {{- end }}
             {{- end }}
       {{- end }}
+    {{- end }}
+    {{- range $name, $value := .Values.persistentVolumes }}
+        - name: {{ $name }}
+          persistentVolumeClaim:
+            claimName: {{ $value.claimName }}
     {{- end }}
     {{- /* END VOLUME LOGIC */ -}}
 
