@@ -261,6 +261,8 @@ serviceMonitor:
 #                                             is injected directly in to the resource yaml.
 #   - hosts       (list[string])            : Sets up the host routes for the ingress resource. There will be a routing
 #                                             rule for each host defined in this list. If empty, will match all hosts.
+#   - allowUnknownHosts (bool)              : Whether or not the Ingress resource should forward requests for unknown
+#                                             hosts. If not set or set to false it won't.
 #   - path        (string)       (required) : The url path to match to route to the Service.
 #   - servicePort (int|string)   (required) : The port (as a number) or the name of the port on the Service to route to.
 #   - additionalPaths (list[map])           : Additional paths that should be added to the ingress which will be lower
