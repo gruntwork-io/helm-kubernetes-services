@@ -773,3 +773,40 @@ func TestK8SServiceDeploymentAddingPersistentVolumes(t *testing.T) {
 	assert.Equal(t, volName, volume.Name)
 	assert.Equal(t, volClaim, volume.PersistentVolumeClaim.ClaimName)
 }
+
+func TestK8SServiceDeploymentStrategy(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"rollingUpdate.maxSurge":       "30%",
+			"rollingUpdate.maxUnavailable": "20%",
+		},
+	)
+
+	// Confirm that deploymentStrategy is set to RollingUpdate
+	assert.NotNil(t, deployment.Spec.Strategy.RollingUpdate)
+
+	// Confirm that maxSurge and maxUnavailable are equal to values set above
+	rollingUpdateOptions := deployment.Spec.Strategy.RollingUpdate
+
+	assert.Equal(t, rollingUpdateOptions.MaxSurge.String(), "30%")
+	assert.Equal(t, rollingUpdateOptions.MaxUnavailable.String(), "20%")
+}
+
+func TestK8SServiceDeploymentRecreateStrategy(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"deploymentStrategy":           "Recreate",
+			"rollingUpdate.maxSurge":       "30%",
+			"rollingUpdate.maxUnavailable": "20%",
+		},
+	)
+
+	// Confirm that RollingUpdate options are not injected if deployment strategy set to Recreate
+	assert.Nil(t, deployment.Spec.Strategy.RollingUpdate)
+}
