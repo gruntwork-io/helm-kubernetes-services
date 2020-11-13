@@ -168,6 +168,33 @@ canary: {}
 # point in time. For example, setting to 3 will signal Kubernetes (via the Deployment contoller) to maintain 3 pods.
 replicaCount: 1
 
+# deploymentStrategy specifies the strategy used to replace old Pods by new ones. Type can be "RollingUpdate" or
+# "Recreate". "RollingUpdate" is the default value.
+# RollingUpdate: The Deployment updates Pods in a rolling update fashion.
+# Recreate: All existing Pods are killed before new ones are created.
+# 
+# RollingUpdate can be further refined by using the options provided by the rollingUpdate variable.
+# The rollingUpdate variable is a map that is directly injected into the deployment spec and it has the following keys:
+#   - Max Unavailable   (Optional) : Field that specifies the maximum number of Pods that can be unavailable
+#                                    during the update process. The value can be an absolute number
+#                                    (for example, 5) or a percentage of desired Pods (for example, 10%).
+#                                    The value cannot be 0 if rollingUpdate.maxSurge is 0. 
+#                                    This option defaults to 25%.
+#   - Max Surge         (Optional) : Field that specifies the maximum number of Pods that can be created over 
+#                                    the desired number of Pods. The value can be an absolute number (for example, 5)
+#                                    or a percentage of desired Pods (for example, 10%). The value cannot be 0 if 
+#                                    MaxUnavailable is 0. 
+#                                    This option defaults to 25%.
+#
+# EXAMPLE: 
+#
+# deploymentStrategy: RollingUpdate
+# rollingUpdate:
+#   maxSurge: 30%
+#   maxUnavailable: 30% 
+deploymentStrategy: RollingUpdate
+rollingUpdate: {}
+
 # deploymentAnnotations will add the provided map to the annotations for the Deployment resource created by this chart.
 # The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
 # NOTE: This variable is injected directly into the deployment spec.
