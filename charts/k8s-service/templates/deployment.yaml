@@ -81,6 +81,12 @@ metadata:
 {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: {{ .Values.deploymentStrategy }}
+{{- if and (eq .Values.deploymentStrategy "RollingUpdate") .Values.rollingUpdate }}
+    rollingUpdate:
+{{ toYaml .Values.rollingUpdate | indent 6 }}
+{{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "k8s-service.name" . }}
