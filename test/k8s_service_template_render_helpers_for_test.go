@@ -107,3 +107,6 @@ func renderK8SServiceAccountWithSetValues(t *testing.T, setValues map[string]str
 	helm.UnmarshalK8SYaml(t, out, &serviceaccount)
 	return serviceaccount
 }
+
+func renderK8SServiceCustomResourcesWithSetValues(t *testing.T, setValues map[string]string) coreV1.NotSure {
+}

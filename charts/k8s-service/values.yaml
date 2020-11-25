@@ -147,7 +147,7 @@ sideCarContainers: {}
 # for allowing you to find any issues early.
 # The expected keys of the canary spec are:
 #   - enabled        (bool) (required) : Whether or not the canary deployment should be created. If false, no canary deployment will be created.
-#   - containerImage (map)  (required) : A map that specifies the application container and tag to be managed by the canary deployment. 
+#   - containerImage (map)  (required) : A map that specifies the application container and tag to be managed by the canary deployment.
 #                                        This has the same structure as containerImage.
 #   - replicaCount   (int)             : The number of pods that should be managed by the canary deployment. Defaults to 1 if unset.
 #
@@ -373,7 +373,7 @@ additionalContainerEnv: {}
 configMaps: {}
 
 # persistentVolumes is a map that specifies PeristantVolumes that should be mounted on the pod.  Each entry represents a
-# persistent volume which should already exist within your cluster. They Key is the name of the persistent volume. 
+# persistent volume which should already exist within your cluster. They Key is the name of the persistent volume.
 # The value is also a map and has the following attributes:
 #   - mountPath (string) (required)
 #     : The path within the container upon which this volume should be mounted.
@@ -499,19 +499,19 @@ horizontalPodAutoscaler:
   minReplicas: 1
   maxReplicas: 10
 
-# customObjects is a map that lets you define Kubernetes objects you want installed and configured as part of this chart.
-# The expected keys of customObjects are:
-#   - enabled     (bool) : Whether or not the provided definitions should be created.
-#   - definitions (map)  : A map of custom Kubernetes object you want to install during the installation of the chart.
+# customResources is a map that lets you define Kubernetes resources you want installed and configured as part of this chart.
+# The expected keys of customResources are:
+#   - enabled     (bool) : Whether or not the provided custom resource definitions should be created.
+#   - definitions (map)  : A map of custom Kubernetes resources you want to install during the installation of the chart.
 #
-# NOTE: The default config will not create any custom object, by setting enabled = false. If you provide any definitions,
-# please make sure you provide them as quoted using "|".
+# NOTE: By default enabled = false, and no custom resources will be created. If you provide any definitions, be sure to
+# provide them as quoted using "|", and set enabled: true.
 #
 # The following example creates a custom ConfigMap and a Secret.
 #
 # EXAMPLE:
 #
-# customObjects:
+# customResources:
 #   enabled: true
 #   definitions:
 #     custom_configmap: |
@@ -529,7 +529,7 @@ horizontalPodAutoscaler:
 #       type: Opaque
 #       data:
 #         key: dmFsdWU=
-customObjects:
+customResources:
   enabled: false
   definitions: {}
 
