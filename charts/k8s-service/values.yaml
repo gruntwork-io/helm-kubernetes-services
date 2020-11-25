@@ -501,10 +501,10 @@ horizontalPodAutoscaler:
 
 # customResources is a map that lets you define Kubernetes resources you want installed and configured as part of this chart.
 # The expected keys of customResources are:
-#   - enabled     (bool) : Whether or not the provided custom resource definitions should be created.
-#   - definitions (map)  : A map of custom Kubernetes resources you want to install during the installation of the chart.
+#   - enabled   (bool) : Whether or not the provided custom resource definitions should be created.
+#   - resources (map)  : A map of custom Kubernetes resources you want to install during the installation of the chart.
 #
-# NOTE: By default enabled = false, and no custom resources will be created. If you provide any definitions, be sure to
+# NOTE: By default enabled = false, and no custom resources will be created. If you provide any resources, be sure to
 # provide them as quoted using "|", and set enabled: true.
 #
 # The following example creates a custom ConfigMap and a Secret.
@@ -513,7 +513,7 @@ horizontalPodAutoscaler:
 #
 # customResources:
 #   enabled: true
-#   definitions:
+#   resources:
 #     custom_configmap: |
 #       apiVersion: v1
 #       kind: ConfigMap
@@ -531,7 +531,7 @@ horizontalPodAutoscaler:
 #         key: dmFsdWU=
 customResources:
   enabled: false
-  definitions: {}
+  resources: {}
 
 #----------------------------------------------------------------------------------------------------------------------
 # AWS SPECIFIC VALUES

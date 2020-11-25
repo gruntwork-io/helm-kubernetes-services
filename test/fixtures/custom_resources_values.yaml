@@ -1,0 +1,18 @@
+customResources:
+  enabled: true
+  resources:
+    custom_configmap: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: example
+      data:
+        key: value
+    custom_secret: |
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: example
+      type: Opaque
+      data:
+        key: dmFsdWU=

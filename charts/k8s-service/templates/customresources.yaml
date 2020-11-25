@@ -5,7 +5,7 @@ from the same template file.
 */ -}}
 
 {{- if .Values.customResources.enabled -}}
-{{- range $name, $value := .Values.customResources.definitions }}
+{{- range $name, $value := .Values.customResources.resources }}
 ---
 {{ $value }}
 {{- end }}

@@ -773,39 +773,3 @@ func TestK8SServiceDeploymentAddingPersistentVolumes(t *testing.T) {
 	assert.Equal(t, volName, volume.Name)
 	assert.Equal(t, volClaim, volume.PersistentVolumeClaim.ClaimName)
 }
-
-// TODO: fix this test
-// Test rendering Custom Resources
-func TestK8SServiceCustomResources(t *testing.T) {
-	t.Parallel()
-
-	crds := NotSure(
-		t,
-		map[string]string{
-			"customResources.enabled":     "true",
-			"customResources.definitions": "",
-		},
-	)
-
-	defs := crds.Spec.Definitions
-	assert.Equal(t, len(defs), 2)
-	assert.Equal(t, defs[0], "")
-	assert.Equal(t, defs[1], "")
-}
-
-// Test that setting customResources.enabled = false will cause the helm template to not render any custom resources
-func TestK8SServiceCustomResourcesDefaultsDoesNotCreateCustomResources(t *testing.T) {
-	t.Parallel()
-
-	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
-	require.NoError(t, err)
-
-	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// We then use SetValues to override all the defaults.
-	options := &helm.Options{
-		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
-		SetValues:   map[string]string{"customResources.enabled": "false"},
-	}
-	_, err = helm.RenderTemplateE(t, options, helmChartPath, "customResources", []string{"templates/customresources.yaml"})
-	require.Error(t, err)
-}
