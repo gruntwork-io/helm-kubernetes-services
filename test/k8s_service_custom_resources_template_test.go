@@ -12,12 +12,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 )
-
-type CustomResources struct {
-	Enabled   bool
-	Resources map[string]interface{}
-}
 
 // Test that setting customResources.enabled = false will cause the helm template to not render any custom resources
 func TestK8SServiceCustomResourcesEnabledFalseDoesNotCreateCustomResources(t *testing.T) {
@@ -36,7 +32,7 @@ func TestK8SServiceCustomResourcesEnabledFalseDoesNotCreateCustomResources(t *te
 	require.Error(t, err)
 }
 
-// Test that configuring a service monitor will render correctly to something
+// Test that configuring a ConfigMap and a Secret will render correctly to something
 func TestK8SServiceCustomResourcesEnabledCreatesCustomResources(t *testing.T) {
 	t.Parallel()
 
@@ -53,11 +49,8 @@ func TestK8SServiceCustomResourcesEnabledCreatesCustomResources(t *testing.T) {
 	}
 	out := helm.RenderTemplate(t, options, helmChartPath, "customresources", []string{"templates/customresources.yaml"})
 
-	// We take the output and render it to a map to validate it
-	rendered := CustomResources{}
-	require.NoError(t, yaml.Unmarshal([]byte(out), &rendered))
-	require.Equal(t, rendered.Enabled, true)
+	// We render the output to a map to validate it
+	renderedConfigMap := corev1.ConfigMap{}
 
-	// TODO: valid each resource as a chart template?
-	require.Equal(t, len(rendered.Resources), 2)
+	require.NoError(t, yaml.Unmarshal([]byte(out), &renderedConfigMap))
 }
