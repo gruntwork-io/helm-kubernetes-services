@@ -40,7 +40,6 @@ func TestK8SServiceCustomResourcesEnabledCreatesCustomResources(t *testing.T) {
 	require.NoError(t, err)
 
 	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
-	// We then use SetValues to override all the defaults.
 	options := &helm.Options{
 		ValuesFiles: []string{
 			filepath.Join("..", "charts", "k8s-service", "linter_values.yaml"),
