@@ -58,23 +58,9 @@ Library], a collection of reusable, battle-tested, production ready infrastructu
 * link:/core-concepts.md#how-do-you-run-applications-on-kubernetes[How do you run applications on Kubernetes?]
 * link:/core-concepts.md#what-is-helm[What is Helm?]
 * _https://www.manning.com/books/kubernetes-in-action[Kubernetes in Action]_: the best book we've found for getting up and running with Kubernetes.
-
-=== Get started
 * link:/charts/k8s-service/README.md##how-to-use-this-chart[How to use this chart?]
 * link:/charts/k8s-service/README.md#what-resources-does-this-helm-chart-deploy[What resources does this Helm Chart deploy?]
-* link:/charts/k8s-service/README.md#how-do-i-deploy-additional-services-not-managed-by-the-chart[How do I deploy additional services not managed by the chart?]
-* link:/charts/k8s-service/README.md#how-do-i-expose-my-application-internally-to-the-cluster[How do I expose my application internally to the cluster?]
-* link:/charts/k8s-service/README.md#how-do-i-expose-my-application-externally-outside-of-the-cluster[How do I expose my application externally outside of the cluster?]
-* link:/charts/k8s-service/README.md#how-do-i-deploy-a-worker-service[How do I deploy a worker service?]
-* link:/charts/k8s-service/README.md#how-do-i-check-the-status-of-the-rollout[How do I check the status of the rollout?]
-* link:/charts/k8s-service/README.md#how-do-i-set-and-share-configurations-with-the-application[How do I set and share configurations with the application?]
-* link:/charts/k8s-service/README.md#how-do-you-update-the-application-to-a-new-version[How do you update the application to a new version?]
-* link:/charts/k8s-service/README.md#how-do-i-verify-my-canary-deployment[How do I verify my canary deployment?]
-* link:/charts/k8s-service/README.md#how-do-i-roll-back-a-canary-deployment[How do I roll back a canary deployment?]
-* link:/charts/k8s-service/README.md#how-do-i-ensure-a-minimum-number-of-pods-are-available-across-node-maintenance[How do I ensure a minimum number of Pods are available across node maintenance?]
-* link:/charts/k8s-service/README.md#why-does-the-pod-have-a-prestop-hook-with-a-shutdown-delay[Why does the Pod have a preStop hook with a Shutdown Delay?]
 * link:/charts/k8s-service/README.md#what-is-a-sidecar-container[What is a sidecar container?]
-* link:/charts/k8s-service/README.md#how-do-i-use-a-private-registry[How do I use a private registry?]
 
 === Repo organization
 
@@ -104,15 +90,20 @@ If you want to deploy this repo in production, check out the following resources
 
 === Day-to-day operations
 
+* link:/charts/k8s-service/README.md#how-do-i-deploy-additional-services-not-managed-by-the-chart[How do I deploy additional services not managed by the chart?]
 * link:/charts/k8s-service/README.md#how-do-i-expose-my-application-internally-to-the-cluster[How do I expose my application internally to the cluster?]
 * link:/charts/k8s-service/README.md#how-do-i-expose-my-application-externally-outside-of-the-cluster[How do I expose my application externally, outside of the cluster?]
 * link:/charts/k8s-service/README.md#how-do-i-deploy-a-worker-service[How do I deploy a worker service?]
 * link:/charts/k8s-service/README.md#how-do-i-check-the-status-of-the-rollout[How do I check the status of the rollout?]
 * link:/charts/k8s-service/README.md#how-do-i-set-and-share-configurations-with-the-application[How do I set and share configurations with the application?]
+* link:/charts/k8s-service/README.md#why-does-the-pod-have-a-prestop-hook-with-a-shutdown-delay[Why does the Pod have a preStop hook with a Shutdown Delay?]
+* link:/charts/k8s-service/README.md#how-do-i-use-a-private-registry[How do I use a private registry?]
 
 === Major changes
 
 * link:/charts/k8s-service/README.md#how-do-you-update-the-application-to-a-new-version[How do you update the application to a new version?]
+* link:/charts/k8s-service/README.md#how-do-i-verify-my-canary-deployment[How do I verify my canary deployment?]
+* link:/charts/k8s-service/README.md#how-do-i-roll-back-a-canary-deployment[How do I roll back a canary deployment?]
 * link:/charts/k8s-service/README.md#how-do-i-ensure-a-minimum-number-of-pods-are-available-across-node-maintenance[How do I ensure a minimum number of Pods are available across node maintenance?]
 
 
