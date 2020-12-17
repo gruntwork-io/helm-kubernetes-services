@@ -14,8 +14,6 @@ defaults: &defaults
     PACKER_VERSION: NONE
     GOLANG_VERSION: 1.13
     KUBECONFIG: /home/circleci/.kube/config
-
-
 install_helm_client: &install_helm_client
   name: install helm
   command: |
@@ -27,8 +25,6 @@ install_helm_client: &install_helm_client
 
     # Initialize stable repository
     helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-
-
 install_gruntwork_utils: &install_gruntwork_utils
   name: install gruntwork utils
   command: |
@@ -41,22 +37,17 @@ install_gruntwork_utils: &install_gruntwork_utils
       --terragrunt-version ${TERRAGRUNT_VERSION} \
       --packer-version ${PACKER_VERSION} \
       --go-version ${GOLANG_VERSION} \
-
-
 version: 2
 jobs:
   setup:
     <<: *defaults
     steps:
       - checkout
-
       # Install gruntwork utilities
       - run:
           <<: *install_gruntwork_utils
-
       - run:
           <<: *install_helm_client
-
       # Fail the build if the pre-commit hooks don't pass. Note: if you run pre-commit install locally, these hooks will
       # execute automatically every time before you commit, ensuring the build never fails at this step!
       - run:
@@ -64,27 +55,21 @@ jobs:
             pip install pre-commit==1.11.2 cfgv==2.0.1
             pre-commit install
             pre-commit run --all-files
-
       - persist_to_workspace:
           root: /home/circleci
           paths:
             - project
-
   test:
     <<: *defaults
     steps:
       - attach_workspace:
           at: /home/circleci
-
       - run:
           <<: *install_gruntwork_utils
-
       - run:
           command: setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}"
-
       - run:
           <<: *install_helm_client
-
       - run:
           name: run tests
           command: |
@@ -93,7 +78,6 @@ jobs:
             go mod tidy
             run-go-tests --packages "-tags all ." --timeout 60m | tee /tmp/logs/all.log
           no_output_timeout: 3600s
-
       - run:
           command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
           when: always
@@ -101,19 +85,15 @@ jobs:
           path: /tmp/logs
       - store_test_results:
           path: /tmp/logs
-
   deploy:
     <<: *defaults
     steps:
       - attach_workspace:
           at: /home/circleci
-
       - run:
           <<: *install_gruntwork_utils
-
       - run:
           <<: *install_helm_client
-
       - run:
           name: Generate chart packages
           command: |
@@ -128,17 +108,13 @@ jobs:
               # TODO: Figure out provenance strategy
               (cd "charts" && helm package "${chart_name}" -d "${assets_dir}")
             done
-
       - run:
           name: Generate chart repo index
           command: |
             cd assets
             helm repo index --url "https://github.com/gruntwork-io/helm-kubernetes-services/releases/download/${CIRCLE_TAG}" .
-
       - run:
           command: upload-github-release-assets ./assets/*
-
-
 workflows:
   version: 2
   test-and-deploy:
