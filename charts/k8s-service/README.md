@@ -53,7 +53,7 @@ back to [root README](/README.adoc)
 
 ## How do I deploy additional services not managed by the chart?
 
-[Listed here](#what-resources-does-this-helm-chart-deploy) are the resources deployed by this chart. You can deploy other resources using the CustomResources template.
+You can create custom service profiles within the `customResources` key in the chart. You provide the service profile manifest directly as a value under `customResources.resources` and set `customResources.enabled` to `true`. For examples of custom resources, take a look at the examples in [test/fixtures/custom_resources_values.yaml](../../test/fixtures/custom_resources_values.yaml) and [test/fixtures/multiple_custom_resources_values.yaml](../../test/fixtures/multiple_custom_resources_values.yaml).
 
 back to [root README](/README.adoc)
 
