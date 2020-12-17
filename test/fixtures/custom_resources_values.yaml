@@ -1,0 +1,10 @@
+customResources:
+  enabled: true
+  resources:
+    custom_configmap: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: example
+      data:
+        key: value

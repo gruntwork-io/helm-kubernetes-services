@@ -23,6 +23,7 @@ If you're using the chart to deploy to [GKE](https://cloud.google.com/kubernetes
 * See the provided [values.yaml](./values.yaml) file for the required and optional configuration values that you can set
   on this chart.
 
+back to [root README](/README.adoc#core-concepts)
 
 ## What resources does this Helm Chart deploy?
 
@@ -30,11 +31,11 @@ The following resources will be deployed with this Helm Chart, depending on whic
 
 - `Deployment`: The main `Deployment` controller that will manage the application container image specified in the
                 `containerImage` input value.
-- Secondary `Deployment` for use as canary: An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`). 
+- Secondary `Deployment` for use as canary: An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`).
 - `Service`: The `Service` resource providing a stable endpoint that can be used to address to `Pods` created by the
              `Deployment` controller. Created only if you configure the `service` input (and set
              `service.enabled = true`).
-- `ServiceMonitor`: The `ServiceMonitor` describes the set of targets to be monitored by Prometheus. Created only if you configure the service input and set `serviceMonitor.enabled = true`.  
+- `ServiceMonitor`: The `ServiceMonitor` describes the set of targets to be monitored by Prometheus. Created only if you configure the service input and set `serviceMonitor.enabled = true`.
 - `Ingress`: The `Ingress` resource providing host and path routing rules to the `Service` for the deployed `Ingress`
              controller in the cluster. Created only if you configure the `ingress` input (and set
              `ingress.enabled = true`).
@@ -48,6 +49,17 @@ The following resources will be deployed with this Helm Chart, depending on whic
 - `ManagedCertificate`: The `ManagedCertificate` is a [GCP](https://cloud.google.com/) -specific resource that creates a Google Managed SSL certificate. Google-managed SSL certificates are provisioned, renewed, and managed for your domain names. Read more about Google-managed SSL certificates [here](https://cloud.google.com/load-balancing/docs/ssl-certificates#managed-certs). Created only if you configure the `google.managedCertificate` input (and set
                          `google.managedCertificate.enabled = true` and `google.managedCertificate.domainName = your.domain.name`).
 
+back to [root README](/README.adoc#core-concepts)
+
+## How do I deploy additional services not managed by the chart?
+
+You can create custom Kubernetes resources, that are not directly managed by the chart, within the `customResources`
+key. You provide each resource manifest directly as a value under `customResources.resources` and set
+`customResources.enabled` to `true`. For examples of custom resources, take a look at the examples in
+[test/fixtures/custom_resources_values.yaml](../../test/fixtures/custom_resources_values.yaml) and
+[test/fixtures/multiple_custom_resources_values.yaml](../../test/fixtures/multiple_custom_resources_values.yaml).
+
+back to [root README](/README.adoc#day-to-day-operations)
 
 ## How do I expose my application internally to the cluster?
 
@@ -165,6 +177,7 @@ Note that DNS does not resolve ports, so in this case, you will have to know whi
 `edge-service-nginx.default.svc.cluster.local:80`. However, like the `Service` name, this should be predictable since it
 is specified in the Helm Chart input value.
 
+back to [root README](/README.adoc#day-to-day-operations)
 
 ## How do I expose my application externally, outside of the cluster?
 
@@ -490,6 +503,7 @@ ingress:
 The `/*` rule which routes to port 3000 will always be used even when accessing the path `/app` because it will be
 evaluated first when routing requests.
 
+back to [root README](/README.adoc#day-to-day-operations)
 
 ## How do I deploy a worker service?
 
@@ -511,6 +525,7 @@ service:
 This will override the default settings such that only the `Deployment` resource is created, with no ports exposed on
 the container.
 
+back to [root README](/README.adoc#day-to-day-operations)
 
 ## How do I check the status of the rollout?
 
@@ -629,6 +644,7 @@ Events:
 This will output detailed information about the `Pod`, including an event log. In this case, the roll out failed because
 there is not enough capacity in the cluster to schedule the `Pod`.
 
+back to [root README](/README.adoc#day-to-day-operations)
 
 ## How do I set and share configurations with the application?
 
@@ -915,6 +931,7 @@ approach:
 
 - Storing sensitive configuration values
 
+back to [root README](/README.adoc#day-to-day-operations)
 
 ## How do you update the application to a new version?
 
@@ -966,9 +983,9 @@ Note that certain changes will lead to a replacement of the `Deployment` resourc
 `applicationName` will cause the `Deployment` resource to be deleted, and then created. This can lead to down time
 because the resources are replaced in an uncontrolled fashion.
 
-## How do I create a canary deployment? 
+## How do I create a canary deployment?
 
-You may optionally configure a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of an arbitrary tag that will run as an individual deployment behind your configured service. This is useful for ensuring a new application tag runs without issues prior to fully rolling it out. 
+You may optionally configure a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of an arbitrary tag that will run as an individual deployment behind your configured service. This is useful for ensuring a new application tag runs without issues prior to fully rolling it out.
 
 To configure a canary deployment, set `canary.enabled = true` and define the `containerImage` values. Typically, you will want to specify the tag of your next release candidate:
 
@@ -977,13 +994,15 @@ canary:
   enabled: true
     containerImage:
       repository: nginx
-      tag: 1.15.9 
+      tag: 1.15.9
 ```
 Once deployed, your service will route traffic across both your stable and canary deployments, allowing you to monitor for and catch any issues early.
 
-## How do I verify my canary deployment? 
+back to [root README](/README.adoc#major-changes)
 
-Canary deployment pods have the same name as your stable deployment pods, with the additional `-canary` appended to the end, like so: 
+## How do I verify my canary deployment?
+
+Canary deployment pods have the same name as your stable deployment pods, with the additional `-canary` appended to the end, like so:
 
 ```bash
 $ kubectl get pods -l "app.kubernetes.io/name=nginx,app.kubernetes.io/instance=edge-service"
@@ -994,9 +1013,11 @@ edge-service-nginx-844c978df7-rdsr8           0/1       Pending   0          52s
 edge-service-nginx-canary-844c978df7-bsr8     0/1       Pending   0          52s
 ```
 
-Therefore, in this example, you could monitor your canary by running `kubectl logs -f edge-service-nginx-canary-844c978df7-bsr8`  
+Therefore, in this example, you could monitor your canary by running `kubectl logs -f edge-service-nginx-canary-844c978df7-bsr8`
 
-## How do I roll back a canary deployment? 
+back to [root README](/README.adoc#day-to-day-operations)
+
+## How do I roll back a canary deployment?
 
 Update your values.yaml file, setting `canary.enabled = false` and then upgrade your helm installation:
 
@@ -1004,6 +1025,8 @@ Update your values.yaml file, setting `canary.enabled = false` and then upgrade 
 $ helm upgrade -f values.yaml edge-service gruntwork/k8s-service
 ```
 Following this update, Kubernetes will determine that your canary deployment is no longer desired and will delete it.
+
+back to [root README](/README.adoc#day-to-day-operations)
 
 ## How do I ensure a minimum number of Pods are available across node maintenance?
 
@@ -1018,6 +1041,8 @@ topic](https://blog.gruntwork.io/avoiding-outages-in-your-kubernetes-cluster-usi
 and in [the official
 documentation](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#how-disruption-budgets-work).
 
+
+back to [root README](/README.adoc#major-changes)
 
 ## Why does the Pod have a preStop hook with a Shutdown Delay?
 
@@ -1038,6 +1063,8 @@ You can read more about this topic in [our blog post
 "Delaying Shutdown to Wait for Pod Deletion
 Propagation"](https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304).
 
+
+back to [root README](/README.adoc#day-to-day-operations)
 
 ## What is a sidecar container?
 
@@ -1094,6 +1121,8 @@ container configured by the `containerImage`, `ports`, `livenessProbe`, etc inpu
 `livenessProbe` should be rendered directly within the `sideCarContainers` input value.
 
 
+back to [root README](/README.adoc#core-concepts)
+
 ## How do I use a private registry?
 
 To pull container images from a private registry, the Kubernetes cluster needs to be able to authenticate to the docker
@@ -1127,3 +1156,5 @@ imagePullSecrets:
 
 You can learn more about using private registries with Kubernetes in [the official
 documentation](https://kubernetes.io/docs/concepts/containers/images/#using-a-private-registry).
+
+back to [root README](/README.adoc#day-to-day-operations)

@@ -119,27 +119,29 @@ workflows:
   version: 2
   test-and-deploy:
     jobs:
-      - setup:
-          filters:
-            tags:
-              only: /^v.*/
-          context:
-            - Gruntwork Admin
-      - test:
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /^v.*/
-          context:
-            - Gruntwork Admin
-      - deploy:
-          requires:
-            - test
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-          context:
-            - Gruntwork Admin
+    - setup:
+        filters:
+          tags:
+            only: /^v.*/
+        context:
+          - Gruntwork Admin
+
+    - test:
+        requires:
+          - setup
+        filters:
+          tags:
+            only: /^v.*/
+        context:
+          - Gruntwork Admin
+
+    - deploy:
+        requires:
+          - test
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore: /.*/
+        context:
+          - Gruntwork Admin

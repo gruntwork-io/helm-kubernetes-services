@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	promethues_operator_v1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
+	prometheus_operator_v1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/ghodss/yaml"
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/stretchr/testify/assert"
@@ -52,15 +52,15 @@ func TestK8SServiceServiceMonitorEnabledCreatesServiceMonitor(t *testing.T) {
 	out := helm.RenderTemplate(t, options, helmChartPath, "servicemonitor", []string{"templates/servicemonitor.yaml"})
 
 	// We take the output and render it to a map to validate it is an empty yaml
-	rendered := promethues_operator_v1.ServiceMonitor{}
+	rendered := prometheus_operator_v1.ServiceMonitor{}
 	require.NoError(t, yaml.Unmarshal([]byte(out), &rendered))
-	require.Equal(t, len(rendered.Spec.Endpoints), 1)
+	require.Equal(t, 1, len(rendered.Spec.Endpoints))
 
 	// check the default endpoint properties
 	defaultEndpoint := rendered.Spec.Endpoints[0]
-	assert.Equal(t, defaultEndpoint.Interval, "10s")
-	assert.Equal(t, defaultEndpoint.ScrapeTimeout, "10s")
-	assert.Equal(t, defaultEndpoint.Path, "/metrics")
-	assert.Equal(t, defaultEndpoint.Port, "http")
-	assert.Equal(t, defaultEndpoint.Scheme, "http")
+	assert.Equal(t, "10s", defaultEndpoint.Interval)
+	assert.Equal(t, "10s", defaultEndpoint.ScrapeTimeout)
+	assert.Equal(t, "/metrics", defaultEndpoint.Path)
+	assert.Equal(t, "http", defaultEndpoint.Port)
+	assert.Equal(t, "http", defaultEndpoint.Scheme)
 }

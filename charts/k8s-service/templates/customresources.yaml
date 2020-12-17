@@ -1,0 +1,12 @@
+{{- /*
+If the operator configures the customResources input variable, then create custom resources based on the given
+definitions. If a list of definitions is provided, separate them using the YAML separator so they can all be executed
+from the same template file.
+*/ -}}
+
+{{- if .Values.customResources.enabled -}}
+{{- range $name, $value := .Values.customResources.resources }}
+---
+{{ $value }}
+{{- end }}
+{{- end }}
