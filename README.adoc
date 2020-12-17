@@ -98,12 +98,12 @@ If you want to deploy this repo in production, check out the following resources
 * link:/charts/k8s-service/README.md#how-do-i-set-and-share-configurations-with-the-application[How do I set and share configurations with the application?]
 * link:/charts/k8s-service/README.md#why-does-the-pod-have-a-prestop-hook-with-a-shutdown-delay[Why does the Pod have a preStop hook with a Shutdown Delay?]
 * link:/charts/k8s-service/README.md#how-do-i-use-a-private-registry[How do I use a private registry?]
+* link:/charts/k8s-service/README.md#how-do-i-verify-my-canary-deployment[How do I verify my canary deployment?]
+* link:/charts/k8s-service/README.md#how-do-i-roll-back-a-canary-deployment[How do I roll back a canary deployment?]
 
 === Major changes
 
 * link:/charts/k8s-service/README.md#how-do-you-update-the-application-to-a-new-version[How do you update the application to a new version?]
-* link:/charts/k8s-service/README.md#how-do-i-verify-my-canary-deployment[How do I verify my canary deployment?]
-* link:/charts/k8s-service/README.md#how-do-i-roll-back-a-canary-deployment[How do I roll back a canary deployment?]
 * link:/charts/k8s-service/README.md#how-do-i-ensure-a-minimum-number-of-pods-are-available-across-node-maintenance[How do I ensure a minimum number of Pods are available across node maintenance?]
 
 
