@@ -92,6 +92,7 @@ If you want to deploy this repo in production, check out the following resources
 * link:/charts/k8s-service/README.md#how-do-i-deploy-a-worker-service[How do I deploy a worker service?]
 * link:/charts/k8s-service/README.md#how-do-i-check-the-status-of-the-rollout[How do I check the status of the rollout?]
 * link:/charts/k8s-service/README.md#how-do-i-set-and-share-configurations-with-the-application[How do I set and share configurations with the application?]
+* link:/charts/k8s-service/README.md#how-do-i-deploy-additional-services-not-managed-by-the-chart[How do I deploy additional services not managed by the chart?]
 
 === Major changes
 

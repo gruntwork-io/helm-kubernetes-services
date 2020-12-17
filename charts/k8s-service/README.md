@@ -30,11 +30,11 @@ The following resources will be deployed with this Helm Chart, depending on whic
 
 - `Deployment`: The main `Deployment` controller that will manage the application container image specified in the
                 `containerImage` input value.
-- Secondary `Deployment` for use as canary: An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`). 
+- Secondary `Deployment` for use as canary: An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`).
 - `Service`: The `Service` resource providing a stable endpoint that can be used to address to `Pods` created by the
              `Deployment` controller. Created only if you configure the `service` input (and set
              `service.enabled = true`).
-- `ServiceMonitor`: The `ServiceMonitor` describes the set of targets to be monitored by Prometheus. Created only if you configure the service input and set `serviceMonitor.enabled = true`.  
+- `ServiceMonitor`: The `ServiceMonitor` describes the set of targets to be monitored by Prometheus. Created only if you configure the service input and set `serviceMonitor.enabled = true`.
 - `Ingress`: The `Ingress` resource providing host and path routing rules to the `Service` for the deployed `Ingress`
              controller in the cluster. Created only if you configure the `ingress` input (and set
              `ingress.enabled = true`).
@@ -966,9 +966,9 @@ Note that certain changes will lead to a replacement of the `Deployment` resourc
 `applicationName` will cause the `Deployment` resource to be deleted, and then created. This can lead to down time
 because the resources are replaced in an uncontrolled fashion.
 
-## How do I create a canary deployment? 
+## How do I create a canary deployment?
 
-You may optionally configure a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of an arbitrary tag that will run as an individual deployment behind your configured service. This is useful for ensuring a new application tag runs without issues prior to fully rolling it out. 
+You may optionally configure a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of an arbitrary tag that will run as an individual deployment behind your configured service. This is useful for ensuring a new application tag runs without issues prior to fully rolling it out.
 
 To configure a canary deployment, set `canary.enabled = true` and define the `containerImage` values. Typically, you will want to specify the tag of your next release candidate:
 
@@ -977,13 +977,13 @@ canary:
   enabled: true
     containerImage:
       repository: nginx
-      tag: 1.15.9 
+      tag: 1.15.9
 ```
 Once deployed, your service will route traffic across both your stable and canary deployments, allowing you to monitor for and catch any issues early.
 
-## How do I verify my canary deployment? 
+## How do I verify my canary deployment?
 
-Canary deployment pods have the same name as your stable deployment pods, with the additional `-canary` appended to the end, like so: 
+Canary deployment pods have the same name as your stable deployment pods, with the additional `-canary` appended to the end, like so:
 
 ```bash
 $ kubectl get pods -l "app.kubernetes.io/name=nginx,app.kubernetes.io/instance=edge-service"
@@ -994,9 +994,9 @@ edge-service-nginx-844c978df7-rdsr8           0/1       Pending   0          52s
 edge-service-nginx-canary-844c978df7-bsr8     0/1       Pending   0          52s
 ```
 
-Therefore, in this example, you could monitor your canary by running `kubectl logs -f edge-service-nginx-canary-844c978df7-bsr8`  
+Therefore, in this example, you could monitor your canary by running `kubectl logs -f edge-service-nginx-canary-844c978df7-bsr8`
 
-## How do I roll back a canary deployment? 
+## How do I roll back a canary deployment?
 
 Update your values.yaml file, setting `canary.enabled = false` and then upgrade your helm installation:
 
@@ -1127,3 +1127,9 @@ imagePullSecrets:
 
 You can learn more about using private registries with Kubernetes in [the official
 documentation](https://kubernetes.io/docs/concepts/containers/images/#using-a-private-registry).
+
+## How do I deploy additional services not managed by the chart?
+
+
+
+back to [root README](/README.adoc)
