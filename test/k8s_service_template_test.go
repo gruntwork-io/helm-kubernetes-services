@@ -148,15 +148,12 @@ func TestK8SServicePodSecurityContextAnnotationRenderCorrectly(t *testing.T) {
 	deployment := renderK8SServiceDeploymentWithSetValues(
 		t,
 		map[string]string{
-			"securityContext.fsGroup": "2000",
+			"podSecurityContext.fsGroup": "2000",
 		},
 	)
 	renderedPodSpec := deployment.Spec.Template.Spec
-	assert.Equal(t, len(renderedPodSpec.Volumes), 0)
-	renderedPodContainers := renderedPodSpec.Containers
-	require.Equal(t, len(renderedPodContainers), 1)
-	appContainer := renderedPodContainers[0]
-	assert.Equal(t, len(appContainer.Env), 0)
+	assert.NotNil(t, renderedPodSpec.SecurityContext)
+	assert.Equal(t, *renderedPodSpec.SecurityContext.fsGroup, int64(2000))
 }
 
 // Test that podAnnotations render correctly to annotate the Pod Template Spec on the Deployment resource
