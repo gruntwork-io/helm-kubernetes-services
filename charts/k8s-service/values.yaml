@@ -118,7 +118,6 @@ securityContext: {}
 #More details can be found at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
 
 # EXAMPLE:
-# 1) To run a container in privilleged mode
 # podSecurityContext:
 #   fsGroup: 2000
 podSecurityContext: {}
