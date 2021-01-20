@@ -142,6 +142,23 @@ func TestK8SServiceSecurityContextAnnotationRenderCorrectly(t *testing.T) {
 	assert.Equal(t, *testContainer.SecurityContext.RunAsUser, int64(1000))
 }
 
+func TestK8SServicePodSecurityContextAnnotationRenderCorrectly(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"securityContext.fsGroup": "2000",
+		},
+	)
+	renderedPodSpec := deployment.Spec.Template.Spec
+	assert.Equal(t, len(renderedPodSpec.Volumes), 0)
+	renderedPodContainers := renderedPodSpec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Equal(t, len(appContainer.Env), 0)
+}
+
 // Test that podAnnotations render correctly to annotate the Pod Template Spec on the Deployment resource
 func TestK8SServicePodAnnotationsRenderCorrectly(t *testing.T) {
 	t.Parallel()
