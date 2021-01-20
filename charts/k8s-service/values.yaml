@@ -114,6 +114,15 @@ readinessProbe: {}
 #   runAsUser: 2000
 securityContext: {}
 
+#SecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty. See type description for default values of each field
+#More details can be found at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
+
+# EXAMPLE:
+# 1) To run a container in privilleged mode
+# podSecurityContext:
+#   fsGroup: 2000
+podSecurityContext: {}
+
 
 # shutdownDelay is the number of seconds to delay the shutdown sequence of the Pod by. This is implemented as a sleep
 # call in the preStop hook. By default, this chart includes a preStop hook with a shutdown delay for eventual

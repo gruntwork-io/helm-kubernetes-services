@@ -106,6 +106,7 @@ spec:
       {{- if hasKey .Values.serviceAccount "automountServiceAccountToken" }}
       automountServiceAccountToken : {{ .Values.serviceAccount.automountServiceAccountToken }}
       {{- end }}
+      
 
       containers:
         - name: {{ .Values.applicationName }}-canary
