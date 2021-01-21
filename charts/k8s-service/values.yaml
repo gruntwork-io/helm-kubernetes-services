@@ -102,6 +102,7 @@ readinessProbe: {}
 
 # securityContext is a map that specified the privillege and access control settings for a Pod of Container. Security Context
 # can be specified when the application requires additional access control permissions. More details on securityContext and supported
+# similar to the podSecurityContext {} however, this sets security attributes at the container level rather than at the pod level scope.
 # settings can be found at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 #
 # EXAMPLE:
@@ -114,10 +115,10 @@ readinessProbe: {}
 #   runAsUser: 2000
 securityContext: {}
 
-#podSecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty. See type description for default values of each field
-#Similar to the securityContext {} however, this sets security attributes at the pod level rather than at the container level scope.
-#This allows certain attributes to be set that are not possible in the container level. For example 'fsGroup'.
-#More details can be found at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
+# podSecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty. See type description for default values of each field
+# similar to the securityContext {} however, this sets security attributes at the pod level rather than at the container level scope.
+# this allows certain attributes to be set that are not possible in the container level. For example 'fsGroup'.
+# more details can be found at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
 
 # EXAMPLE:
 # podSecurityContext:
