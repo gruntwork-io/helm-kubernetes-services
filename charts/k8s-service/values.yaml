@@ -103,6 +103,8 @@ readinessProbe: {}
 # securityContext is a map that specified the privillege and access control settings for a Pod of Container. Security Context
 # can be specified when the application requires additional access control permissions. More details on securityContext and supported
 # settings can be found at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+# similar to the podSecurityContext {} however, this sets security attributes at the container level rather than at the pod level scope.
+
 #
 # EXAMPLE:
 # 1) To run a container in privilleged mode
@@ -113,6 +115,16 @@ readinessProbe: {}
 # securityContext:
 #   runAsUser: 2000
 securityContext: {}
+
+# podSecurityContext holds pod-level security access control settings.
+# similar to the securityContext {} however, this sets security attributes at the pod level rather than at the container level scope.
+# this allows certain attributes to be set that are not possible in the container level. For example 'fsGroup'.
+# more details can be found at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
+
+# EXAMPLE:
+# podSecurityContext:
+#   fsGroup: 2000
+podSecurityContext: {}
 
 
 # shutdownDelay is the number of seconds to delay the shutdown sequence of the Pod by. This is implemented as a sleep

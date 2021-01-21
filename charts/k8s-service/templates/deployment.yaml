@@ -106,6 +106,10 @@ spec:
       {{- if hasKey .Values.serviceAccount "automountServiceAccountToken" }}
       automountServiceAccountToken : {{ .Values.serviceAccount.automountServiceAccountToken }}
       {{- end }}
+      {{- if .Values.podSecurityContext }}
+      securityContext:
+{{ toYaml .Values.podSecurityContext | indent 8 }}
+      {{- end}}
 
       containers:
         - name: {{ .Values.applicationName }}
