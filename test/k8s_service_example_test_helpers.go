@@ -39,13 +39,14 @@ func verifyPodsCreatedSuccessfully(
 	kubectlOptions *k8s.KubectlOptions,
 	appName string,
 	releaseName string,
+	numPods int,
 ) {
 	// Get the pods and wait until they are all ready
 	filters := metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s", appName, releaseName),
 	}
 
-	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, NumPodsExpected, WaitTimerRetries, WaitTimerSleep)
+	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, numPods, WaitTimerRetries, WaitTimerSleep)
 	pods := k8s.ListPods(t, kubectlOptions, filters)
 
 	for _, pod := range pods {

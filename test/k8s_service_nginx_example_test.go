@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
-	"github.com/gruntwork-io/terratest/modules/http-helper"
+	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/require"
@@ -67,7 +67,7 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	defer helm.Delete(t, options, releaseName, true)
 	helm.Install(t, options, helmChartPath, releaseName)
 
-	verifyPodsCreatedSuccessfully(t, kubectlOptions, "nginx", releaseName)
+	verifyPodsCreatedSuccessfully(t, kubectlOptions, "nginx", releaseName, NumPodsExpected)
 	verifyAllPodsAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 	verifyServiceAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 
@@ -85,7 +85,7 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	helm.Upgrade(t, options, helmChartPath, releaseName)
 
 	// We expect the service to still come up cleanly
-	verifyPodsCreatedSuccessfully(t, kubectlOptions, "nginx", releaseName)
+	verifyPodsCreatedSuccessfully(t, kubectlOptions, "nginx", releaseName, NumPodsExpected)
 	verifyAllPodsAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 	verifyServiceAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 

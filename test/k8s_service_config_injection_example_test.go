@@ -59,7 +59,7 @@ func TestK8SServiceConfigInjectionBaseExample(t *testing.T) {
 	// Verify the app comes up cleanly and returns the expected text
 	expectedText := "Hello from backend"
 	validationFunction := sampleAppValidationFunctionGenerator(t, expectedText)
-	verifyPodsCreatedSuccessfully(t, kubectlOptions, "sample-sinatra-app", releaseName)
+	verifyPodsCreatedSuccessfully(t, kubectlOptions, "sample-sinatra-app", releaseName, NumPodsExpected)
 	verifyAllPodsAvailable(t, kubectlOptions, "sample-sinatra-app", releaseName, validationFunction)
 	verifyServiceAvailable(t, kubectlOptions, "sample-sinatra-app", releaseName, validationFunction)
 
@@ -119,7 +119,7 @@ func TestK8SServiceConfigInjectionConfigMapExample(t *testing.T) {
 	// Verify the app comes up cleanly and returns the expected text
 	expectedText := "Hello! I was configured using a ConfigMap!"
 	validationFunction := sampleAppValidationFunctionGenerator(t, expectedText)
-	verifyPodsCreatedSuccessfully(t, kubectlOptions, "sample-sinatra-app", releaseName)
+	verifyPodsCreatedSuccessfully(t, kubectlOptions, "sample-sinatra-app", releaseName, NumPodsExpected)
 	verifyAllPodsAvailable(t, kubectlOptions, "sample-sinatra-app", releaseName, validationFunction)
 	verifyServiceAvailable(t, kubectlOptions, "sample-sinatra-app", releaseName, validationFunction)
 }
@@ -189,7 +189,7 @@ func TestK8SServiceConfigInjectionSecretExample(t *testing.T) {
 	// Verify the app comes up cleanly and returns the expected text
 	expectedText := "Hello! I was configured using a Secret!"
 	validationFunction := sampleAppValidationFunctionGenerator(t, expectedText)
-	verifyPodsCreatedSuccessfully(t, kubectlOptions, "sample-sinatra-app", releaseName)
+	verifyPodsCreatedSuccessfully(t, kubectlOptions, "sample-sinatra-app", releaseName, NumPodsExpected)
 	verifyAllPodsAvailable(t, kubectlOptions, "sample-sinatra-app", releaseName, validationFunction)
 	verifyServiceAvailable(t, kubectlOptions, "sample-sinatra-app", releaseName, validationFunction)
 }

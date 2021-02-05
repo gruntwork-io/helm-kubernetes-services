@@ -404,6 +404,15 @@ configMaps: {}
 #
 persistentVolumes: {}
 
+# scratchPaths is a map of key value pairs that specifies which paths in the container should be setup as scratch space.
+# Under the hood each entry in the map is converted to a tmpfs volume with the name set to the key and mounted into the
+# container on the path provided as the value.
+#
+# EXAMPLE:
+# scratchPaths:
+#   example: /mnt/scratch
+scratchPaths: {}
+
 # secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
 # the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value
 # specifying how to expose the Secret. The value is also a map and has the following attributes:
