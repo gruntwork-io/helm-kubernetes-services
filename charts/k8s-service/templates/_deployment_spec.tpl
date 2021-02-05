@@ -69,6 +69,9 @@ We need this because certain sections are omitted if there are no volumes or env
 {{- if gt (len .Values.persistentVolumes) 0 -}}
   {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
 {{- end -}}
+{{- if gt (len .Values.scratchPaths) 0 -}}
+  {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -288,6 +291,10 @@ spec:
             - name: {{ $name }}
               mountPath: {{ quote $value.mountPath }}
           {{- end }}
+          {{- range $name, $value := .Values.scratchPaths }}
+            - name: {{ $name }}
+              mountPath: {{ quote $value }}
+          {{- end }}
           {{- /* END VOLUME MOUNT LOGIC */ -}}
 
         {{- range $key, $value := .Values.sideCarContainers }}
@@ -356,6 +363,11 @@ spec:
         - name: {{ $name }}
           persistentVolumeClaim:
             claimName: {{ $value.claimName }}
+    {{- end }}
+    {{- range $name, $value := .Values.scratchPaths }}
+        - name: {{ $name }}
+          emptyDir:
+            medium: "Memory"
     {{- end }}
     {{- /* END VOLUME LOGIC */ -}}
 
