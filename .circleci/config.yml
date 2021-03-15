@@ -2,6 +2,8 @@ defaults: &defaults
   machine:
     enabled: true
     image: "ubuntu-1604:201903-01"
+
+env: &env
   environment:
     GRUNTWORK_INSTALLER_VERSION: v0.0.21
     TERRATEST_LOG_PARSER_VERSION: v0.29.0
@@ -14,6 +16,7 @@ defaults: &defaults
     PACKER_VERSION: NONE
     GOLANG_VERSION: 1.13
     KUBECONFIG: /home/circleci/.kube/config
+
 install_helm_client: &install_helm_client
   name: install helm
   command: |
@@ -25,6 +28,7 @@ install_helm_client: &install_helm_client
 
     # Initialize stable repository
     helm repo add stable https://charts.helm.sh/stable
+
 install_gruntwork_utils: &install_gruntwork_utils
   name: install gruntwork utils
   command: |
@@ -37,10 +41,11 @@ install_gruntwork_utils: &install_gruntwork_utils
       --terragrunt-version ${TERRAGRUNT_VERSION} \
       --packer-version ${PACKER_VERSION} \
       --go-version ${GOLANG_VERSION} \
+
 version: 2
 jobs:
   setup:
-    <<: *defaults
+    <<: *env
     docker:
       - image: circleci/python:3.8.1
     steps:
@@ -63,6 +68,7 @@ jobs:
             - project
   test:
     <<: *defaults
+    <<: *env
     steps:
       - attach_workspace:
           at: /home/circleci
@@ -89,6 +95,7 @@ jobs:
           path: /tmp/logs
   deploy:
     <<: *defaults
+    <<: *env
     steps:
       - attach_workspace:
           at: /home/circleci
