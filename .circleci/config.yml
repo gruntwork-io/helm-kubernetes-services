@@ -41,6 +41,8 @@ version: 2
 jobs:
   setup:
     <<: *defaults
+    docker:
+      - image: circleci/python:3.8.1
     steps:
       - checkout
       # Install gruntwork utilities
@@ -52,7 +54,7 @@ jobs:
       # execute automatically every time before you commit, ensuring the build never fails at this step!
       - run:
           command: |
-            pip install pre-commit==1.11.2 cfgv==2.0.1
+            pip install pre-commit
             pre-commit install
             pre-commit run --all-files
       - persist_to_workspace:
