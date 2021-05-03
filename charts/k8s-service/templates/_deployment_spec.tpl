@@ -21,7 +21,7 @@ We need this because certain sections are omitted if there are no volumes or env
 */ -}}
 
 {{/* Go Templates do not support variable updating, so we simulate it using dictionaries */}}
-{{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false "hasIRSA" false "exposePorts" false -}}
+{{- $hasInjectionTypes := dict "hasVolume" false "hasEnvVars" false "exposePorts" false -}}
 {{- if .Values.envVars -}}
   {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
 {{- end -}}
@@ -36,11 +36,6 @@ We need this because certain sections are omitted if there are no volumes or env
   {{- if or (not (hasKey . "disabled")) (not .disabled) -}}
     {{- $_ := set $hasInjectionTypes "exposePorts" true -}}
   {{- end -}}
-{{- end -}}
-{{- if gt (len .Values.aws.irsa.role_arn) 0 -}}
-  {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
-  {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
-  {{- $_ := set $hasInjectionTypes "hasIRSA" true -}}
 {{- end -}}
 {{- $allSecrets := values .Values.secrets -}}
 {{- range $allSecrets -}}
@@ -229,12 +224,6 @@ spec:
           {{- if index $hasInjectionTypes "hasEnvVars" }}
           env:
           {{- end }}
-          {{- if index $hasInjectionTypes "hasIRSA" }}
-            - name: AWS_ROLE_ARN
-              value: "{{ .Values.aws.irsa.role_arn }}"
-            - name: AWS_WEB_IDENTITY_TOKEN_FILE
-              value: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
-          {{- end }}
           {{- range $key, $value := .Values.envVars }}
             - name: {{ $key }}
               value: {{ quote $value }}
@@ -269,11 +258,6 @@ spec:
           {{- /* START VOLUME MOUNT LOGIC */ -}}
           {{- if index $hasInjectionTypes "hasVolume" }}
           volumeMounts:
-          {{- end }}
-          {{- if index $hasInjectionTypes "hasIRSA" }}
-            - name: aws-iam-token
-              mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
-              readOnly: true
           {{- end }}
           {{- range $name, $value := .Values.configMaps }}
             {{- if eq $value.as "volume" }}
@@ -314,16 +298,6 @@ spec:
     {{- /* START VOLUME LOGIC */ -}}
     {{- if index $hasInjectionTypes "hasVolume" }}
       volumes:
-    {{- end }}
-    {{- if index $hasInjectionTypes "hasIRSA" }}
-        - name: aws-iam-token
-          projected:
-            defaultMode: 420
-            sources:
-              - serviceAccountToken:
-                  audience: sts.amazonaws.com
-                  expirationSeconds: 86400
-                  path: token
     {{- end }}
     {{- range $name, $value := .Values.configMaps }}
       {{- if eq $value.as "volume" }}
