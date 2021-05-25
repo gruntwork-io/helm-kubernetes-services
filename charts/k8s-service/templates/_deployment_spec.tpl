@@ -92,6 +92,14 @@ metadata:
 {{- end }}
 spec:
   replicas: {{ if .isCanary }}{{ .Values.canary.replicaCount | default 1 }}{{ else }}{{ .Values.replicaCount }}{{ end }}
+{{- if .Values.deploymentStrategy.enabled }}
+  strategy:
+    type: {{ .Values.deploymentStrategy.type }}
+{{- if and (eq .Values.deploymentStrategy.type "RollingUpdate") .Values.deploymentStrategy.rollingUpdate }}
+    rollingUpdate:
+{{ toYaml .Values.deploymentStrategy.rollingUpdate | indent 6 }}
+{{- end }}
+{{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "k8s-service.name" . }}
