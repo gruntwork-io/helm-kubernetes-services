@@ -555,35 +555,6 @@ customResources:
   resources: {}
 
 #----------------------------------------------------------------------------------------------------------------------
-# AWS SPECIFIC VALUES
-# These input values relate to AWS specific features, such as those relating to EKS and the AWS ALB Ingress Controller.
-#----------------------------------------------------------------------------------------------------------------------
-aws:
-  # irsa can be used to configure the projected tokens used in the IAM Roles for Service Accounts feature. This is
-  # useful if you are manually annotating the projected tokens into your Pods, instead of relying on the mutating
-  # admission hook.
-  #
-  # irsa is a map and expects the following keys:
-  #   - role_arn     (string) (required) : The AWS ARN that the Service Account associated with the Pod should assume.
-  #                                        Note that the projected token will not be mounted and the environment
-  #                                        variables will not be set if this is an empty string (the default).
-  #
-  # Note that you can not use any role with the IRSA feature. It must have the proper assume role IAM policy to allow
-  # the Service Account of the Pod to assume that role. See
-  # https://docs.aws.amazon.com/eks/latest/userguide/create-service-account-iam-policy-and-role.html for more
-  # information.
-  #
-  # EXAMPLE:
-  #
-  # aws:
-  #   irsa:
-  #     role_arn: "arn:aws:iam::123456789012:role/role-for-pod"
-  #
-  irsa:
-    role_arn: ""
-
-
-#----------------------------------------------------------------------------------------------------------------------
 # GOOGLE SPECIFIC VALUES
 # google specifies Google (GKE) specific configuration to be set via arguments/env. variables
 #----------------------------------------------------------------------------------------------------------------------
