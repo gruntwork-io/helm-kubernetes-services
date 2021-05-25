@@ -585,6 +585,10 @@ customResources:
   enabled: false
   resources: {}
 
+# fullnameOverride is a string that allows overriding the default fullname that appears as the
+# application name and is used as the application name by kubernetes. 
+fullnameOverride: ""
+
 #----------------------------------------------------------------------------------------------------------------------
 # GOOGLE SPECIFIC VALUES
 # google specifies Google (GKE) specific configuration to be set via arguments/env. variables
