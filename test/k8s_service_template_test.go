@@ -700,3 +700,83 @@ func TestK8SServicePodAddingAdditionalLabels(t *testing.T) {
 	assert.Equal(t, deployment.Spec.Template.Labels["first-label"], first_custom_pod_label_value)
 	assert.Equal(t, deployment.Spec.Template.Labels["second-label"], second_custom_pod_label_value)
 }
+
+func TestK8SServiceDeploymentStrategyOnlySetIfEnabled(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"deploymentStrategy.enabled": "false",
+		},
+	)
+
+	// Strategy shouldn't be set
+	assert.Equal(t, "", string(deployment.Spec.Strategy.Type))
+	assert.Nil(t, deployment.Spec.Strategy.RollingUpdate)
+}
+
+func TestK8SServiceDeploymentRollingUpdateStrategy(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"deploymentStrategy.enabled": "true",
+			"deploymentStrategy.type":    "RollingUpdate",
+		},
+	)
+
+	assert.EqualValues(t, "RollingUpdate", string(deployment.Spec.Strategy.Type))
+	require.Nil(t, deployment.Spec.Strategy.RollingUpdate)
+}
+
+func TestK8SServiceDeploymentRollingUpdateStrategyWithCustomOptions(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"deploymentStrategy.enabled":                      "true",
+			"deploymentStrategy.type":                         "RollingUpdate",
+			"deploymentStrategy.rollingUpdate.maxSurge":       "30%",
+			"deploymentStrategy.rollingUpdate.maxUnavailable": "20%",
+		},
+	)
+
+	assert.EqualValues(t, "RollingUpdate", string(deployment.Spec.Strategy.Type))
+
+	rollingUpdateOptions := deployment.Spec.Strategy.RollingUpdate
+	require.NotNil(t, rollingUpdateOptions)
+	assert.Equal(t, rollingUpdateOptions.MaxSurge.String(), "30%")
+	assert.Equal(t, rollingUpdateOptions.MaxUnavailable.String(), "20%")
+}
+
+func TestK8SServiceDeploymentRecreateStrategy(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"deploymentStrategy.enabled": "true",
+			"deploymentStrategy.type":    "Recreate",
+		},
+	)
+
+	assert.Equal(t, "Recreate", string(deployment.Spec.Strategy.Type))
+	assert.Nil(t, deployment.Spec.Strategy.RollingUpdate)
+
+	// Test that custom rolling update options are ignore if the strategy is set to recreate
+	deployment = renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"deploymentStrategy.enabled":                      "true",
+			"deploymentStrategy.type":                         "Recreate",
+			"deploymentStrategy.rollingUpdate.maxSurge":       "30%",
+			"deploymentStrategy.rollingUpdate.maxUnavailable": "20%",
+		},
+	)
+
+	assert.Equal(t, "Recreate", string(deployment.Spec.Strategy.Type))
+	assert.Nil(t, deployment.Spec.Strategy.RollingUpdate)
+}
