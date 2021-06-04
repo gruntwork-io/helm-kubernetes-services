@@ -780,3 +780,17 @@ func TestK8SServiceDeploymentRecreateStrategy(t *testing.T) {
 	assert.Equal(t, "Recreate", string(deployment.Spec.Strategy.Type))
 	assert.Nil(t, deployment.Spec.Strategy.RollingUpdate)
 }
+
+func TestK8SServiceFullnameOverride(t *testing.T) {
+	t.Parallel()
+
+	overiddenName := "overidden-name"
+
+	deployment := renderK8SServiceDeploymentWithSetValues(t,
+		map[string]string{
+			"fullnameOverride": overiddenName,
+		},
+	)
+
+	assert.Equal(t, deployment.Name, overiddenName)
+}

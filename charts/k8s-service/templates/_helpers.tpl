@@ -14,7 +14,9 @@ If release name contains chart name it will be used as a full name.
 */}}
 {{- define "k8s-service.fullname" -}}
   {{- $name := required "applicationName is required" .Values.applicationName -}}
-  {{- if contains $name .Release.Name -}}
+  {{- if .Values.fullnameOverride -}}
+    {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+  {{- else if contains $name .Release.Name -}}
     {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
   {{- else -}}
     {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
