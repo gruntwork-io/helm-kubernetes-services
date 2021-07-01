@@ -9,7 +9,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/gruntwork-io/gruntwork-cli v0.5.1 // indirect
-	github.com/gruntwork-io/terratest v0.35.7
+	github.com/gruntwork-io/terratest v0.36.3
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/shopspring/decimal v0.0.0-20200105231215-408a2507e114 // indirect
 	github.com/stretchr/testify v1.4.0
