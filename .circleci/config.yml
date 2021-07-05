@@ -60,6 +60,8 @@ jobs:
       - run:
           command: |
             pip install pre-commit
+            go get golang.org/x/tools/cmd/goimports
+            export GOPATH=~/go/bin && export PATH=$PATH:$GOPATH 
             pre-commit install
             pre-commit run --all-files
       - persist_to_workspace:
