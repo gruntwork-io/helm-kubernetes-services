@@ -14,7 +14,8 @@ env: &env
     TERRAFORM_VERSION: NONE
     TERRAGRUNT_VERSION: NONE
     PACKER_VERSION: NONE
-    GOLANG_VERSION: 1.13
+    GOLANG_VERSION: 1.16
+    GO111MODULE: auto
     KUBECONFIG: /home/circleci/.kube/config
 
 install_helm_client: &install_helm_client
@@ -53,6 +54,10 @@ jobs:
       # Install gruntwork utilities
       - run:
           <<: *install_gruntwork_utils
+      # Export go install location to $PATH so it is available in subsequent steps
+      - run:
+          command: |
+            echo "export PATH=/usr/local/go/bin:$PATH" >> $BASH_ENV
       - run:
           <<: *install_helm_client
       # Fail the build if the pre-commit hooks don't pass. Note: if you run pre-commit install locally, these hooks will
@@ -60,8 +65,8 @@ jobs:
       - run:
           command: |
             pip install pre-commit
+            # Go's location was added to the PATH above
             go get golang.org/x/tools/cmd/goimports
-            export GOPATH=~/go/bin && export PATH=$PATH:$GOPATH 
             pre-commit install
             pre-commit run --all-files
       - persist_to_workspace:
@@ -130,29 +135,29 @@ workflows:
   version: 2
   test-and-deploy:
     jobs:
-    - setup:
-        filters:
-          tags:
-            only: /^v.*/
-        context:
-          - Gruntwork Admin
+      - setup:
+          filters:
+            tags:
+              only: /^v.*/
+          context:
+            - Gruntwork Admin
 
-    - test:
-        requires:
-          - setup
-        filters:
-          tags:
-            only: /^v.*/
-        context:
-          - Gruntwork Admin
+      - test:
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /^v.*/
+          context:
+            - Gruntwork Admin
 
-    - deploy:
-        requires:
-          - test
-        filters:
-          tags:
-            only: /^v.*/
-          branches:
-            ignore: /.*/
-        context:
-          - Gruntwork Admin
+      - deploy:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+          context:
+            - Gruntwork Admin
