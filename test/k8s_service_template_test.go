@@ -794,3 +794,16 @@ func TestK8SServiceFullnameOverride(t *testing.T) {
 
 	assert.Equal(t, deployment.Name, overiddenName)
 }
+
+func TestK8SServiceEnvFrom(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(t,
+		map[string]string{
+			"envFrom[0].configMapRef.name": "test-configmap",
+		},
+	)
+
+	assert.NotNil(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom)
+	assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name, "test-configmap")
+}

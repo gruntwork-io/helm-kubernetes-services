@@ -368,6 +368,18 @@ envVars: {}
 #         fieldPath: metadata.uid
 additionalContainerEnv: {}
 
+# envFrom is a list of configmapRefs or secretRefs in which to import the data
+# as environment variables.  See:
+# https://v1-18.docs.kubernetes.io/docs/concepts/configuration/secret/#use-case-as-container-environment-variables or
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables
+# for official kubernetes syntax
+#
+# EXAMPLE
+# envFrom:
+#  - configMapRef:
+#      name: "my-configmap"
+envFrom: {}
+
 # configMaps is a map that specifies the ConfigMap resources that should be exposed to the main application container. Each
 # entry in the map represents a ConfigMap resource. The key refers to the name of the ConfigMap that should be exposed,
 # with the value specifying how to expose the ConfigMap. The value is also a map and has the following attributes:
