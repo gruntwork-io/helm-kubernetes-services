@@ -794,3 +794,46 @@ func TestK8SServiceFullnameOverride(t *testing.T) {
 
 	assert.Equal(t, deployment.Name, overiddenName)
 }
+
+func TestK8SServiceEnvFrom(t *testing.T) {
+	t.Parallel()
+
+	t.Run("BothConfigMapsAndSecretsEnvFrom", func(t *testing.T) {
+		deployment := renderK8SServiceDeploymentWithSetValues(t,
+			map[string]string{
+				"configMaps.test-configmap.as": "envFrom",
+				"secrets.test-secret.as": "envFrom",
+			},
+		)
+
+		assert.NotNil(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom)
+		assert.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].EnvFrom), 2)
+		assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name, "test-configmap")
+		assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom[1].SecretRef.Name, "test-secret")
+	})
+
+	t.Run("OnlyConfigMapsEnvFrom", func(t *testing.T) {
+		deployment := renderK8SServiceDeploymentWithSetValues(t,
+			map[string]string{
+				"configMaps.test-configmap.as": "envFrom",
+			},
+		)
+
+		assert.NotNil(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom)
+		assert.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].EnvFrom), 1)
+		assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name, "test-configmap")
+	})
+
+	t.Run("OnlySecretsEnvFrom", func(t *testing.T) {
+		deployment := renderK8SServiceDeploymentWithSetValues(t,
+			map[string]string{
+				"secrets.test-secret.as": "envFrom",
+			},
+		)
+
+		assert.NotNil(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom)
+		assert.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].EnvFrom), 1)
+		assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].SecretRef.Name, "test-secret")
+	})
+
+}

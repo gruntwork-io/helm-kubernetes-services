@@ -43,6 +43,8 @@ We need this because certain sections are omitted if there are no volumes or env
     {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
   {{- else if eq (index . "as") "environment" -}}
     {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
+  {{- else if eq (index . "as") "envFrom" }}
+    {{- $_ := set $hasInjectionTypes "hasEnvFrom" true -}}
   {{- else if eq (index . "as") "none" -}}
     {{- /* noop */ -}}
   {{- else -}}
@@ -55,6 +57,8 @@ We need this because certain sections are omitted if there are no volumes or env
     {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
   {{- else if eq (index . "as") "environment" -}}
     {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
+  {{- else if eq (index . "as") "envFrom" }}
+    {{- $_ := set $hasInjectionTypes "hasEnvFrom" true -}}
   {{- else if eq (index . "as") "none" -}}
     {{- /* noop */ -}}
   {{- else -}}
@@ -261,7 +265,23 @@ spec:
             {{- end }}
             {{- end }}
           {{- end }}
+          {{- if index $hasInjectionTypes "hasEnvFrom" }}
+          envFrom:
+          {{- range $name, $value := .Values.configMaps }}
+            {{- if eq $value.as "envFrom" }}
+            - configMapRef:
+                name: {{ $name }}
+            {{- end }}
+          {{- end }}
+          {{- range $name, $value := .Values.secrets }}
+            {{- if eq $value.as "envFrom" }}
+            - secretRef:
+                name: {{ $name }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
           {{- /* END ENV VAR LOGIC */ -}}
+
 
           {{- /* START VOLUME MOUNT LOGIC */ -}}
           {{- if index $hasInjectionTypes "hasVolume" }}
