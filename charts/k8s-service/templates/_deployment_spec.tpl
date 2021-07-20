@@ -261,7 +261,12 @@ spec:
             {{- end }}
             {{- end }}
           {{- end }}
+          {{- if .Values.envFrom }}
+          envFrom:
+{{ toYaml .Values.envFrom | indent 12 }}
+          {{- end }}
           {{- /* END ENV VAR LOGIC */ -}}
+
 
           {{- /* START VOLUME MOUNT LOGIC */ -}}
           {{- if index $hasInjectionTypes "hasVolume" }}
