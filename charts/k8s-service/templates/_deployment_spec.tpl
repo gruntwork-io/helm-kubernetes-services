@@ -303,6 +303,14 @@ spec:
     {{- end }}
     {{- /* END IMAGE PULL SECRETS LOGIC */ -}}
 
+    {{- /* START TERMINATION GRACE PERIOD LOGIC */ -}}
+    {{- if .Values.terminationGracePeriodSeconds }}    
+      terminationGracePeriodSeconds:
+{{ toYaml .Values.terminationGracePeriodSeconds | 30 }}
+    {{- end}}
+    {{- /* END TERMINATION GRACE PERIOD LOGIC */ -}}
+
+
     {{- /* START VOLUME LOGIC */ -}}
     {{- if index $hasInjectionTypes "hasVolume" }}
       volumes:
