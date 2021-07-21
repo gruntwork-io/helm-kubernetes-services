@@ -305,8 +305,7 @@ spec:
 
     {{- /* START TERMINATION GRACE PERIOD LOGIC */ -}}
     {{- if .Values.terminationGracePeriodSeconds }}    
-      terminationGracePeriodSeconds:
-{{ toYaml .Values.terminationGracePeriodSeconds | 30 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | 30 }}
     {{- end}}
     {{- /* END TERMINATION GRACE PERIOD LOGIC */ -}}
 
