@@ -305,7 +305,7 @@ spec:
 
     {{- /* START TERMINATION GRACE PERIOD LOGIC */ -}}
     {{- if .Values.terminationGracePeriodSeconds }}    
-      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | 30 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
     {{- end}}
     {{- /* END TERMINATION GRACE PERIOD LOGIC */ -}}
 
