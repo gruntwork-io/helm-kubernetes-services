@@ -371,11 +371,11 @@ additionalContainerEnv: {}
 # configMaps is a map that specifies the ConfigMap resources that should be exposed to the main application container. Each
 # entry in the map represents a ConfigMap resource. The key refers to the name of the ConfigMap that should be exposed,
 # with the value specifying how to expose the ConfigMap. The value is also a map and has the following attributes:
-#   - as (enum[volume,environment,none]) (required)
+#   - as (enum[volume,environment,envFrom,none]) (required)
 #     : ConfigMaps can be exposed to Pods as a volume mount, or as environment variables. This attribute is a string
-#       enum that is expected to be either "volume" or "environment", specifying that the ConfigMap should be exposed as a
-#       mounted volume or via environment variables respectively. This attribute can also be set to "none", which
-#       disables the `ConfigMap` on the container.
+#       enum that is expected to be either "volume", "environment", or "envFrom", specifying that the ConfigMap should
+#       be exposed as a mounted volume, via environment variables, or loaded as environment variables respectively.
+#       This attribute can also be set to "none", which disables the `ConfigMap` on the container.
 #   - mountPath (string)
 #     : For ConfigMaps mounted as a volume, specify the mount path on the container file system where the config values
 #       will be available.  Required when the ConfigMap is exposed as a volume. Ignored when the ConfigMap is exposed as
@@ -400,7 +400,8 @@ additionalContainerEnv: {}
 # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
 #
 # The following example exposes the ConfigMap `myconfig` as a volume mounted to `/etc/myconfig`, while it exposes the
-# ConfigMap `myotherconfig` as an environment variable.
+# ConfigMap `myotherconfig` as an environment variable.  Additionally, it automatically mounts all of the keys
+# `anotherconfig` as environment variables using the `envFrom` keyword.
 #
 # EXAMPLE:
 #
@@ -413,9 +414,11 @@ additionalContainerEnv: {}
 #     items:
 #       foo:
 #         envVarName: CONFIG_FOO
+#   anotherconfig:
+#     as: envFrom
 configMaps: {}
 
-# persistentVolumes is a map that specifies PeristantVolumes that should be mounted on the pod.  Each entry represents a
+# persistentVolumes is a map that specifies PersistentVolumes that should be mounted on the pod.  Each entry represents a
 # persistent volume which should already exist within your cluster. They Key is the name of the persistent volume.
 # The value is also a map and has the following attributes:
 #   - mountPath (string) (required)
@@ -447,11 +450,11 @@ scratchPaths: {}
 # secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
 # the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value
 # specifying how to expose the Secret. The value is also a map and has the following attributes:
-#   - as (enum[volume,environment,none]) (required)
+#   - as (enum[volume,environment,envFrom,none]) (required)
 #     : Secrets can be exposed to Pods as a volume mount, or as environment variables. This attribute is a string enum
-#       that is expected to be either "volume" or "environment", specifying that the Secret should be exposed as a mounted
-#       volume or via environment variables respectively. This attribute can also be set to "none", which disables the
-#       `Secret` on the container.
+#       that is expected to be either "volume", "environment", or "envFrom", specifying that the Secret should be
+#       exposed as a mounted volume, via environment variables, or loaded in its entirety as environment variables
+#       respectively. This attribute can also be set to "none", which disables the `Secret` on the container.
 #   - mountPath (string)
 #     : For Secrets mounted as a volume, specify the mount path on the container file system where the secrets will be
 #       available. Required when the Secret is exposed as a volume. Ignored when the Secret is exposed as environment
@@ -476,7 +479,8 @@ scratchPaths: {}
 # https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets
 #
 # The following example exposes the Secret `mysecret` as a volume mounted to `/etc/mysecret`, while it exposes the
-# Secret `myothersecret` as an environment variable.
+# Secret `myothersecret` as an environment variable. Additionally, it automatically mounts all of the keys
+# `anothersecret` as environment variables using the `envFrom` keyword.
 #
 # EXAMPLE:
 #
@@ -489,8 +493,9 @@ scratchPaths: {}
 #     items:
 #       foo:
 #         envVarName: SECRET_FOO
+#   anothersecret:
+#     as: envFrom
 secrets: {}
-
 
 # containerResources specifies the amount of resources the application container will require. Only specify if you have
 # specific resource needs.
