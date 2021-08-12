@@ -314,6 +314,11 @@ spec:
 {{ toYaml $value | indent 10 }}
         {{- end }}
 
+        {{- range $key, $value := .Values.initContainers }}
+        - name: {{ $key }}
+{{ toYaml $value | indent 10 }}
+        {{- end }}
+
     {{- /* START IMAGE PULL SECRETS LOGIC */ -}}
     {{- if gt (len .Values.imagePullSecrets) 0 }}
       imagePullSecrets:

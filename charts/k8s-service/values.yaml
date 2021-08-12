@@ -154,6 +154,15 @@ shutdownDelay: 5
 #         value: docker
 sideCarContainers: {}
 
+initContainers:
+   flyway:
+     image: datadog/agent:latest
+     env:
+       - name: DD_API_KEY
+         value: ASDF-1234
+       - name: SD_BACKEND
+         value: docker
+
 # canary specifies test pod(s) that are deployed alongside your application's stable track pods.
 # It is useful for testing a new release candidate in a production environment with minimal disruption and
 # for allowing you to find any issues early.
