@@ -154,6 +154,22 @@ shutdownDelay: 5
 #         value: docker
 sideCarContainers: {}
 
+# initContainers specifies any additional containers that should be deployed as init containers to the main application
+# container. This will be included in the Deployment container spec so that it will be included in the application Pod.
+# This is a nested map, where the first map key is used to name the container, with the nested map being injected as the
+# container spec.
+#
+# The following example specifies a flyway image as an init container with an environment variable, binding the
+# name `flyway`:
+#
+# EXAMPLE:
+#
+# initContainers:
+#   flyway:
+#     image: flyway/flyway
+#     env:
+#       - name: FLYWAY_LOCATIONS
+#         value: 'filesystem:/flyway/migrations'
 initContainers: {}
 
 # canary specifies test pod(s) that are deployed alongside your application's stable track pods.

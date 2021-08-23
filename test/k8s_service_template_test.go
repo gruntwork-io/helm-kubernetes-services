@@ -6,15 +6,14 @@
 package test
 
 import (
-	"path/filepath"
-	"strings"
-	"testing"
-
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	"path/filepath"
+	"strings"
+	"testing"
 )
 
 // Test that setting ingress.enabled = false will cause the helm template to not render the Ingress resource
@@ -633,6 +632,19 @@ func TestK8SServiceSideCarContainersRendersCorrectly(t *testing.T) {
 	require.Equal(t, len(renderedContainers), 2)
 	sideCarContainer := renderedContainers[1]
 	assert.Equal(t, sideCarContainer.Image, "datadog/agent:latest")
+}
+
+func TestK8SServiceInitContainersRendersCorrectly(t *testing.T) {
+	t.Parallel()
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"initContainers.flyway.image": "flyway/flyway",
+		},
+	)
+	renderedContainers := deployment.Spec.Template.Spec.InitContainers
+	require.Equal(t, len(renderedContainers), 1)
+	assert.Equal(t, renderedContainers[0].Image, "flyway/flyway")
 }
 
 func TestK8SServiceDisableDefaultPort(t *testing.T) {
