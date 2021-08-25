@@ -635,6 +635,19 @@ func TestK8SServiceSideCarContainersRendersCorrectly(t *testing.T) {
 	assert.Equal(t, sideCarContainer.Image, "datadog/agent:latest")
 }
 
+func TestK8SServiceInitContainersRendersCorrectly(t *testing.T) {
+	t.Parallel()
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"initContainers.flyway.image": "flyway/flyway",
+		},
+	)
+	renderedContainers := deployment.Spec.Template.Spec.InitContainers
+	require.Equal(t, len(renderedContainers), 1)
+	assert.Equal(t, renderedContainers[0].Image, "flyway/flyway")
+}
+
 func TestK8SServiceDisableDefaultPort(t *testing.T) {
 	t.Parallel()
 	deployment := renderK8SServiceDeploymentWithSetValues(
