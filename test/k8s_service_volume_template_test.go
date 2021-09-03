@@ -1,3 +1,4 @@
+//go:build all || tpl
 // +build all tpl
 
 // NOTE: We use build flags to differentiate between template tests and integration tests so that you can conveniently
@@ -80,4 +81,37 @@ func TestK8SServiceDeploymentAddingPersistentVolumes(t *testing.T) {
 	volume := volumes[0]
 	assert.Equal(t, volName, volume.Name)
 	assert.Equal(t, volClaim, volume.PersistentVolumeClaim.ClaimName)
+}
+
+func TestK8SServiceDeploymentAddingEmptyDirs(t *testing.T) {
+	t.Parallel()
+
+	volName := "empty-dir"
+	volMountPath := "/mnt/empty"
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			fmt.Sprintf("emptyDirs.%s", volName): volMountPath,
+		},
+	)
+
+	// Verify that there is only one container
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	podContainer := renderedPodContainers[0]
+
+	// Verify that a mount has been created for the emptyDir
+	mounts := podContainer.VolumeMounts
+	assert.Equal(t, len(mounts), 1)
+	mount := mounts[0]
+	assert.Equal(t, volName, mount.Name)
+	assert.Equal(t, volMountPath, mount.MountPath)
+
+	// Verify that a volume has been declared for the emptyDir
+	volumes := deployment.Spec.Template.Spec.Volumes
+	assert.Equal(t, len(volumes), 1)
+	volume := volumes[0]
+	assert.Equal(t, volName, volume.Name)
+	assert.Empty(t, volume.EmptyDir)
 }
