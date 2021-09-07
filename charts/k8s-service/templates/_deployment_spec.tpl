@@ -71,6 +71,9 @@ We need this because certain sections are omitted if there are no volumes or env
 {{- if gt (len .Values.scratchPaths) 0 -}}
   {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
 {{- end -}}
+{{- if gt (len .Values.emptyDirs) 0 -}}
+  {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -307,6 +310,10 @@ spec:
             - name: {{ $name }}
               mountPath: {{ quote $value }}
           {{- end }}
+          {{- range $name, $value := .Values.emptyDirs }}
+            - name: {{ $name }}
+              mountPath: {{ quote $value }}
+          {{- end }}
           {{- /* END VOLUME MOUNT LOGIC */ -}}
 
         {{- range $key, $value := .Values.sideCarContainers }}
@@ -379,6 +386,10 @@ spec:
         - name: {{ $name }}
           emptyDir:
             medium: "Memory"
+    {{- end }}
+    {{- range $name, $value := .Values.emptyDirs }}
+        - name: {{ $name }}
+          emptyDir: {}
     {{- end }}
     {{- /* END VOLUME LOGIC */ -}}
 
