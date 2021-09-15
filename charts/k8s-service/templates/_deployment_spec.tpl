@@ -339,6 +339,12 @@ spec:
     {{- end }}
     {{- /* END IMAGE PULL SECRETS LOGIC */ -}}
 
+    {{- /* START TERMINATION GRACE PERIOD LOGIC */ -}}
+    {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+    {{- end}}
+    {{- /* END TERMINATION GRACE PERIOD LOGIC */ -}}
+
     {{- /* START VOLUME LOGIC */ -}}
     {{- if index $hasInjectionTypes "hasVolume" }}
       volumes:
