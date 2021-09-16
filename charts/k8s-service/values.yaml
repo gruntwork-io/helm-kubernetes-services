@@ -545,6 +545,14 @@ tolerations: []
 # list is a string that corresponds to the Secret name.
 imagePullSecrets: []
 
+# terminationGracePeriodSeconds sets grace period Kubernetes will wait before terminating the pod. The timeout happens
+# in parallel to preStop hook and the SIGTERM signal, Kubernetes does not wait for preStop to finish before beginning
+# the grace period.
+#
+# EXAMPLE:
+# terminationGracePeriodSeconds: 30
+terminationGracePeriodSeconds: {}
+
 # serviceAccount is a map that configures the ServiceAccount information for the Pod.
 # The expected keys of serviceAccount are:
 #   - name                         (string) : The name of the ServiceAccount in the Namespace where the Pod is deployed

@@ -8,6 +8,7 @@ package test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -114,4 +115,27 @@ func TestK8SServiceDeploymentAddingEmptyDirs(t *testing.T) {
 	volume := volumes[0]
 	assert.Equal(t, volName, volume.Name)
 	assert.Empty(t, volume.EmptyDir)
+}
+
+func TestK8SServiceDeploymentAddingTerminationGracePeriod(t *testing.T) {
+
+	gracePeriod := "30"
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"terminationGracePeriodSeconds": gracePeriod,
+		},
+	)
+
+	// Verify that there is only one container
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+
+	expectedGracePeriodInt64, err := strconv.ParseInt(gracePeriod, 10, 64)
+
+	// Verify termination grace period has been set for container
+	assert.NoError(t, err)
+	renderedTerminationGracePeriodSeconds := deployment.Spec.Template.Spec.TerminationGracePeriodSeconds
+	require.Equal(t, expectedGracePeriodInt64, *renderedTerminationGracePeriodSeconds)
 }
