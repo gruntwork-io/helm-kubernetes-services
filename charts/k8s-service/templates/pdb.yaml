@@ -2,7 +2,7 @@
 If there is a specification for minimum number of Pods that should be available, create a PodDisruptionBudget
 */ -}}
 {{- if .Values.minPodsAvailable -}}
-apiVersion: {{ include "gruntwork.pdb.apiVersion" }}
+apiVersion: {{ include "gruntwork.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "k8s-service.fullname" . }}
