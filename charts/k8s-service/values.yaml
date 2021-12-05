@@ -398,6 +398,10 @@ additionalContainerEnv: {}
 #     : For ConfigMaps mounted as a volume, specify the mount path on the container file system where the config values
 #       will be available.  Required when the ConfigMap is exposed as a volume. Ignored when the ConfigMap is exposed as
 #       environment variables.
+#   - subPath (string)
+#     : For ConfigMaps mounted as a volume, specify the sub path on the volume system where the config values will be
+#       available.  Optional when the ConfigMap is exposed as a volume. Ignored when the ConfigMap is exposed as
+#       environment variables.
 #   - items (map[ConfigMapItem])
 #     : Specify how each ConfigMap value should be made available. The keys are the key of the ConfigMap that you wish
 #       to configure, while the value is another map that controls how that key should be exposed. Required when the
