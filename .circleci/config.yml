@@ -15,6 +15,7 @@ base_env: &base_env
   GOLANG_VERSION: 1.16
   GO111MODULE: auto
   KUBECONFIG: /home/circleci/.kube/config
+  DEBIAN_FRONTEND: noninteractive
 
 install_helm_client: &install_helm_client
   name: install helm
