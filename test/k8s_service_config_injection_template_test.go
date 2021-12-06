@@ -162,7 +162,7 @@ func TestK8SServiceEnvironmentConfigMapAddsEnvVarsToPod(t *testing.T) {
 //   dbsettings:
 //     as: volume
 //     mountPath: /etc/db
-func TestK8SServiceVolumeConfigMapAddsVolumeAndVolumeMountToPod(t *testing.T) {
+func TestK8SServiceVolumeConfigMapAddsVolumeAndVolumeMountWithoutSubPathToPod(t *testing.T) {
 	t.Parallel()
 
 	deployment := renderK8SServiceDeploymentWithSetValues(
@@ -191,6 +191,47 @@ func TestK8SServiceVolumeConfigMapAddsVolumeAndVolumeMountToPod(t *testing.T) {
 	volumeMount := appContainer.VolumeMounts[0]
 	assert.Equal(t, volumeMount.Name, "dbsettings-volume")
 	assert.Equal(t, volumeMount.MountPath, "/etc/db")
+	assert.Empty(t, volumeMount.SubPath)
+}
+
+// Test that setting the `configMaps` input value with volume include the volume mount and subpath for the config map
+// We test by injecting to configMaps:
+// configMaps:
+//   dbsettings:
+//     as: volume
+//     mountPath: /etc/db/host.txt
+//     subPath: host.xt
+func TestK8SServiceVolumeConfigMapAddsVolumeAndVolumeMountWithSubPathToPod(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"configMaps.dbsettings.as":        "volume",
+			"configMaps.dbsettings.mountPath": "/etc/db/host.txt",
+			"configMaps.dbsettings.subPath":   "host.txt",
+		},
+	)
+
+	// Verify that there is only one container and only one volume
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	renderedPodVolumes := deployment.Spec.Template.Spec.Volumes
+	require.Equal(t, len(renderedPodVolumes), 1)
+	podVolume := renderedPodVolumes[0]
+
+	// Check that the pod volume is a configmap volume
+	assert.Equal(t, podVolume.Name, "dbsettings-volume")
+	require.NotNil(t, podVolume.ConfigMap)
+	assert.Equal(t, podVolume.ConfigMap.Name, "dbsettings")
+
+	// Check that the pod volume will be mounted
+	require.Equal(t, len(appContainer.VolumeMounts), 1)
+	volumeMount := appContainer.VolumeMounts[0]
+	assert.Equal(t, volumeMount.Name, "dbsettings-volume")
+	assert.Equal(t, volumeMount.MountPath, "/etc/db/host.txt")
+	assert.Equal(t, volumeMount.SubPath, "host.txt")
 }
 
 // Test that setting the `configMaps` input value with volume and individual file mount paths will set the appropriate
