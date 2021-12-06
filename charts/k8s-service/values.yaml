@@ -626,7 +626,7 @@ customResources:
   resources: {}
 
 # fullnameOverride is a string that allows overriding the default fullname that appears as the
-# application name and is used as the application name by kubernetes. 
+# application name and is used as the application name by kubernetes.
 fullnameOverride: ""
 
 #----------------------------------------------------------------------------------------------------------------------

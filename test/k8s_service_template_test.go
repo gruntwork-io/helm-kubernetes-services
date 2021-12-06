@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 )
 
 // Test that setting ingress.enabled = false will cause the helm template to not render the Ingress resource
@@ -815,7 +816,7 @@ func TestK8SServiceEnvFrom(t *testing.T) {
 		deployment := renderK8SServiceDeploymentWithSetValues(t,
 			map[string]string{
 				"configMaps.test-configmap.as": "envFrom",
-				"secrets.test-secret.as": "envFrom",
+				"secrets.test-secret.as":       "envFrom",
 			},
 		)
 
@@ -849,4 +850,39 @@ func TestK8SServiceEnvFrom(t *testing.T) {
 		assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].SecretRef.Name, "test-secret")
 	})
 
+}
+
+func TestK8SServiceMinPodsAvailableZeroMeansNoPDB(t *testing.T) {
+	t.Parallel()
+
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	// We then use SetValues to override all the defaults.
+	options := &helm.Options{
+		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+		SetValues:   map[string]string{"minPodsAvailable": "0"},
+	}
+	_, err = helm.RenderTemplateE(t, options, helmChartPath, "pdb", []string{"templates/pdb.yaml"})
+	require.Error(t, err)
+}
+
+func TestK8SServiceMinPodsAvailableGreaterThanZeroMeansPDB(t *testing.T) {
+	t.Parallel()
+
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	// We then use SetValues to override all the defaults.
+	options := &helm.Options{
+		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+		SetValues:   map[string]string{"minPodsAvailable": "1"},
+	}
+	out := helm.RenderTemplate(t, options, helmChartPath, "pdb", []string{"templates/pdb.yaml"})
+
+	var pdb policyv1beta1.PodDisruptionBudget
+	helm.UnmarshalK8SYaml(t, out, &pdb)
+	assert.Equal(t, 1, pdb.Spec.MinAvailable.IntValue())
 }
