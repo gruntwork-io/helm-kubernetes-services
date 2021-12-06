@@ -48,7 +48,10 @@ test_steps: &test_steps
     - run:
         <<: *install_gruntwork_utils
     - run:
-        command: setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}"
+        command: |
+          sudo apt-get update
+          sudo apt-get install -y conntrack
+          setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}"
     - run:
         <<: *install_helm_client
     - run:
