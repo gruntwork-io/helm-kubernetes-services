@@ -140,7 +140,7 @@ jobs:
     <<: *defaults
     environment:
       <<: *base_env
-      KUBERNETES_VERSION: v1.21.0
+      KUBERNETES_VERSION: v1.21.7
     <<: *integration_test_steps
   deploy:
     <<: *defaults
