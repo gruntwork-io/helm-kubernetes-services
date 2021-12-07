@@ -886,3 +886,36 @@ func TestK8SServiceMinPodsAvailableGreaterThanZeroMeansPDB(t *testing.T) {
 	helm.UnmarshalK8SYaml(t, out, &pdb)
 	assert.Equal(t, 1, pdb.Spec.MinAvailable.IntValue())
 }
+
+// Test that rendering networking.v1 Ingress works.
+func TestK8SServiceRenderNetworkingV1Ingress(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceNetworkingV1IngressWithSetValues(
+		t,
+		map[string]string{
+			"ingress.enabled":                        "true",
+			"ingress.path":                           "/app",
+			"ingress.servicePort":                    "app",
+			"ingress.additionalPaths[0].path":        "/black-hole",
+			"ingress.additionalPaths[0].serviceName": "black-hole",
+			"ingress.additionalPaths[0].servicePort": "80",
+		},
+	)
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 2)
+
+	// The first path should be the main service path
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/app")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.Service.Name), "ingress-linter")
+	assert.Equal(t, firstPath.Backend.Service.Port.Name, "app")
+
+	// The second path should be the black hole
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/black-hole")
+	assert.Equal(t, secondPath.Backend.Service.Name, "black-hole")
+	assert.Equal(t, secondPath.Backend.Service.Port.Number, int32(80))
+}
+
+
