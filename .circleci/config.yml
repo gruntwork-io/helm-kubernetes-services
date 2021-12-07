@@ -42,7 +42,7 @@ install_gruntwork_utils: &install_gruntwork_utils
       --packer-version ${PACKER_VERSION} \
       --go-version ${GOLANG_VERSION} \
 
-test_steps: &test_steps
+integration_test_steps: &integration_test_steps
   steps:
     - attach_workspace:
         at: /home/circleci
@@ -50,7 +50,6 @@ test_steps: &test_steps
         <<: *install_gruntwork_utils
     - run:
         command: |
-          sudo apt-get update
           sudo apt-get install -y conntrack
           setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}"
     - run:
@@ -61,7 +60,7 @@ test_steps: &test_steps
           mkdir -p /tmp/logs
           cd test
           go mod tidy
-          run-go-tests --packages "-tags all ." --timeout 60m | tee /tmp/logs/all.log
+          run-go-tests --packages "-tags integration ." --timeout 60m | tee /tmp/logs/all.log
         no_output_timeout: 3600s
     - run:
         command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
@@ -102,18 +101,46 @@ jobs:
           root: /home/circleci
           paths:
             - project
+  tpl_tests:
+    <<: *defaults
+    environment:
+      <<: *base_env
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          <<: *install_gruntwork_utils
+      - run:
+          <<: *install_helm_client
+      - run:
+          name: run tests
+          command: |
+            mkdir -p /tmp/logs
+            cd test
+            go mod tidy
+            run-go-tests --packages "-tags tpl ." --timeout 60m | tee /tmp/logs/all.log
+          no_output_timeout: 3600s
+      - run:
+          command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
+          when: always
+      - store_artifacts:
+          path: /tmp/logs
+      - store_test_results:
+          path: /tmp/logs
+
   test_k8s117:
     <<: *defaults
     environment:
       <<: *base_env
       KUBERNETES_VERSION: v1.17.12
-    <<: *test_steps
+    <<: *integration_test_steps
+
   test_k8s121:
     <<: *defaults
     environment:
       <<: *base_env
       KUBERNETES_VERSION: v1.21.0
-    <<: *test_steps
+    <<: *integration_test_steps
   deploy:
     <<: *defaults
     environment:
