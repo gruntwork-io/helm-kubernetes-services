@@ -8,11 +8,13 @@ We declare some variables defined on the Values. These are reused in `with` and 
 (`.`) is rebound within the block.
 */ -}}
 {{- $fullName := include "k8s-service.fullname" . -}}
+{{- $ingressAPIVersion := include "gruntwork.ingress.apiVersion" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
 {{- $additionalPathsHigherPriority := .Values.ingress.additionalPathsHigherPriority }}
 {{- $additionalPaths := .Values.ingress.additionalPaths }}
 {{- $servicePort := .Values.ingress.servicePort -}}
-apiVersion: {{ include "gruntwork.ingress.apiVersion" . }}
+{{- $baseVarsForBackend := dict "fullName" $fullName "ingressAPIVersion" $ingressAPIVersion -}}
+apiVersion: {{ $ingressAPIVersion }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -46,18 +48,15 @@ spec:
           {{- range $additionalPathsHigherPriority }}
           - path: {{ .path }}
             backend:
-              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
-              servicePort: {{ .servicePort }}
+              {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
           - path: {{ $ingressPath }}
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $servicePort }}
+              {{- include "gruntwork.ingress.backend" (dict "serviceName" $fullName "servicePort" $servicePort | merge $baseVarsForBackend) }}
           {{- range $additionalPaths }}
           - path: {{ .path }}
             backend:
-              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
-              servicePort: {{ .servicePort }}
+              {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
     {{- end }}
     {{- else }}
@@ -66,18 +65,15 @@ spec:
           {{- range $additionalPathsHigherPriority }}
           - path: {{ .path }}
             backend:
-              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
-              servicePort: {{ .servicePort }}
+              {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
           - path: {{ $ingressPath }}
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $servicePort }}
+              {{- include "gruntwork.ingress.backend" (dict "serviceName" $fullName "servicePort" $servicePort | merge $baseVarsForBackend) }}
           {{- range $additionalPaths }}
           - path: {{ .path }}
             backend:
-              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
-              servicePort: {{ .servicePort }}
+              {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
 
     {{- end }}
