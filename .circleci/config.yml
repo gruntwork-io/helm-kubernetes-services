@@ -185,6 +185,15 @@ workflows:
           context:
             - Gruntwork Admin
 
+      - tpl_tests:
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /^v.*/
+          context:
+            - Gruntwork Admin
+
       - test_k8s117:
           requires:
             - setup
@@ -205,6 +214,7 @@ workflows:
 
       - deploy:
           requires:
+            - tpl_tests
             - test_k8s117
             - test_k8s121
           filters:
