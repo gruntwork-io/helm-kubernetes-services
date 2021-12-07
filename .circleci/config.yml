@@ -15,7 +15,6 @@ base_env: &base_env
   GOLANG_VERSION: 1.16
   GO111MODULE: auto
   KUBECONFIG: /home/circleci/.kube/config
-  DEBIAN_FRONTEND: noninteractive
 
 install_helm_client: &install_helm_client
   name: install helm
@@ -34,7 +33,8 @@ install_gruntwork_utils: &install_gruntwork_utils
   command: |
     curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
     gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/terraform-aws-ci" --tag "${MODULE_CI_VERSION}"
-    gruntwork-install --module-name "kubernetes-circleci-helpers" --repo "https://github.com/gruntwork-io/terraform-aws-ci" --tag "${MODULE_CI_VERSION}"
+    # TODO: replace with released version
+    gruntwork-install --module-name "kubernetes-circleci-helpers" --repo "https://github.com/gruntwork-io/terraform-aws-ci" --branch "bug/fix-setup-minikube" #--tag "${MODULE_CI_VERSION}"
     gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag "${TERRATEST_LOG_PARSER_VERSION}"
     configure-environment-for-gruntwork-module \
       --terraform-version ${TERRAFORM_VERSION} \
@@ -50,7 +50,8 @@ integration_test_steps: &integration_test_steps
         <<: *install_gruntwork_utils
     - run:
         command: |
-          sudo apt-get install -y conntrack
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y conntrack
           setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}"
     - run:
         <<: *install_helm_client
