@@ -316,24 +316,31 @@ serviceMonitor:
 # ingress is a map that can be used to configure an Ingress resource for this service. By default, turn off ingress.
 # NOTE: if you enable Ingress, then Service must also be enabled.
 # The expected keys are:
-#   - enabled     (bool)         (required) : Whether or not the Ingress resource should be created. If false, no
-#                                             Ingress resource will be created.
-#   - annotations (map)                     : Annotations that should be added to the Service resource. This is injected
-#                                             directly in to the resource yaml.
-#   - tls         (list[map])               : Sets up TLS termination on the ingress rule. Each item is a separate TLS
-#                                             rule that maps to one or more hosts specified in this ingress rule. This
-#                                             is injected directly in to the resource yaml.
-#   - hosts       (list[string])            : Sets up the host routes for the ingress resource. There will be a routing
-#                                             rule for each host defined in this list. If empty, will match all hosts.
-#   - path        (string)       (required) : The url path to match to route to the Service.
-#   - servicePort (int|string)   (required) : The port (as a number) or the name of the port on the Service to route to.
-#   - additionalPaths (list[map])           : Additional paths that should be added to the ingress which will be lower
-#                                             priority than the application service path. Each item corresponds to
-#                                             another path, and should define `path`, `serviceName`, and `servicePort`.
+#   - enabled     (bool)         (required)  : Whether or not the Ingress resource should be created. If false, no
+#                                              Ingress resource will be created.
+#   - annotations (map)                      : Annotations that should be added to the Service resource. This is
+#                                              injected directly in to the resource yaml.
+#   - tls         (list[map])                : Sets up TLS termination on the ingress rule. Each item is a separate TLS
+#                                              rule that maps to one or more hosts specified in this ingress rule. This
+#                                              is injected directly in to the resource yaml.
+#   - hosts       (list[string])             : Sets up the host routes for the ingress resource. There will be a routing
+#                                              rule for each host defined in this list. If empty, will match all hosts.
+#   - path        (string)       (required)  : The url path to match to route to the Service.
+#   - pathType    (string)       (required in k8s version 1.19+)
+#                                            : The path type to use for the ingress rule. Refer to
+#                                              https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
+#                                              for more information.
+#   - servicePort (int|string)   (required)  : The port (as a number) or the name of the port on the Service to route
+#                                              to.
+#   - additionalPaths (list[map])            : Additional paths that should be added to the ingress which will be lower
+#                                              priority than the application service path. Each item corresponds to
+#                                              another path, and should define `path`, `pathType`, `serviceName`, and
+#                                              `servicePort`.
 #   - additionalPathsHigherPriority (list[map])
-#                                           : Additional paths that should be added to the ingress which will be higher
-#                                             priority than the application service path. Each item corresponds to
-#                                             another path, and should define `path`, `serviceName`, and `servicePort`.
+#                                            : Additional paths that should be added to the ingress which will be higher
+#                                              priority than the application service path. Each item corresponds to
+#                                              another path, and should define `path`, `pathType`, `serviceName`, and
+#                                              `servicePort`.
 #
 # The following example specifies an Ingress rule that routes chart-example.local/app to the Service port `app` with
 # TLS configured using the certificate key pair in the Secret `chart-example-tls`:
