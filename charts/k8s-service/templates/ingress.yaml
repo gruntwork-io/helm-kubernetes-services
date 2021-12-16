@@ -48,21 +48,21 @@ spec:
         paths:
           {{- range $additionalPathsHigherPriority }}
           - path: {{ .path }}
-            {{- if .pathType }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") .pathType }}
             pathType: {{ .pathType }}
             {{- end }}
             backend:
               {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
           - path: {{ $ingressPath }}
-            {{- if $ingressPathType }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") $ingressPathType }}
             pathType: {{ $ingressPathType }}
             {{- end }}
             backend:
               {{- include "gruntwork.ingress.backend" (dict "serviceName" $fullName "servicePort" $servicePort | merge $baseVarsForBackend) }}
           {{- range $additionalPaths }}
           - path: {{ .path }}
-            {{- if .pathType }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") .pathType }}
             pathType: {{ .pathType }}
             {{- end }}
             backend:
@@ -74,21 +74,21 @@ spec:
         paths:
           {{- range $additionalPathsHigherPriority }}
           - path: {{ .path }}
-            {{- if .pathType }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") .pathType }}
             pathType: {{ .pathType }}
             {{- end }}
             backend:
               {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
           - path: {{ $ingressPath }}
-            {{- if $ingressPathType }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") $ingressPathType }}
             pathType: {{ $ingressPathType }}
             {{- end }}
             backend:
               {{- include "gruntwork.ingress.backend" (dict "serviceName" $fullName "servicePort" $servicePort | merge $baseVarsForBackend) }}
           {{- range $additionalPaths }}
           - path: {{ .path }}
-            {{- if .pathType }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") .pathType }}
             pathType: {{ .pathType }}
             {{- end }}
             backend:
