@@ -119,6 +119,7 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	test_structure.RunTestStage(t, "upgrade", func() {
 		// Now redeploy with higher priority path and make sure it fails
 		options.SetValues["ingress.additionalPathsHigherPriority[0].path"] = "/app"
+		options.SetValues["ingress.additionalPathsHigherPriority[0].pathType"] = "Prefix"
 		options.SetValues["ingress.additionalPathsHigherPriority[0].serviceName"] = "black-hole"
 		options.SetValues["ingress.additionalPathsHigherPriority[0].servicePort"] = "80"
 		helm.Upgrade(t, options, helmChartPath, releaseName)
