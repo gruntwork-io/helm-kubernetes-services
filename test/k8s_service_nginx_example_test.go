@@ -18,6 +18,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/mod/semver"
 )
 
 // Test that:
@@ -151,18 +152,40 @@ func verifyIngressAvailable(
 	path string,
 	validationFunction func(int, string) bool,
 ) {
-	// Get the ingress and wait until it is available
-	k8s.WaitUntilIngressAvailable(
-		t,
-		kubectlOptions,
-		ingressName,
-		WaitTimerRetries,
-		WaitTimerSleep,
-	)
+	version, err := k8s.GetKubernetesClusterVersionWithOptionsE(t, kubectlOptions)
+	require.NoError(t, err)
 
-	// Now hit the service endpoint to verify it is accessible
-	ingress := k8s.GetIngress(t, kubectlOptions, ingressName)
-	ingressEndpoint := ingress.Status.LoadBalancer.Ingress[0].IP
+	// If the actual cluster version is >= v1.19.0, use networkingv1 functions. Otherwise, use networkingv1beta1
+	// functions.
+	var ingressEndpoint string
+	if semver.Compare(version, "v1.19.0") >= 0 {
+		// Get the ingress and wait until it is available
+		k8s.WaitUntilIngressAvailable(
+			t,
+			kubectlOptions,
+			ingressName,
+			WaitTimerRetries,
+			WaitTimerSleep,
+		)
+
+		// Now hit the service endpoint to verify it is accessible
+		ingress := k8s.GetIngress(t, kubectlOptions, ingressName)
+		ingressEndpoint = ingress.Status.LoadBalancer.Ingress[0].IP
+	} else {
+		// Get the ingress and wait until it is available
+		k8s.WaitUntilIngressAvailableV1Beta1(
+			t,
+			kubectlOptions,
+			ingressName,
+			WaitTimerRetries,
+			WaitTimerSleep,
+		)
+
+		// Now hit the service endpoint to verify it is accessible
+		ingress := k8s.GetIngressV1Beta1(t, kubectlOptions, ingressName)
+		ingressEndpoint = ingress.Status.LoadBalancer.Ingress[0].IP
+	}
+
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s%s", ingressEndpoint, path),
