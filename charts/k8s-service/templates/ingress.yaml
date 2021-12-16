@@ -3,6 +3,7 @@ If the operator configures the ingress input variable, then also create an Ingre
 service. Note that Ingress can only route to a Service, so the operator must also configure a Service.
 */ -}}
 {{- if .Values.ingress.enabled -}}
+
 {{- /*
 We declare some variables defined on the Values. These are reused in `with` and `range` blocks where the scoped variable
 (`.`) is rebound within the block.
@@ -15,6 +16,7 @@ We declare some variables defined on the Values. These are reused in `with` and 
 {{- $additionalPaths := .Values.ingress.additionalPaths }}
 {{- $servicePort := .Values.ingress.servicePort -}}
 {{- $baseVarsForBackend := dict "fullName" $fullName "ingressAPIVersion" $ingressAPIVersion -}}
+
 apiVersion: {{ $ingressAPIVersion }}
 kind: Ingress
 metadata:

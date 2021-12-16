@@ -18,7 +18,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/require"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Test that:
@@ -110,10 +109,10 @@ func TestK8SServiceNginxExample(t *testing.T) {
 
 		// We expect this to succeed, because the black hole service that overlaps with the nginx service is added as lower
 		// priority.
-		verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/app", nginxValidationFunction)
+		verifyIngressAvailable(t, kubectlOptions, releaseName, "/app", nginxValidationFunction)
 
 		// On the other hand, we expect this to fail because the black hole service does not exist
-		verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/black-hole", serviceUnavailableValidationFunction)
+		verifyIngressAvailable(t, kubectlOptions, releaseName, "/black-hole", serviceUnavailableValidationFunction)
 	})
 
 	test_structure.RunTestStage(t, "upgrade", func() {
@@ -131,7 +130,7 @@ func TestK8SServiceNginxExample(t *testing.T) {
 		verifyServiceAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
 
 		// ... but now the nginx service via ingress should be unavailable because of the higher priority black hole path
-		verifyIngressAvailable(t, kubectlOptions, "nginx", releaseName, "/app", serviceUnavailableValidationFunction)
+		verifyIngressAvailable(t, kubectlOptions, releaseName, "/app", serviceUnavailableValidationFunction)
 	})
 }
 
@@ -148,18 +147,11 @@ func serviceUnavailableValidationFunction(statusCode int, body string) bool {
 func verifyIngressAvailable(
 	t *testing.T,
 	kubectlOptions *k8s.KubectlOptions,
-	appName string,
-	releaseName string,
+	ingressName string,
 	path string,
 	validationFunction func(int, string) bool,
 ) {
-	// Get the service and wait until it is available
-	filters := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s", appName, releaseName),
-	}
-	ingresses := k8s.ListIngresses(t, kubectlOptions, filters)
-	require.Equal(t, len(ingresses), 1)
-	ingressName := ingresses[0].Name
+	// Get the ingress and wait until it is available
 	k8s.WaitUntilIngressAvailable(
 		t,
 		kubectlOptions,
