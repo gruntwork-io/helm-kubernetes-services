@@ -3,20 +3,19 @@ defaults: &defaults
     enabled: true
     image: "ubuntu-1604:201903-01"
 
-env: &env
-  environment:
-    GRUNTWORK_INSTALLER_VERSION: v0.0.21
-    TERRATEST_LOG_PARSER_VERSION: v0.29.0
-    HELM_VERSION: v3.1.1
-    MINIKUBE_VERSION: v1.11.0
-    KUBERNETES_VERSION: v1.17.12
-    MODULE_CI_VERSION: v0.28.3
-    TERRAFORM_VERSION: NONE
-    TERRAGRUNT_VERSION: NONE
-    PACKER_VERSION: NONE
-    GOLANG_VERSION: 1.16
-    GO111MODULE: auto
-    KUBECONFIG: /home/circleci/.kube/config
+base_env: &base_env
+  GRUNTWORK_INSTALLER_VERSION: v0.0.21
+  TERRATEST_LOG_PARSER_VERSION: v0.29.0
+  HELM_VERSION: v3.6.3
+  # Newer versions of minikube has bugs in the nginx ingress setup
+  MINIKUBE_VERSION: v1.22.0
+  MODULE_CI_VERSION: v0.40.0
+  TERRAFORM_VERSION: NONE
+  TERRAGRUNT_VERSION: NONE
+  PACKER_VERSION: NONE
+  GOLANG_VERSION: 1.16
+  GO111MODULE: auto
+  KUBECONFIG: /home/circleci/.kube/config
 
 install_helm_client: &install_helm_client
   name: install helm
@@ -43,10 +42,40 @@ install_gruntwork_utils: &install_gruntwork_utils
       --packer-version ${PACKER_VERSION} \
       --go-version ${GOLANG_VERSION} \
 
+integration_test_steps: &integration_test_steps
+  steps:
+    - attach_workspace:
+        at: /home/circleci
+    - run:
+        <<: *install_gruntwork_utils
+    - run:
+        command: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y conntrack
+          setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}"
+    - run:
+        <<: *install_helm_client
+    - run:
+        name: run tests
+        command: |
+          mkdir -p /tmp/logs
+          cd test
+          go mod tidy
+          run-go-tests --packages "-tags integration ." --timeout 60m | tee /tmp/logs/all.log
+        no_output_timeout: 3600s
+    - run:
+        command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
+        when: always
+    - store_artifacts:
+        path: /tmp/logs
+    - store_test_results:
+        path: /tmp/logs
+
 version: 2
 jobs:
   setup:
-    <<: *env
+    environment:
+      <<: *base_env
     docker:
       - image: circleci/python:3.8.1
     steps:
@@ -73,16 +102,15 @@ jobs:
           root: /home/circleci
           paths:
             - project
-  test:
+  tpl_tests:
     <<: *defaults
-    <<: *env
+    environment:
+      <<: *base_env
     steps:
       - attach_workspace:
           at: /home/circleci
       - run:
           <<: *install_gruntwork_utils
-      - run:
-          command: setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}"
       - run:
           <<: *install_helm_client
       - run:
@@ -91,7 +119,7 @@ jobs:
             mkdir -p /tmp/logs
             cd test
             go mod tidy
-            run-go-tests --packages "-tags all ." --timeout 60m | tee /tmp/logs/all.log
+            run-go-tests --packages "-tags tpl ." --timeout 60m | tee /tmp/logs/all.log
           no_output_timeout: 3600s
       - run:
           command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
@@ -100,9 +128,24 @@ jobs:
           path: /tmp/logs
       - store_test_results:
           path: /tmp/logs
+
+  test_k8s117:
+    <<: *defaults
+    environment:
+      <<: *base_env
+      KUBERNETES_VERSION: v1.17.12
+    <<: *integration_test_steps
+
+  test_k8s121:
+    <<: *defaults
+    environment:
+      <<: *base_env
+      KUBERNETES_VERSION: v1.21.7
+    <<: *integration_test_steps
   deploy:
     <<: *defaults
-    <<: *env
+    environment:
+      <<: *base_env
     steps:
       - attach_workspace:
           at: /home/circleci
@@ -142,7 +185,25 @@ workflows:
           context:
             - Gruntwork Admin
 
-      - test:
+      - tpl_tests:
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /^v.*/
+          context:
+            - Gruntwork Admin
+
+      - test_k8s117:
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /^v.*/
+          context:
+            - Gruntwork Admin
+
+      - test_k8s121:
           requires:
             - setup
           filters:
@@ -153,7 +214,9 @@ workflows:
 
       - deploy:
           requires:
-            - test
+            - tpl_tests
+            - test_k8s117
+            - test_k8s121
           filters:
             tags:
               only: /^v.*/

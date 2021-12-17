@@ -3,16 +3,21 @@ If the operator configures the ingress input variable, then also create an Ingre
 service. Note that Ingress can only route to a Service, so the operator must also configure a Service.
 */ -}}
 {{- if .Values.ingress.enabled -}}
+
 {{- /*
 We declare some variables defined on the Values. These are reused in `with` and `range` blocks where the scoped variable
 (`.`) is rebound within the block.
 */ -}}
 {{- $fullName := include "k8s-service.fullname" . -}}
+{{- $ingressAPIVersion := include "gruntwork.ingress.apiVersion" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
+{{- $ingressPathType := .Values.ingress.pathType -}}
 {{- $additionalPathsHigherPriority := .Values.ingress.additionalPathsHigherPriority }}
 {{- $additionalPaths := .Values.ingress.additionalPaths }}
 {{- $servicePort := .Values.ingress.servicePort -}}
-apiVersion: {{ include "gruntwork.ingress.apiVersion" . }}
+{{- $baseVarsForBackend := dict "fullName" $fullName "ingressAPIVersion" $ingressAPIVersion -}}
+
+apiVersion: {{ $ingressAPIVersion }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -45,19 +50,25 @@ spec:
         paths:
           {{- range $additionalPathsHigherPriority }}
           - path: {{ .path }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
             backend:
-              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
-              servicePort: {{ .servicePort }}
+              {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
           - path: {{ $ingressPath }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") $ingressPathType }}
+            pathType: {{ $ingressPathType }}
+            {{- end }}
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $servicePort }}
+              {{- include "gruntwork.ingress.backend" (dict "serviceName" $fullName "servicePort" $servicePort | merge $baseVarsForBackend) }}
           {{- range $additionalPaths }}
           - path: {{ .path }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
             backend:
-              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
-              servicePort: {{ .servicePort }}
+              {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
     {{- end }}
     {{- else }}
@@ -65,19 +76,25 @@ spec:
         paths:
           {{- range $additionalPathsHigherPriority }}
           - path: {{ .path }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
             backend:
-              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
-              servicePort: {{ .servicePort }}
+              {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
           - path: {{ $ingressPath }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") $ingressPathType }}
+            pathType: {{ $ingressPathType }}
+            {{- end }}
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $servicePort }}
+              {{- include "gruntwork.ingress.backend" (dict "serviceName" $fullName "servicePort" $servicePort | merge $baseVarsForBackend) }}
           {{- range $additionalPaths }}
           - path: {{ .path }}
+            {{- if and (eq $ingressAPIVersion "networking.k8s.io/v1") .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
             backend:
-              serviceName: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ $fullName }}{{ end }}
-              servicePort: {{ .servicePort }}
+              {{- include "gruntwork.ingress.backend" (merge . $baseVarsForBackend) }}
           {{- end }}
 
     {{- end }}

@@ -6,6 +6,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -67,7 +68,7 @@ func getConfigMap(t *testing.T, options *k8s.KubectlOptions, name string) corev1
 	clientset, err := k8s.GetKubernetesClientFromOptionsE(t, options)
 	require.NoError(t, err)
 
-	configMap, err := clientset.CoreV1().ConfigMaps(options.Namespace).Get(name, metav1.GetOptions{})
+	configMap, err := clientset.CoreV1().ConfigMaps(options.Namespace).Get(context.Background(), name, metav1.GetOptions{})
 	require.NoError(t, err)
 	require.NotNil(t, configMap)
 
