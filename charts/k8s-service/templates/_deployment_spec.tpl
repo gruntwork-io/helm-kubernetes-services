@@ -224,15 +224,26 @@ spec:
           resources:
 {{ toYaml .Values.containerResources | indent 12 }}
 
-          {{- if gt (int .Values.shutdownDelay) 0 }}
-          # Include a preStop hook with a shutdown delay for eventual consistency reasons.
-          # See https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
+          {{- if or .Values.lifecycleHooks.enabled (gt (int .Values.shutdownDelay) 0) }}
           lifecycle:
+            {{- if and .Values.lifecycleHooks.enabled .Values.lifecycleHooks.postStart }}
+            postStart:
+{{ toYaml .Values.lifecycleHooks.postStart | indent 14 }}
+            {{- end }}
+
+            {{- if and .Values.lifecycleHooks.enabled .Values.lifecycleHooks.preStop }}
+            preStop:
+{{ toYaml .Values.lifecycleHooks.preStop | indent 14 }}
+            {{- else if gt (int .Values.shutdownDelay) 0 }}
+            # Include a preStop hook with a shutdown delay for eventual consistency reasons.
+            # See https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
             preStop:
               exec:
                 command:
                   - sleep
                   - "{{ int .Values.shutdownDelay }}"
+            {{- end }}
+
           {{- end }}
 
           {{- /* START ENV VAR LOGIC */ -}}

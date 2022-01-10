@@ -1,3 +1,4 @@
+//go:build all || tpl
 // +build all tpl
 
 // NOTE: We use build flags to differentiate between template tests and integration tests so that you can conveniently
@@ -226,33 +227,6 @@ func TestK8SServiceMultipleImagePullSecrets(t *testing.T) {
 	require.Equal(t, len(renderedImagePullSecrets), 2)
 	assert.Equal(t, renderedImagePullSecrets[0].Name, "docker-private-registry-key")
 	assert.Equal(t, renderedImagePullSecrets[1].Name, "gcr-registry-key")
-}
-
-// Test that setting shutdownDelay to 0 will disable the preStop hook
-func TestK8SServiceShutdownDelayZeroDisablesPreStopHook(t *testing.T) {
-	t.Parallel()
-
-	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{"shutdownDelay": "0"})
-
-	renderedPodContainers := deployment.Spec.Template.Spec.Containers
-	require.Equal(t, len(renderedPodContainers), 1)
-	appContainer := renderedPodContainers[0]
-	assert.Nil(t, appContainer.Lifecycle)
-}
-
-// Test that setting shutdownDelay to something greater than 0 will include a preStop hook
-func TestK8SServiceNonZeroShutdownDelayIncludesPreStopHook(t *testing.T) {
-	t.Parallel()
-
-	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{"shutdownDelay": "5"})
-
-	renderedPodContainers := deployment.Spec.Template.Spec.Containers
-	require.Equal(t, len(renderedPodContainers), 1)
-	appContainer := renderedPodContainers[0]
-	require.NotNil(t, appContainer.Lifecycle)
-	require.NotNil(t, appContainer.Lifecycle.PreStop)
-	require.NotNil(t, appContainer.Lifecycle.PreStop.Exec)
-	require.Equal(t, appContainer.Lifecycle.PreStop.Exec.Command, []string{"sleep", "5"})
 }
 
 // Test that setting additionalPaths on ingress add paths after service path
