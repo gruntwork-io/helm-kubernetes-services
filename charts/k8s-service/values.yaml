@@ -132,7 +132,32 @@ podSecurityContext: {}
 # consistency reasons. You can read more about why you might want to do this in
 # https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
 # You can disable this behavior by setting this value to 0.
+# NOTE: this conflicts with lifecycleHooks.preStop
 shutdownDelay: 5
+
+# lifecycleHooks configures container lifecycle hooks on the Pod so you can run arbitrary commands after the
+# container starts (postStart) or before the container stops.
+# Refer to https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ for more information on container
+# lifecycles.
+#
+# EXAMPLE:
+#
+# lifecycleHooks:
+#   enabled: true
+#   postStart:
+#     exec:
+#       command:
+#         - echo
+#         - "Run after starting container"
+#   preStop:
+#     exec:
+#       command:
+#         - echo
+#         - "Run before stopping container"
+#
+# NOTE: the preStop hook conflicts with shutdownDelay
+lifecycleHooks:
+  enabled: false
 
 # sideCarContainers specifies any additional containers that should be deployed as side cars to the main application
 # container. This will be included in the Deployment container spec so that it will be included in the application Pod.
