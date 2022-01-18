@@ -30,4 +30,13 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "k8s-service.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if .Values.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.service.sessionAffinity }}
+  {{- if .Values.service.sessionAffinityConfig }}
+  {{- with .Values.service.sessionAffinityConfig }}
+  sessionAffinityConfig:
+{{ toYaml . | indent 4 }}
+  {{- end}}
+  {{- end}}
+  {{- end}}
 {{- end }}

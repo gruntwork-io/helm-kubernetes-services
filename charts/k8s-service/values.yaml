@@ -297,7 +297,28 @@ minPodsAvailable: 0
 #                                       Deployment. This has the same structure as containerPorts, with the additional
 #                                       key of `targetPort` to indicate which port of the container the service port
 #                                       should route to. The `targetPort` can be a name defined in `containerPorts`.
+#   - sessionAffinity (string)        : Used to maintain session affinity, as defined in Kubernetes - supports 'ClientIP' and 'None'
+#                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
+#                                       Kubernetes defaults to None.
+#   - sessionAffinityConfig (object)  : Configuration for session affinity, as defined in Kubernetes
+#                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
 #
+# The following example uses the default config and enables client IP based session affinity with a maximum session
+# sticky time of 3 hours.
+# EXAMPLE:
+# 
+# service:
+#   enabled: true
+#   ports:
+#     app:
+#       port: 80
+#       targetPort: http
+#       protocol: TCP
+#   sessionAffinity: ClientIP
+#   sessionAffinityConfig:
+#     clientIP:
+#       timeoutSeconds: 10800
+# 
 # The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to the
 # port 80 of the service, and names the binding as `app`:
 service:
