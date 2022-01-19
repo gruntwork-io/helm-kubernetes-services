@@ -892,3 +892,33 @@ func TestK8SServiceRenderExtV1Beta1Ingress(t *testing.T) {
 	assert.Equal(t, secondPath.Backend.ServiceName, "black-hole")
 	assert.Equal(t, secondPath.Backend.ServicePort.IntVal, int32(80))
 }
+
+// Test that sessionAffinity and sessionAffinityConfig render correctly when set
+func TestK8SServiceSessionAffinityConfig(t *testing.T) {
+	t.Parallel()
+
+	service := renderK8SServiceWithSetValues(
+		t,
+		map[string]string{
+			"service.sessionAffinity":                               "ClientIP",
+			"service.sessionAffinityConfig.clientIP.timeoutSeconds": "10800",
+		},
+	)
+
+	assert.Equal(t, corev1.ServiceAffinity("ClientIP"), service.Spec.SessionAffinity)
+	assert.Equal(t, int32(10800), *service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds)
+}
+
+// Test that sessionAffinity and sessionAffinityConfig are not rendered if not set
+func TestK8SServiceSessionAffinityOnlySetIfDefined(t *testing.T) {
+	t.Parallel()
+
+	service := renderK8SServiceWithSetValues(
+		t,
+		map[string]string{},
+	)
+
+	// SessionAffinity and SessionAffinityConfig shouldn't be set
+	assert.Equal(t, corev1.ServiceAffinity(""), service.Spec.SessionAffinity)
+	assert.Nil(t, service.Spec.SessionAffinityConfig)
+}
