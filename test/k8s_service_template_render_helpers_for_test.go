@@ -126,3 +126,21 @@ func renderK8SServiceAccountWithSetValues(t *testing.T, setValues map[string]str
 	helm.UnmarshalK8SYaml(t, out, &serviceaccount)
 	return serviceaccount
 }
+
+func renderK8SServiceWithSetValues(t *testing.T, setValues map[string]string) corev1.Service {
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	options := &helm.Options{
+		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+		SetValues:   setValues,
+	}
+	// Render just the service resource
+	out := helm.RenderTemplate(t, options, helmChartPath, "service", []string{"templates/service.yaml"})
+
+	// Parse the service and return it
+	var service corev1.Service
+	helm.UnmarshalK8SYaml(t, out, &service)
+	return service
+}
