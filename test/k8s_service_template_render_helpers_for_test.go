@@ -1,3 +1,4 @@
+//go:build all || tpl
 // +build all tpl
 
 // NOTE: We use build flags to differentiate between template tests and integration tests so that you can conveniently
@@ -63,6 +64,26 @@ func renderK8SServiceIngressWithSetValues(t *testing.T, setValues map[string]str
 	options := &helm.Options{
 		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
 		SetValues:   setValues,
+	}
+	// Render just the ingress resource
+	out := helm.RenderTemplate(t, options, helmChartPath, "ingress", []string{"templates/ingress.yaml"})
+
+	// Parse the ingress and return it
+	var ingress networkingv1.Ingress
+	helm.UnmarshalK8SYaml(t, out, &ingress)
+	return ingress
+}
+
+func renderK8SServiceIngressWithValuesFile(t *testing.T, valuesFilePath string) networkingv1.Ingress {
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	options := &helm.Options{
+		ValuesFiles: []string{
+			filepath.Join("..", "charts", "k8s-service", "linter_values.yaml"),
+			valuesFilePath,
+		},
 	}
 	// Render just the ingress resource
 	out := helm.RenderTemplate(t, options, helmChartPath, "ingress", []string{"templates/ingress.yaml"})

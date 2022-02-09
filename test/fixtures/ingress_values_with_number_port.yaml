@@ -1,0 +1,8 @@
+ingress:
+  enabled: true
+  path: "/app"
+  servicePort: 80
+  additionalPaths:
+    - path: "/black-hole"
+      serviceName: "black-hole"
+      servicePort: 80

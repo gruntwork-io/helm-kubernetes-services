@@ -229,6 +229,46 @@ func TestK8SServiceMultipleImagePullSecrets(t *testing.T) {
 	assert.Equal(t, renderedImagePullSecrets[1].Name, "gcr-registry-key")
 }
 
+func TestK8SServiceIngressPortNumberTypeConversionWithValues(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithValuesFile(t, filepath.Join("fixtures", "ingress_values_with_number_port.yaml"))
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 2)
+
+	// The first path should be the main service path
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/app")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.Service.Name), "ingress-linter")
+	assert.Equal(t, firstPath.Backend.Service.Port.Number, int32(80))
+
+	// The second path should be the black hole
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/black-hole")
+	assert.Equal(t, secondPath.Backend.Service.Name, "black-hole")
+	assert.Equal(t, secondPath.Backend.Service.Port.Number, int32(80))
+}
+
+func TestK8SServiceIngressPortStringTypeConversionWithValues(t *testing.T) {
+	t.Parallel()
+
+	ingress := renderK8SServiceIngressWithValuesFile(t, filepath.Join("fixtures", "ingress_values_with_name_port.yaml"))
+	pathRules := ingress.Spec.Rules[0].HTTP.Paths
+	assert.Equal(t, len(pathRules), 2)
+
+	// The first path should be the main service path
+	firstPath := pathRules[0]
+	assert.Equal(t, firstPath.Path, "/app")
+	assert.Equal(t, strings.ToLower(firstPath.Backend.Service.Name), "ingress-linter")
+	assert.Equal(t, firstPath.Backend.Service.Port.Name, "app")
+
+	// The second path should be the black hole
+	secondPath := pathRules[1]
+	assert.Equal(t, secondPath.Path, "/black-hole")
+	assert.Equal(t, secondPath.Backend.Service.Name, "black-hole")
+	assert.Equal(t, secondPath.Backend.Service.Port.Name, "black-hole")
+}
+
 // Test that setting additionalPaths on ingress add paths after service path
 func TestK8SServiceIngressAdditionalPathsAfterMainServicePath(t *testing.T) {
 	t.Parallel()
