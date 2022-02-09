@@ -21,7 +21,7 @@
               service:
                 name: {{ if .serviceName }}{{ .serviceName }}{{ else }}{{ .fullName }}{{ end }}
                 port:
-                  {{- if kindIs "int64" .servicePort }}
+                  {{- if int .servicePort }}
                   number: {{ .servicePort }}
                   {{- else }}
                   name: {{ .servicePort }}
