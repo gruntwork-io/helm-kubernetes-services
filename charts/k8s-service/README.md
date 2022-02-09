@@ -505,6 +505,38 @@ evaluated first when routing requests.
 
 back to [root README](/README.adoc#day-to-day-operations)
 
+### How do I expose additional ports?
+
+By default, this Helm Chart will deploy your application container in a Pod that exposes ports 80. Sometimes you might 
+want to expose additional ports in your application - for example a separate port for Prometheus metrics. You can expose 
+additional ports for your application by overriding `containerPorts` and `service` input values:
+
+```yaml
+
+containerPorts:
+  http:
+    port: 80
+    protocol: TCP
+  prometheus:
+    port: 2020
+    protocol: TCP
+
+service:
+  enabled: true
+  type: NodePort
+  ports:
+    app:
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    prometheus:
+      port: 2020
+      targetPort: 2020
+      protocol: TCP
+
+```
+
+
 ## How do I deploy a worker service?
 
 Worker services typically do not have a RPC or web server interface to access it. Instead, worker services act on their
