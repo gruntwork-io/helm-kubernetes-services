@@ -76,7 +76,7 @@ jobs:
     environment:
       <<: *base_env
     docker:
-      - image: cimg/python:3.10.1
+      - image: "cimg/python:3.10.2"
     steps:
       - checkout
       # Install gruntwork utilities
@@ -85,7 +85,7 @@ jobs:
       # Export go install location to $PATH so it is available in subsequent steps
       - run:
           command: |
-            echo "export PATH=/usr/local/go/bin:$PATH" >> $BASH_ENV
+            echo 'export PATH=/usr/local/go/bin:$PATH' >> $BASH_ENV
       - run:
           <<: *install_helm_client
       # Fail the build if the pre-commit hooks don't pass. Note: if you run pre-commit install locally, these hooks will
