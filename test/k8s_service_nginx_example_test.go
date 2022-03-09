@@ -171,7 +171,11 @@ func verifyIngressAvailable(
 
 		// Now hit the service endpoint to verify it is accessible
 		ingress := k8s.GetIngress(t, kubectlOptions, ingressName)
-		ingressEndpoint = ingress.Status.LoadBalancer.Ingress[0].IP
+		if ingress.Status.LoadBalancer.Ingress[0].IP == "" {
+			ingressEndpoint = ingress.Status.LoadBalancer.Ingress[0].Hostname
+		} else {
+			ingressEndpoint = ingress.Status.LoadBalancer.Ingress[0].IP
+		}
 	} else {
 		// Get the ingress and wait until it is available
 		k8s.WaitUntilIngressAvailableV1Beta1(
@@ -184,7 +188,11 @@ func verifyIngressAvailable(
 
 		// Now hit the service endpoint to verify it is accessible
 		ingress := k8s.GetIngressV1Beta1(t, kubectlOptions, ingressName)
-		ingressEndpoint = ingress.Status.LoadBalancer.Ingress[0].IP
+		if ingress.Status.LoadBalancer.Ingress[0].IP == "" {
+			ingressEndpoint = ingress.Status.LoadBalancer.Ingress[0].Hostname
+		} else {
+			ingressEndpoint = ingress.Status.LoadBalancer.Ingress[0].IP
+		}
 	}
 
 	http_helper.HttpGetWithRetryWithCustomValidation(
