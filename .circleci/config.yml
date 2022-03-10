@@ -1,15 +1,15 @@
 defaults: &defaults
   machine:
     enabled: true
-    image: "ubuntu-1604:201903-01"
+    image: "ubuntu-2004:202111-02"
 
 base_env: &base_env
-  GRUNTWORK_INSTALLER_VERSION: v0.0.21
-  TERRATEST_LOG_PARSER_VERSION: v0.29.0
-  HELM_VERSION: v3.6.3
-  # Newer versions of minikube has bugs in the nginx ingress setup
+  GRUNTWORK_INSTALLER_VERSION: v0.0.38
+  TERRATEST_LOG_PARSER_VERSION: v0.40.6
+  HELM_VERSION: v3.8.0
+  # Newer versions of minikube has bugs in the nginx ingress setup for k8s <1.19
   MINIKUBE_VERSION: v1.22.0
-  MODULE_CI_VERSION: v0.40.0
+  MODULE_CI_VERSION: v0.46.1
   TERRAFORM_VERSION: NONE
   TERRAGRUNT_VERSION: NONE
   PACKER_VERSION: NONE
@@ -77,7 +77,7 @@ jobs:
     environment:
       <<: *base_env
     docker:
-      - image: circleci/python:3.8.1
+      - image: "cimg/python:3.10.2"
     steps:
       - checkout
       # Install gruntwork utilities
@@ -86,7 +86,7 @@ jobs:
       # Export go install location to $PATH so it is available in subsequent steps
       - run:
           command: |
-            echo "export PATH=/usr/local/go/bin:$PATH" >> $BASH_ENV
+            echo 'export PATH=/usr/local/go/bin:$PATH' >> $BASH_ENV
       - run:
           <<: *install_helm_client
       # Fail the build if the pre-commit hooks don't pass. Note: if you run pre-commit install locally, these hooks will
