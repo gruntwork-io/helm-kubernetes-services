@@ -1,7 +1,7 @@
 defaults: &defaults
   machine:
     enabled: true
-    image: "ubuntu-2004:202111-02"
+    image: ubuntu-2004:202111-02
 
 base_env: &base_env
   GRUNTWORK_INSTALLER_VERSION: v0.0.38
@@ -77,7 +77,7 @@ jobs:
     environment:
       <<: *base_env
     docker:
-      - image: "cimg/python:3.10.2"
+      - image: cimg/python:3.10.2
     steps:
       - checkout
       # Install gruntwork utilities
@@ -130,18 +130,17 @@ jobs:
           path: /tmp/logs
 
   test_k8s117:
-    <<: *defaults
+    <<: [*defaults, *integration_test_steps]
     environment:
       <<: *base_env
       KUBERNETES_VERSION: v1.17.12
-    <<: *integration_test_steps
 
   test_k8s121:
-    <<: *defaults
+    <<: [*defaults, *integration_test_steps]
     environment:
       <<: *base_env
       KUBERNETES_VERSION: v1.21.7
-    <<: *integration_test_steps
+
   deploy:
     <<: *defaults
     environment:
