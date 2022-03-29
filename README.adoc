@@ -81,7 +81,7 @@ If you just want to try this repo out for experimenting and learning, check out 
 
 If you want to deploy this repo in production, check out the following resources:
 
-* **Gruntwork Subscriber Only** https://github.com/gruntwork-io/infrastructure-modules-multi-account-acme/tree/master/services/k8s-service[k8s-service in the Acme example Reference Architecture]: Production-ready sample code from the Acme Reference Architecture examples.
+* **Gruntwork Subscriber Only** https://github.com/gruntwork-io/terraform-aws-service-catalog/tree/master/examples/for-production/infrastructure-live/services/k8s-service[k8s-service in the example Reference Architecture]: Production-ready sample code from the Reference Architecture example.
 
 
 
