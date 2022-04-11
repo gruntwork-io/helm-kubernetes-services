@@ -900,6 +900,17 @@ secrets:
 for different secrets and config maps, you can end up with only one. It is undefined which `Secret` or `ConfigMap` ends
 up getting mounted. To be safe, use a different `mountPath` for each one.
 
+**NOTE**: If you want mount the volumes created with `secrets` or `configMaps` on your init or sidecar containers, you will 
+have to append `-volume` to the volume name in . In the example above, the resulting volume will be `my-secret-volume`.
+
+```yaml
+sideCarContainers:
+  sidecar:
+    image: sidecar/container:latest
+    volumeMounts:
+    - name: my-secret-volume
+      mountPath: /etc/db
+```
 
 ### Which configuration method should I use?
 
@@ -1151,7 +1162,6 @@ In this config, the side car containers are rendered as additional containers to
 container configured by the `containerImage`, `ports`, `livenessProbe`, etc input values. Note that the
 `sideCarContainers` variable directly renders the spec, meaning that the additional values for the side cars such as
 `livenessProbe` should be rendered directly within the `sideCarContainers` input value.
-
 
 back to [root README](/README.adoc#core-concepts)
 
