@@ -34,7 +34,7 @@ func TestK8SJobBusyboxExample(t *testing.T) {
 	//os.Setenv("SKIP_setup", "true")
 	//os.Setenv("SKIP_create_namespace", "true")
 	//os.Setenv("SKIP_install", "true")
-	//os.Setenv("SKIP_validate_initial_deployment", "true")
+	//os.Setenv("SKIP_validate_job_deployment", "true")
 	//os.Setenv("SKIP_upgrade", "true")
 	//os.Setenv("SKIP_validate_upgrade", "true")
 	//os.Setenv("SKIP_delete", "true")
