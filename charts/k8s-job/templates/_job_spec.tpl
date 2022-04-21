@@ -84,10 +84,10 @@ metadata:
     app.kubernetes.io/name: {{ include "k8s-job.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    {{- range $key, $value := .Values.additionalDeploymentLabels }}
+    {{- range $key, $value := .Values.additionalJobLabels }}
     {{ $key }}: {{ $value }}
     {{- end}}
-{{- with .Values.deploymentAnnotations }}
+{{- with .Values.jobAnnotations }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
@@ -96,11 +96,6 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ include "k8s-job.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
-      {{- if .isCanary }}
-      gruntwork.io/deployment-type: canary
-      {{- else }}
-      gruntwork.io/deployment-type: main
-      {{- end }}
   template:
     metadata:
       labels:

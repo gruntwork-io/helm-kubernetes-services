@@ -151,3 +151,14 @@ customResources:
 # fullnameOverride is a string that allows overriding the default fullname that appears as the
 # application name and is used as the application name by kubernetes.
 fullnameOverride: ""
+
+# jobAnnotations will add the provided map to the annotations for the Job resource created by this chart.
+# The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
+# NOTE: This variable is injected directly into the Job spec.
+jobAnnotations: {}
+
+# additionalJobLabels will add the provided map to the labels for the Job resource created by this chart.
+# this is in addition to the helm template related labels created by the chart
+# The keys and values are free form, but subject to the limitations of Kubernetes labelling.
+# NOTE: This variable is injected directly into the Job spec.
+additionalJobLabels: {}
