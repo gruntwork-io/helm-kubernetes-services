@@ -81,7 +81,7 @@ func TestK8SJobOptionalValuesAreOptional(t *testing.T) {
 }
 
 // Test that annotations render correctly to annotate the Job resource
-func TestK8SJobtAnnotationsRenderCorrectly(t *testing.T) {
+func TestK8SJobAnnotationsRenderCorrectly(t *testing.T) {
 	t.Parallel()
 
 	uniqueID := random.UniqueId()
