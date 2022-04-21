@@ -1,0 +1,153 @@
+#----------------------------------------------------------------------------------------------------------------------
+# CHART PARAMETERS
+# This file declares the configuration input values for the k8s-job Helm chart.
+# This is a YAML-formatted file.
+#----------------------------------------------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------------------------------------------
+# REQUIRED VALUES
+# These values are expected to be defined and passed in by the operator when deploying this helm chart.
+#----------------------------------------------------------------------------------------------------------------------
+
+# containerImage is a map that describes the container image that should be used to serve the application managed by
+# this chart.
+# The expected keys are:
+#   - repository (string) (required) : The container image repository that should be used.
+#                                      E.g `nginx` ; `gcr.io/kubernetes-helm/tiller`
+#   - tag        (string) (required) : The tag of the image (e.g `latest`) that should be used. We recommend using a
+#                                      fixed tag or the SHA of the image. Avoid using the tags `latest`, `head`,
+#                                      `canary`, or other tags that are designed to be “floating”.
+#   - pullPolicy (string)            : The image pull policy to employ. Determines when the image will be pulled in. See
+#                                      the official Kubernetes docs for more info. If undefined, this will default to
+#                                      `IfNotPresent`.
+#
+# The following example deploys the `nginx:stable` image with a `IfNotPresent` image pull policy, which indicates that
+# the image should only be pulled if it has not been pulled previously.
+#
+# EXAMPLE:
+#
+# containerImage:
+#   repository: nginx
+#   tag: stable
+#   pullPolicy: IfNotPresent
+
+# applicationName is a string that names the application. This is used to label the pod and to name the main application
+# container in the pod spec. The label is keyed under "gruntwork.io/app-name"
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# OPTIONAL VALUES
+# These values have defaults, but may be overridden by the operator
+#----------------------------------------------------------------------------------------------------------------------
+
+# containerCommand is a list of strings that indicate a custom command to run for the container in place of the default
+# configured on the image. Omit to run the default command configured on the image.
+#
+# Example (run echo "Hello World"):
+#
+# containerCommand:
+#   - "echo"
+#   - "Hello World"
+containerCommand: null
+
+# containerArgs is a list of strings that indicate custom arguments when a pod is created. Omit and no arguments will be injected.
+#
+# Example (run echo "Hello World"):
+#
+# containerArgs:
+#   - "echo"
+#   - "Hello World"
+containerArgs: null
+
+# restartPolicy is a container and pod configuration option which decides which action to take if a container's process
+# exits with a non-zero code. The default option "Never" will not attempt to restart the container. The "OnFailure" option
+# will re-run the container. 
+#
+# Read more: https://kubernetes.io/docs/concepts/workloads/controllers/job/#handling-pod-and-container-failures
+#
+# Example (restart on failure)
+#
+# spec:
+#   restartPolicy: OnFailure
+#   containers:
+#     - name: busybox
+#     ...
+restartPolicy: Never
+
+# envVars is a map of strings to strings that specifies hard coded environment variables that should be set on the
+# application container. The keys will be mapped to environment variable keys, with the values mapping to the
+# environment variable values.
+#
+# NOTE: If you wish to set environment variables using Secrets, see the `secrets` setting in this file.
+#
+# The following example configures two environment variables, DB_HOST and DB_PORT:
+#
+# EXAMPLE:
+#
+# envVars:
+#   DB_HOST: "mysql.default.svc.cluster.local"
+#   DB_PORT: 3306
+envVars: {}
+
+# additionalContainerEnv is a list of additional environment variables
+# definitions that will be inserted into the Container's environment YAML.
+#
+# Example:
+# additionalContainerEnv:
+#   - name: DD_AGENT_HOST
+#     valueFrom:
+#       fieldRef:
+#         fieldPath: status.hostIP
+#   - name: DD_ENTITY_ID
+#     valueFrom:
+#       fieldRef:
+#         fieldPath: metadata.uid
+additionalContainerEnv: {}
+
+# containerResources specifies the amount of resources the application container will require. Only specify if you have
+# specific resource needs.
+# NOTE: This variable is injected directly into the pod spec. See the official documentation for what this might look
+# like: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+containerResources: {}
+
+# imagePullSecrets lists the Secret resources that should be used for accessing private registries. Each item in the
+# list is a string that corresponds to the Secret name.
+imagePullSecrets: []
+
+# customResources is a map that lets you define Kubernetes resources you want installed and configured as part of this chart.
+# The expected keys of customResources are:
+#   - enabled   (bool) : Whether or not the provided custom resource definitions should be created.
+#   - resources (map)  : A map of custom Kubernetes resources you want to install during the installation of the chart.
+#
+# NOTE: By default enabled = false, and no custom resources will be created. If you provide any resources, be sure to
+# provide them as quoted using "|", and set enabled: true.
+#
+# The following example creates a custom ConfigMap and a Secret.
+#
+# EXAMPLE:
+#
+# customResources:
+#   enabled: true
+#   resources:
+#     custom_configmap: |
+#       apiVersion: v1
+#       kind: ConfigMap
+#       metadata:
+#         name: example
+#       data:
+#         key: value
+#     custom_secret: |
+#       apiVersion: v1
+#       kind: Secret
+#       metadata:
+#         name: example
+#       type: Opaque
+#       data:
+#         key: dmFsdWU=
+customResources:
+  enabled: false
+  resources: {}
+
+# fullnameOverride is a string that allows overriding the default fullname that appears as the
+# application name and is used as the application name by kubernetes.
+fullnameOverride: ""
