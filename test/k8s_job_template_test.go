@@ -85,7 +85,8 @@ func TestK8SJobAnnotationsRenderCorrectly(t *testing.T) {
 	t.Parallel()
 
 	uniqueID := random.UniqueId()
-	job := renderK8SJobWithSetValues(t, map[string]string{"jobAnnotations.unique-id": uniqueID})
+	// ERROR: Need to find function that can inject annotations into a job
+	job := renderK8SServiceDeploymentWithSetValues(t, map[string]string{"jobAnnotations.unique-id": uniqueID})
 
 	assert.Equal(t, len(job.Annotations), 1)
 	assert.Equal(t, job.Annotations["unique-id"], uniqueID)
@@ -93,7 +94,7 @@ func TestK8SJobAnnotationsRenderCorrectly(t *testing.T) {
 
 func TestK8SJobSecurityContextAnnotationRenderCorrectly(t *testing.T) {
 	t.Parallel()
-	job := renderK8SJobWithSetValues(
+	job := renderK8SServiceDeploymentWithSetValues(
 		t,
 		map[string]string{
 			"securityContext.privileged": "true",
@@ -108,25 +109,11 @@ func TestK8SJobSecurityContextAnnotationRenderCorrectly(t *testing.T) {
 	assert.Equal(t, *testContainer.SecurityContext.RunAsUser, int64(1000))
 }
 
-func TestK8SJobSecurityContextAnnotationRenderCorrectly(t *testing.T) {
-	t.Parallel()
-
-	job := renderK8SJobWithSetValues(
-		t,
-		map[string]string{
-			"allowPrivilegeEscalation": "false",
-		},
-	)
-	renderedContainerSpec := job.Spec.Template.Spec
-	assert.NotNil(t, renderedContainerSpec.SecurityContext)
-	assert.Equal(t, *renderedContainerSpec.SecurityContext.allowPrivilegeEscalation, bool(false))
-}
-
 // Test that default imagePullSecrets do not render any
 func TestK8SJobNoImagePullSecrets(t *testing.T) {
 	t.Parallel()
 
-	job := renderK8SJobWithSetValues(
+	job := renderK8SServiceDeploymentWithSetValues(
 		t,
 		map[string]string{},
 	)
@@ -138,7 +125,7 @@ func TestK8SJobNoImagePullSecrets(t *testing.T) {
 func TestK8SJobMultipleImagePullSecrets(t *testing.T) {
 	t.Parallel()
 
-	job := renderK8SJobWithSetValues(
+	job := renderK8SServiceDeploymentWithSetValues(
 		t,
 		map[string]string{
 			"imagePullSecrets[0]": "docker-private-registry-key",
@@ -152,13 +139,11 @@ func TestK8SJobMultipleImagePullSecrets(t *testing.T) {
 	assert.Equal(t, renderedImagePullSecrets[1].Name, "gcr-registry-key")
 }
 
-// Not-reviewed
-
 // Test that omitting containerCommand does not set command attribute on the Job container spec.
 func TestK8SJobDefaultHasNullCommandSpec(t *testing.T) {
 	t.Parallel()
 
-	job := renderK8SJobWithSetValues(t, map[string]string{})
+	job := renderK8SServiceDeploymentWithSetValues(t, map[string]string{})
 	renderedContainers := job.Spec.Template.Spec.Containers
 	require.Equal(t, len(renderedContainers), 1)
 	appContainer := renderedContainers[0]
@@ -169,7 +154,7 @@ func TestK8SJobDefaultHasNullCommandSpec(t *testing.T) {
 func TestK8SJobWithContainerCommandHasCommandSpec(t *testing.T) {
 	t.Parallel()
 
-	job := renderK8SJobWithSetValues(
+	job := renderK8SServiceDeploymentWithSetValues(
 		t,
 		map[string]string{
 			"containerCommand[0]": "echo",
@@ -184,7 +169,7 @@ func TestK8SJobWithContainerCommandHasCommandSpec(t *testing.T) {
 
 func TestK8SJobMainJobContainersLabeledCorrectly(t *testing.T) {
 	t.Parallel()
-	job := renderK8SJobWithSetValues(
+	job := renderK8SServiceDeploymentWithSetValues(
 		t,
 		map[string]string{
 			"containerImage.repository": "nginx",
@@ -199,7 +184,7 @@ func TestK8SJobAddingAdditionalLabels(t *testing.T) {
 	t.Parallel()
 	first_custom_job_label_value := "first-custom-value"
 	second_custom_job_label_value := "second-custom-value"
-	job := renderK8SJobWithSetValues(t,
+	job := renderK8SServiceDeploymentWithSetValues(t,
 		map[string]string{"additionalJobLabels.first-label": first_custom_job_label_value,
 			"additionalJobLabels.second-label": second_custom_job_label_value})
 
@@ -212,7 +197,7 @@ func TestK8SJobFullnameOverride(t *testing.T) {
 
 	overiddenName := "overidden-name"
 
-	job := renderK8SJobWithSetValues(t,
+	job := renderK8SServiceDeploymentWithSetValues(t,
 		map[string]string{
 			"fullnameOverride": overiddenName,
 		},
@@ -225,7 +210,7 @@ func TestK8SJobEnvFrom(t *testing.T) {
 	t.Parallel()
 
 	t.Run("BothConfigMapsAndSecretsEnvFrom", func(t *testing.T) {
-		job := renderK8SJobWithSetValues(t,
+		job := renderK8SServiceDeploymentWithSetValues(t,
 			map[string]string{
 				"configMaps.test-configmap.as": "envFrom",
 				"secrets.test-secret.as":       "envFrom",
@@ -239,7 +224,7 @@ func TestK8SJobEnvFrom(t *testing.T) {
 	})
 
 	t.Run("OnlyConfigMapsEnvFrom", func(t *testing.T) {
-		job := renderK8SJobWithSetValues(t,
+		job := renderK8SServiceDeploymentWithSetValues(t,
 			map[string]string{
 				"configMaps.test-configmap.as": "envFrom",
 			},
@@ -251,7 +236,7 @@ func TestK8SJobEnvFrom(t *testing.T) {
 	})
 
 	t.Run("OnlySecretsEnvFrom", func(t *testing.T) {
-		job := renderK8SJobWithSetValues(t,
+		job := renderK8SServiceDeploymentWithSetValues(t,
 			map[string]string{
 				"secrets.test-secret.as": "envFrom",
 			},

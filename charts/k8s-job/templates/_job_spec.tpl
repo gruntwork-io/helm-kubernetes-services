@@ -124,7 +124,6 @@ spec:
           {{- $tag := required ".Values.containerImage.tag is required" .Values.containerImage.tag }}
           image: "{{ $repo }}:{{ $tag }}"
           imagePullPolicy: {{ .Values.containerImage.pullPolicy | default "IfNotPresent" }}
-        {{- end }}
           {{- if .Values.containerCommand }}
           command:
 {{ toYaml .Values.containerCommand | indent 12 }}
@@ -137,7 +136,6 @@ spec:
           {{- end}}
           resources:
 {{ toYaml .Values.containerResources | indent 12 }}
-          {{- end }}
 
           {{- /* START ENV VAR LOGIC */ -}}
           {{- if index $hasInjectionTypes "hasEnvVars" }}
