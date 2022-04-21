@@ -1,4 +1,4 @@
-# Kubernetes Service Helm Chart
+# Kubernetes Job Helm Chart
 
 This Helm Chart can be used to deploy your job container under a
 [Job](https://kubernetes.io/docs/concepts/workloads/controllers/job/) resource onto your Kubernetes
