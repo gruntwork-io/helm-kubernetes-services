@@ -23,7 +23,7 @@ The following resources will be deployed with this Helm Chart, depending on whic
 
 back to [root README](/README.adoc#core-concepts)
 
-## How do I deploy additional services not managed by the chart?
+## How do I deploy additional resources not managed by the chart?
 
 You can create custom Kubernetes resources, that are not directly managed by the chart, within the `customResources`
 key. You provide each resource manifest directly as a value under `customResources.resources` and set
