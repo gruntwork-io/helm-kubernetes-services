@@ -1,4 +1,4 @@
-# Kubernetes Service Helm Chart
+# Kubernetes DaemonSet Helm Chart
 
 This Helm Chart can be used to deploy your application container under a
 [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) resource onto your Kubernetes
