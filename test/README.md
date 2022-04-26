@@ -43,21 +43,12 @@ clean up.
 ### Prerequisites
 
 - Install the latest version of [Go](https://golang.org/).
-- Install [dep](https://github.com/golang/dep) for Go dependency management.
 - Setup a Kubernetes cluster. We recommend using a local version for fast iteration:
     - Linux: [minikube](https://github.com/kubernetes/minikube)
     - Mac OSX: [Kubernetes on Docker For Mac](https://docs.docker.com/docker-for-mac/kubernetes/)
     - Windows: [Kubernetes on Docker For Windows](https://docs.docker.com/docker-for-windows/kubernetes/)
 - Install and setup [helm](https://docs.helm.sh/using_helm/#installing-helm)
 
-### One-time setup
-
-Download Go dependencies using dep:
-
-```
-cd test
-dep ensure
-```
 
 ### Run all the tests
 
