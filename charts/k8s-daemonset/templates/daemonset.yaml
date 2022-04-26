@@ -1,0 +1,5 @@
+{{- /*
+The main Deployment Controller for the application being deployed. This resource manages the creation and replacement
+of the Pods backing your application.
+*/ -}}
+{{ include "k8s-daemonset.daemonsetSpec" (dict "Values" .Values "isCanary" false "Release" .Release "Chart" .Chart) }}

@@ -1,0 +1,23 @@
+{{- /*
+If there is a specification for minimum number of Pods that should be available, create a PodDisruptionBudget
+*/ -}}
+{{- if .Values.minPodsAvailable -}}
+apiVersion: {{ include "gruntwork.pdb.apiVersion" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "k8s-service.fullname" . }}
+  labels:
+    gruntwork.io/app-name: {{ .Values.applicationName }}
+    # These labels are required by helm. You can read more about required labels in the chart best practices guide:
+    # https://docs.helm.sh/chart_best_practices/#standard-labels
+    app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+    helm.sh/chart: {{ include "k8s-service.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  minAvailable: {{ int .Values.minPodsAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
