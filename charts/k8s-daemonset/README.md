@@ -1,13 +1,13 @@
 # Kubernetes Service Helm Chart
 
 This Helm Chart can be used to deploy your application container under a
-[Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) resource onto your Kubernetes
+[DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) resource onto your Kubernetes
 cluster. You can use this Helm Chart to run and deploy a long-running container, such as a web service or backend
 microservice. The container will be packaged into
-[Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) that are managed by the `Deployment`
+[Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) that are managed by the `DaemonSet`
 controller.
 
-This Helm Chart can also be used to front the `Pods` of the `Deployment` resource with a
+This Helm Chart can also be used to front the `Pods` of the `DaemonSet` resource with a
 [Service](https://kubernetes.io/docs/concepts/services-networking/service/) to provide a stable endpoint to access the
 `Pods`, as well as load balance traffic to them. The Helm Chart can also specify
 [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) rules to further configure complex routing
@@ -29,9 +29,9 @@ back to [root README](/README.adoc#core-concepts)
 
 The following resources will be deployed with this Helm Chart, depending on which configuration values you use:
 
-- `Deployment`: The main `Deployment` controller that will manage the application container image specified in the
+- `Deployment`: The main `DaemonSet` controller that will manage the application container image specified in the
                 `containerImage` input value.
-- Secondary `Deployment` for use as canary: An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`).
+- Secondary `DaemonSet` for use as canary: An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`).
 - `Service`: The `Service` resource providing a stable endpoint that can be used to address to `Pods` created by the
              `Deployment` controller. Created only if you configure the `service` input (and set
              `service.enabled = true`).
@@ -39,13 +39,6 @@ The following resources will be deployed with this Helm Chart, depending on whic
 - `Ingress`: The `Ingress` resource providing host and path routing rules to the `Service` for the deployed `Ingress`
              controller in the cluster. Created only if you configure the `ingress` input (and set
              `ingress.enabled = true`).
-- `Horizontal Pod Autoscaler`: The `Horizontal Pod Autoscaler` automatically scales the number of pods in a replication
-                                controller, deployment, replica set or stateful set based on observed CPU or memory utilization.
-                                Created only if the user sets `horizontalPodAutoscaler.enabled = true`.
-- `PodDisruptionBudget`: The `PodDisruptionBudget` resource that specifies a disruption budget for the `Pods` managed by
-                         the `Deployment`. This manages how many pods can be disrupted by a voluntary disruption (e.g
-                         node maintenance). Created if you specify a non-zero value for the `minPodsAvailable` input
-                         value.
 - `ManagedCertificate`: The `ManagedCertificate` is a [GCP](https://cloud.google.com/) -specific resource that creates a Google Managed SSL certificate. Google-managed SSL certificates are provisioned, renewed, and managed for your domain names. Read more about Google-managed SSL certificates [here](https://cloud.google.com/load-balancing/docs/ssl-certificates#managed-certs). Created only if you configure the `google.managedCertificate` input (and set
                          `google.managedCertificate.enabled = true` and `google.managedCertificate.domainName = your.domain.name`).
 
@@ -1134,11 +1127,11 @@ sideCarContainers:
     image: nginx:1.15.4
 ```
 
-This input will be rendered in the `Deployment` resource as:
+This input will be rendered in the `DaemonSet` resource as:
 
 ```yaml
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   ... Snipped for brevity ...
 spec:
