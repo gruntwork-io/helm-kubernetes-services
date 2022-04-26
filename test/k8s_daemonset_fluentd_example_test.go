@@ -25,11 +25,11 @@ import (
 //
 // 1. We can deploy the example
 // 2. The deployment succeeds without errors
-// 3. We can open a port forward to one of the Pods and access nginx
-// 4. We can access nginx via the service endpoint
-// 5. We can access nginx via the ingress endpoint
-// 6. If we set a lower priority path, the application path takes precendence over the nginx service
-// 7. If we set a higher priority path, that takes precedence over the nginx service
+// 3. We can open a port forward to one of the Pods and access fluentd
+// 4. We can access fluentd via the service endpoint
+// 5. We can access fluentd via the ingress endpoint
+// 6. If we set a lower priority path, the application path takes precendence over the fluentd service
+// 7. If we set a higher priority path, that takes precedence over the fluentd service
 func TestK8SServiceNginxExample(t *testing.T) {
 	t.Parallel()
 
@@ -46,7 +46,7 @@ func TestK8SServiceNginxExample(t *testing.T) {
 
 	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-daemonset"))
 	require.NoError(t, err)
-	examplePath, err := filepath.Abs(filepath.Join("..", "examples", "k8s-daemonset-nginx"))
+	examplePath, err := filepath.Abs(filepath.Join("..", "examples", "k8s-daemonset-fluentd"))
 	require.NoError(t, err)
 
 	// Create a test namespace to deploy resources into, to avoid colliding with other tests
@@ -59,7 +59,7 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	})
 	kubectlOptions := test_structure.LoadKubectlOptions(t, workingDir)
 	uniqueID := test_structure.LoadString(t, workingDir, "uniqueID")
-	testNamespace := fmt.Sprintf("k8s-daemonset-nginx-%s", strings.ToLower(uniqueID))
+	testNamespace := fmt.Sprintf("k8s-daemonset-fluentd-%s", strings.ToLower(uniqueID))
 
 	defer test_structure.RunTestStage(t, "delete_namespace", func() {
 		k8s.DeleteNamespace(t, kubectlOptions, testNamespace)
@@ -73,7 +73,7 @@ func TestK8SServiceNginxExample(t *testing.T) {
 
 	// Use the values file in the example and deploy the chart in the test namespace
 	// Set a random release name
-	releaseName := fmt.Sprintf("k8s-daemonset-nginx-%s", strings.ToLower(uniqueID))
+	releaseName := fmt.Sprintf("k8s-daemonset-fluentd-%s", strings.ToLower(uniqueID))
 	options := &helm.Options{
 		KubectlOptions: kubectlOptions,
 		ValuesFiles:    []string{filepath.Join(examplePath, "values.yaml")},
@@ -82,8 +82,8 @@ func TestK8SServiceNginxExample(t *testing.T) {
 			"ingress.path":        "/app",
 			"ingress.pathType":    "Prefix",
 			"ingress.servicePort": "http",
-			"ingress.annotations.kubernetes\\.io/ingress\\.class":                  "nginx",
-			"ingress.annotations.nginx\\.ingress\\.kubernetes\\.io/rewrite-target": "/",
+			"ingress.annotations.kubernetes\\.io/ingress\\.class":                  "fluentd",
+			"ingress.annotations.fluentd\\.ingress\\.kubernetes\\.io/rewrite-target": "/",
 			"ingress.additionalPaths[0].path":                                      "/app",
 			"ingress.additionalPaths[0].pathType":                                  "Prefix",
 			"ingress.additionalPaths[0].serviceName":                               "black-hole",
@@ -104,13 +104,13 @@ func TestK8SServiceNginxExample(t *testing.T) {
 	})
 
 	test_structure.RunTestStage(t, "validate_initial_deployment", func() {
-		verifyPodsCreatedSuccessfully(t, kubectlOptions, "nginx", releaseName, NumPodsExpected)
-		verifyAllPodsAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
-		verifyServiceAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
+		verifyPodsCreatedSuccessfully(t, kubectlOptions, "fluentd", releaseName, NumPodsExpected)
+		verifyAllPodsAvailable(t, kubectlOptions, "fluentd", releaseName, fluentdValidationFunction)
+		verifyServiceAvailable(t, kubectlOptions, "fluentd", releaseName, fluentdValidationFunction)
 
-		// We expect this to succeed, because the black hole service that overlaps with the nginx service is added as lower
+		// We expect this to succeed, because the black hole service that overlaps with the fluentd service is added as lower
 		// priority.
-		verifyIngressAvailable(t, kubectlOptions, releaseName, "/app", nginxValidationFunction)
+		verifyIngressAvailable(t, kubectlOptions, releaseName, "/app", fluentdValidationFunction)
 
 		// On the other hand, we expect this to fail because the black hole service does not exist
 		verifyIngressAvailable(t, kubectlOptions, releaseName, "/black-hole", serviceUnavailableValidationFunction)
@@ -127,18 +127,18 @@ func TestK8SServiceNginxExample(t *testing.T) {
 
 	test_structure.RunTestStage(t, "validate_upgrade", func() {
 		// We expect the service to still come up cleanly
-		verifyPodsCreatedSuccessfully(t, kubectlOptions, "nginx", releaseName, NumPodsExpected)
-		verifyAllPodsAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
-		verifyServiceAvailable(t, kubectlOptions, "nginx", releaseName, nginxValidationFunction)
+		verifyPodsCreatedSuccessfully(t, kubectlOptions, "fluentd", releaseName, NumPodsExpected)
+		verifyAllPodsAvailable(t, kubectlOptions, "fluentd", releaseName, fluentdValidationFunction)
+		verifyServiceAvailable(t, kubectlOptions, "fluentd", releaseName, fluentdValidationFunction)
 
-		// ... but now the nginx service via ingress should be unavailable because of the higher priority black hole path
+		// ... but now the fluentd service via ingress should be unavailable because of the higher priority black hole path
 		verifyIngressAvailable(t, kubectlOptions, releaseName, "/app", serviceUnavailableValidationFunction)
 	})
 }
 
-// nginxValidationFunction checks that we get a 200 response with the nginx welcome page.
-func nginxValidationFunction(statusCode int, body string) bool {
-	return statusCode == 200 && strings.Contains(body, "Welcome to nginx")
+// fluentdValidationFunction checks that we get a 200 response with the fluentd welcome page.
+func fluentdValidationFunction(statusCode int, body string) bool {
+	return statusCode == 200 && strings.Contains(body, "Welcome to fluentd")
 }
 
 // serviceUnavailableValidationFunction checks that we get a 503 response and the maintenance page

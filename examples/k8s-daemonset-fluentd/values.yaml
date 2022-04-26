@@ -1,19 +1,19 @@
 #----------------------------------------------------------------------------------------------------------------------
 # CHART PARAMETERS FOR NGINX EXAMPLE
-# This file declares the required values for the k8s-daemonset helm chart to deploy nginx.
+# This file declares the required values for the k8s-daemonset helm chart to deploy fluentd.
 # This is a YAML-formatted file.
 #----------------------------------------------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------------------------------------------
 # REQUIRED VALUES OF CHART
-# These are the required values defined by the k8s-daemonset chart. Here we will set them to deploy an nginx container.
+# These are the required values defined by the k8s-daemonset chart. Here we will set them to deploy an fluentd container.
 #----------------------------------------------------------------------------------------------------------------------
 
 # containerImage is a map that describes the container image that should be used to serve the application managed by
 # the k8s-daemonset chart.
 # The expected keys are:
 #   - repository (string) (required) : The container image repository that should be used.
-#                                      E.g `nginx` ; `gcr.io/kubernetes-helm/tiller`
+#                                      E.g `fluentd` ; `gcr.io/kubernetes-helm/tiller`
 #   - tag        (string) (required) : The tag of the image (e.g `latest`) that should be used. We recommend using a
 #                                      fixed tag or the SHA of the image. Avoid using the tags `latest`, `head`,
 #                                      `canary`, or other tags that are designed to be “floating”.
@@ -21,16 +21,16 @@
 #                                      the official Kubernetes docs for more info. If undefined, this will default to
 #                                      `IfNotPresent`.
 #
-# The following example deploys the `nginx:stable` image with a `IfNotPresent` image pull policy, which indicates that
+# The following example deploys the `fluentd:stable` image with a `IfNotPresent` image pull policy, which indicates that
 # the image should only be pulled if it has not been pulled previously. We deploy a specific, locked tag so that we
-# don't inadvertently upgrade nginx during a deployment that changes some other unrelated input value.
+# don't inadvertently upgrade fluentd during a deployment that changes some other unrelated input value.
 containerImage:
   repository: fluent/fluentd-kubernetes-daemonset
   tag: v1-debian-syslog
   pullPolicy: IfNotPresent
 
 # applicationName is a string that names the application. This is used to label the pod and to name the main application
-# container in the pod spec. Here we use nginx as the name since we are deploying nginx.
+# container in the pod spec. Here we use fluentd as the name since we are deploying fluentd.
 applicationName: "fluentd"
 
 #----------------------------------------------------------------------------------------------------------------------
