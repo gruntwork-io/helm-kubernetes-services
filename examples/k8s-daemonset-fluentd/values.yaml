@@ -1,69 +1,29 @@
-#----------------------------------------------------------------------------------------------------------------------
-# CHART PARAMETERS FOR NGINX EXAMPLE
-# This file declares the required values for the k8s-daemonset helm chart to deploy fluentd.
-# This is a YAML-formatted file.
-#----------------------------------------------------------------------------------------------------------------------
+# DaemonSet is a map that configures the pods to run as daemon on all (or some) Nodes.
+# The expected keys of DaemonSet are:
+#   - name                         (string) : The name of the DaemonSet.
+#   - create                       (bool)   : Whether or not to create a DaemonSet with the desired name
+#   - labels                       (map)    : Labels will add the provided map to the DaemonSet created
+#   - selectorLabels               (map)    : Tells the resource to match the pod, according to that label
+#   - tolerationKey                (string) : Toleration Key, Example: node-role.kubernetes.io/master
+#   - tolerationOperator           (string) : Toleration Operator, Example: Exists
+#   - tolerationEffect             (string) : Toleration Key, Example: NoSchedule
+#   - volumeName                   (string) : Name of the volumes mount inside container
+#   - volumeMountPath              (string) : Path name to Mount volumes into container
+#   - updateStrategy               (string) : Type of deployment
+#   - maxUnavailable               (number) : Only used when updateStrategy is set to "RollingUpdate"
 
-#----------------------------------------------------------------------------------------------------------------------
-# REQUIRED VALUES OF CHART
-# These are the required values defined by the k8s-daemonset chart. Here we will set them to deploy an fluentd container.
-#----------------------------------------------------------------------------------------------------------------------
-
-# containerImage is a map that describes the container image that should be used to serve the application managed by
-# the k8s-daemonset chart.
-# The expected keys are:
-#   - repository (string) (required) : The container image repository that should be used.
-#                                      E.g `fluentd` ; `gcr.io/kubernetes-helm/tiller`
-#   - tag        (string) (required) : The tag of the image (e.g `latest`) that should be used. We recommend using a
-#                                      fixed tag or the SHA of the image. Avoid using the tags `latest`, `head`,
-#                                      `canary`, or other tags that are designed to be “floating”.
-#   - pullPolicy (string)            : The image pull policy to employ. Determines when the image will be pulled in. See
-#                                      the official Kubernetes docs for more info. If undefined, this will default to
-#                                      `IfNotPresent`.
-#
-# The following example deploys the `fluentd:stable` image with a `IfNotPresent` image pull policy, which indicates that
-# the image should only be pulled if it has not been pulled previously. We deploy a specific, locked tag so that we
-# don't inadvertently upgrade fluentd during a deployment that changes some other unrelated input value.
-containerImage:
-  repository: fluent/fluentd-kubernetes-daemonset
-  tag: v1-debian-syslog
-  pullPolicy: IfNotPresent
-
-# applicationName is a string that names the application. This is used to label the pod and to name the main application
-# container in the pod spec. Here we use fluentd as the name since we are deploying fluentd.
-applicationName: "fluentd"
-
-#----------------------------------------------------------------------------------------------------------------------
-# OVERRIDE OPTIONAL VALUES
-# These values have defaults in the k8s-daemonset chart, but we override a few of them for the purposes of this demo.
-#----------------------------------------------------------------------------------------------------------------------
-
-# livenessProbe is a map that specifies the liveness probe of the main application container. Liveness probes indicate
-# when a container has reached a fatal state where it needs to be restarted to recover. When the liveness probe fails,
-# the container is automatically recreated. You can read more about container liveness probes in the official docs:
-# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
-# NOTE: This variable is injected directly into the container spec.
-#
-# The following example specifies an http GET based liveness probe, that will base the probe on a http GET request to
-# the port bound to name `http` (port 80 in the default settings) on the path `/`.
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-
-# readinessProbe is a map that specifies the readiness probe of the main application container. Readiness probes
-# indicate when a container is unable to serve traffic. When the readiness probe fails, the container is cycled out of
-# the list of available containers to the `Service`. You can read more about readiness probes in the official docs:
-# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
-# NOTE: This variable is injected directly into the container spec.
-#
-# The following example specifies an http GET based readiness probe, that will base the probe on a http GET request to
-# the port bound to name `http` (see description on `containerPorts`) on the path `/`.
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
-
-# We override the service type to use NodePort so that we can access the Service from outside the Kubernetes cluster.
-service:
-  type: NodePort
+DaemonSet:
+  name: "fluentd"
+  create: true
+  tolerationKey: "node-role.kubernetes.io/master"
+  tolerationOperator: "Exists"
+  tolerationEffect: "NoSchedule"
+  containerImage: "quay.io/fluentd_elasticsearch/fluentd:v2.5.2"
+  volumeMountCreate: true
+  volumeName: "varlog"
+  volumeMountPath: "/var/log"
+  updateStrategy: "RollingUpdate"
+  maxUnavailable: 1
+  extraVolumeMountCreate: true
+  extraVolumeName: "varlibdockercontainers"
+  extraVolumeMountPath: "/var/lib/docker/containers"
