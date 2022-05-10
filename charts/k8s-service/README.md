@@ -1008,6 +1008,21 @@ applicationName: nginx
 
 The only difference here is the `tag` of the `containerImage`.
 
+If you wish to upgrade your `nginx` version to a specific `sha256:` image digest value (not image id), then you can do this by
+using the sha256 value instead of the tag label as shown below:
+
+```yaml
+containerImage:
+  repository: nginx
+  tag: sha256:15b5f7f28672bbbf26f058928b16ecb465843845fafe5ea9a06b05a590709150
+
+applicationName: nginx
+```
+
+This will deploy a specific image version, not a tag that could potentially float (like `latest`). This is very useful if doing
+promotion pipelines where you want the values SBOM (Software Bill Of Materials) to represent a specific image version, not
+a label that may no longer refer to the original image version.  
+
 Next, we will upgrade our release using the updated values. To do so, we will use the `helm upgrade` command:
 
 ```bash
