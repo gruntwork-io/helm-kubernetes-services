@@ -48,7 +48,6 @@ func TestK8SServiceCanaryStatefulset(t *testing.T) {
 			filepath.Join("..", "charts", "k8s-service", "linter_values.yaml"),
 			filepath.Join("fixtures", "canary_and_main_statefulset_values.yaml"),
 		},
-		SetValues: map[string]string{"workloadType": "statefulset"},
 	}
 
 	defer helm.Delete(t, options, releaseName, true)

@@ -1,3 +1,4 @@
+workloadType: statefulset
 containerImage:
     repository: nginx
     tag: 1.14.2

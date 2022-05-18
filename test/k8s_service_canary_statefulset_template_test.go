@@ -49,7 +49,6 @@ func TestK8SServiceCanaryEnabledCreatesCanaryStatefulset(t *testing.T) {
 			filepath.Join("..", "charts", "k8s-service", "linter_values.yaml"),
 			filepath.Join("fixtures", "canary_statefulset_values.yaml"),
 		},
-		SetValues: map[string]string{"workloadType": "statefulset"},
 	}
 	out := helm.RenderTemplate(t, options, helmChartPath, "canary", []string{"templates/canarystatefulset.yaml"})
 	

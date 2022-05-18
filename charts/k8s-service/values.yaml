@@ -9,11 +9,6 @@
 # These values are expected to be defined and passed in by the operator when deploying this helm chart.
 #----------------------------------------------------------------------------------------------------------------------
 
-# workloadType defines which type of resource this Helm Chart should deploy.
-# Possible values are: 
-#   - deployment  : Use this to generate a Deployment workload application
-#   - statefulset : Use this to generate a Statefulset workload application
-
 # containerImage is a map that describes the container image that should be used to serve the application managed by
 # this chart.
 # The expected keys are:
@@ -44,6 +39,12 @@
 # OPTIONAL VALUES
 # These values have defaults, but may be overridden by the operator
 #----------------------------------------------------------------------------------------------------------------------
+
+# workloadType defines which type of resource this Helm Chart should deploy.
+# Possible values are: 
+#   - deployment  : Use this to generate a Deployment workload application
+#   - statefulset : Use this to generate a Statefulset workload application
+workloadType: deployment
 
 # containerCommand is a list of strings that indicate a custom command to run for the container in place of the default
 # configured on the image. Omit to run the default command configured on the image.

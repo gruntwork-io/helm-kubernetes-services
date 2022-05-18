@@ -1,3 +1,4 @@
+workloadType: statefulset
 canary:
   enabled: true
   replicaCount: 1
