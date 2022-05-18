@@ -9,6 +9,11 @@
 # These values are expected to be defined and passed in by the operator when deploying this helm chart.
 #----------------------------------------------------------------------------------------------------------------------
 
+# workloadType defines which type of resource this Helm Chart should deploy.
+# Possible values are: 
+#   - deployment  : Use this to generate a Deployment workload application
+#   - statefulset : Use this to generate a Statefulset workload application
+
 # containerImage is a map that describes the container image that should be used to serve the application managed by
 # this chart.
 # The expected keys are:
@@ -254,6 +259,30 @@ deploymentStrategy:
   type: RollingUpdate
   rollingUpdate: {}
 
+# updateStrategy specifies the strategy used to replace old Pods by new ones. Type can be "RollingUpdate" or
+# "OnDelete". "RollingUpdate" is the default value.
+# RollingUpdate: Automated, rolling update for the Pods in a StatefulSet.
+# Recreate: The StatefulSet controller will not automatically update the Pods in a StatefulSet. Users must manually delete Pods to cause the controller to create new Pods that reflect modifications made to a StatefulSet's .spec.template.
+#
+# RollingUpdate can be further refined by providing custom rollingUpdate options.
+# The rollingUpdate variable is a map that is directly injected into the statefulset spec and it allows you to specify partitioned rolling updates.
+# If a partition is specified, all Pods with an ordinal that is greater than or equal to the partition will be updated when the StatefulSet's .spec.template is updated. 
+# All Pods with an ordinal that is less than the partition will not be updated, and, even if they are deleted, they will be recreated at the previous version. 
+# If a StatefulSet's .spec.updateStrategy.rollingUpdate.partition is greater than its .spec.replicas, updates to its .spec.template will not be propagated to its Pods. 
+# In most cases you will not need to use a partition, but they are useful if you want to stage an update, roll out a canary, or perform a phased roll out.
+#
+# EXAMPLE:
+#
+# updateStrategy:
+#   enabled: false
+#   type: RollingUpdate
+# 
+# NOTE: This field is only used in `statefulset` workloads.
+updateStrategy:
+  enabled: false
+  type: RollingUpdate
+  rollingUpdate: {}
+
 # deploymentAnnotations will add the provided map to the annotations for the Deployment resource created by this chart.
 # The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
 # NOTE: This variable is injected directly into the deployment spec.
@@ -302,6 +331,8 @@ minPodsAvailable: 0
 #                                       Kubernetes defaults to None.
 #   - sessionAffinityConfig (object)  : Configuration for session affinity, as defined in Kubernetes
 #                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
+#   - name (required for statefulset  : The name of the service associated with this deployment.
+#           workloads)     
 #
 # The following example uses the default config and enables client IP based session affinity with a maximum session
 # sticky time of 3 hours.

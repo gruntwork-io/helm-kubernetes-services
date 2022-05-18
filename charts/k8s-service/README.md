@@ -1,13 +1,13 @@
 # Kubernetes Service Helm Chart
 
 This Helm Chart can be used to deploy your application container under a
-[Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) resource onto your Kubernetes
+[Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) or [Statefulset](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) resource onto your Kubernetes
 cluster. You can use this Helm Chart to run and deploy a long-running container, such as a web service or backend
 microservice. The container will be packaged into
-[Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) that are managed by the `Deployment`
-controller.
+[Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) that are managed by either the `Deployment` or the `Statefulset`
+controller, depending on which workload you specify.
 
-This Helm Chart can also be used to front the `Pods` of the `Deployment` resource with a
+This Helm Chart can also be used to front the `Pods` of the `Deployment` or `Statefulset` resource with a
 [Service](https://kubernetes.io/docs/concepts/services-networking/service/) to provide a stable endpoint to access the
 `Pods`, as well as load balance traffic to them. The Helm Chart can also specify
 [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) rules to further configure complex routing
@@ -32,8 +32,11 @@ The following resources will be deployed with this Helm Chart, depending on whic
 - `Deployment`: The main `Deployment` controller that will manage the application container image specified in the
                 `containerImage` input value.
 - Secondary `Deployment` for use as canary: An optional `Deployment` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`).
+- `Statefulset`: The main `Statefulset` controller that will manage the application container image specified in the
+                `containerImage` input value.
+- Secondary `Statefulset` for use as canary: An optional `Statefulset` controller that will manage a [canary deployment](https://martinfowler.com/bliki/CanaryRelease.html) of the application container image specified in the `canary.containerImage` input value. This is useful for testing a new application tag, in parallel to your stable tag, prior to rolling the new tag out. Created only if you configure the `canary.containerImage` values (and set `canary.enabled = true`).
 - `Service`: The `Service` resource providing a stable endpoint that can be used to address to `Pods` created by the
-             `Deployment` controller. Created only if you configure the `service` input (and set
+             `Deployment` or `Statefulset` controller. Created only if you configure the `service` input (and set
              `service.enabled = true`).
 - `ServiceMonitor`: The `ServiceMonitor` describes the set of targets to be monitored by Prometheus. Created only if you configure the service input and set `serviceMonitor.enabled = true`.
 - `Ingress`: The `Ingress` resource providing host and path routing rules to the `Service` for the deployed `Ingress`
@@ -43,10 +46,10 @@ The following resources will be deployed with this Helm Chart, depending on whic
                                 controller, deployment, replica set or stateful set based on observed CPU or memory utilization.
                                 Created only if the user sets `horizontalPodAutoscaler.enabled = true`.
 - `PodDisruptionBudget`: The `PodDisruptionBudget` resource that specifies a disruption budget for the `Pods` managed by
-                         the `Deployment`. This manages how many pods can be disrupted by a voluntary disruption (e.g
+                         the `Deployment` or `Statefulset`. This manages how many pods can be disrupted by a voluntary disruption (e.g
                          node maintenance). Created if you specify a non-zero value for the `minPodsAvailable` input
                          value.
-- `ManagedCertificate`: The `ManagedCertificate` is a [GCP](https://cloud.google.com/) -specific resource that creates a Google Managed SSL certificate. Google-managed SSL certificates are provisioned, renewed, and managed for your domain names. Read more about Google-managed SSL certificates [here](https://cloud.google.com/load-balancing/docs/ssl-certificates#managed-certs). Created only if you configure the `google.managedCertificate` input (and set
+- `ManagedCertificate`: The `ManagedCertificate` is a [GCP](https://cloud.google.com/)-specific resource that creates a Google Managed SSL certificate. Google-managed SSL certificates are provisioned, renewed, and managed for your domain names. Read more about Google-managed SSL certificates [here](https://cloud.google.com/load-balancing/docs/ssl-certificates#managed-certs). Created only if you configure the `google.managedCertificate` input (and set
                          `google.managedCertificate.enabled = true` and `google.managedCertificate.domainName = your.domain.name`).
 
 back to [root README](/README.adoc#core-concepts)
