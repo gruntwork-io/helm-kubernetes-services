@@ -27,6 +27,9 @@ spec:
     - name: {{ $key }}
 {{ toYaml $value | indent 6 }}
     {{- end }}
+  {{- if .Values.service.clusterIP }}
+  clusterIP: {{ .Values.service.clusterIP }}
+  {{- end }}
   selector:
     app.kubernetes.io/name: {{ include "k8s-service.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

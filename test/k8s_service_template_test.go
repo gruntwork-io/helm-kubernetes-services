@@ -962,3 +962,30 @@ func TestK8SServiceSessionAffinityOnlySetIfDefined(t *testing.T) {
 	assert.Equal(t, corev1.ServiceAffinity(""), service.Spec.SessionAffinity)
 	assert.Nil(t, service.Spec.SessionAffinityConfig)
 }
+
+// Test that clusterIP is rendered correctly when it is set.
+func TestK8SServiceClusterIP(t *testing.T) {
+	t.Parallel()
+
+	testCases := []string{
+		// Unset
+		"",
+		// headless service:
+		// https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
+		"None",
+		// Some random IP
+		"192.168.0.42",
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc, func(t *testing.T) {
+			values := make(map[string]string)
+			if tc != "" {
+				values["service.clusterIP"] = tc
+			}
+
+			service := renderK8SServiceWithSetValues(t, values)
+			assert.Equal(t, tc, service.Spec.ClusterIP)
+		})
+	}
+}

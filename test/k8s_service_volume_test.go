@@ -1,3 +1,4 @@
+//go:build all || integration
 // +build all integration
 
 // NOTE: We use build flags to differentiate between template tests and integration tests so that you can conveniently
@@ -60,5 +61,5 @@ func TestK8SServiceScratchSpaceIsTmpfs(t *testing.T) {
 	pod := pods[0]
 	logs, err := k8s.RunKubectlAndGetOutputE(t, kubectlOptions, "logs", pod.Name)
 	require.NoError(t, err)
-	require.Contains(t, logs, "tmpfs on /mnt/scratch type tmpfs (rw,relatime)")
+	require.Contains(t, logs, "tmpfs on /mnt/scratch type tmpfs (rw,relatime,inode64)")
 }
