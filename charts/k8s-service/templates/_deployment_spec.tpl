@@ -159,7 +159,10 @@ spec:
           command:
 {{ toYaml .Values.containerCommand | indent 12 }}
           {{- end }}
-
+          {{- if .Values.containerArgs }}
+          args:
+{{ toYaml .Values.containerArgs | indent 12 }}
+          {{- end }}
           {{- if index $hasInjectionTypes "exposePorts" }}
           ports:
             {{- /*
