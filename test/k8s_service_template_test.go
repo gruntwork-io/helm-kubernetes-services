@@ -600,6 +600,34 @@ func TestK8SServiceWithContainerCommandHasCommandSpec(t *testing.T) {
 	assert.Equal(t, appContainer.Command, []string{"echo", "Hello world"})
 }
 
+// Test that omitting containerArgs does not set args attribute on the Deployment container spec.
+func TestK8SServiceDefaultHasNullArgSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{})
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Nil(t, appContainer.Args)
+}
+
+// Test that setting containerCommand sets the command attribute on the Deployment container spec.
+func TestK8SServiceWithContainerArgsHasArgsSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"containerArgs[0]": "echo",
+			"containerArgs[1]": "Hello world",
+		},
+	)
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Equal(t, appContainer.Args, []string{"echo", "Hello world"})
+}
+
 // Test that providing tls configuration to Ingress renders correctly
 func TestK8SServiceIngressMultiCert(t *testing.T) {
 	t.Parallel()
