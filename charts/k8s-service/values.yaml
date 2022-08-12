@@ -1,3 +1,4 @@
+---
 #----------------------------------------------------------------------------------------------------------------------
 # CHART PARAMETERS
 # This file declares the configuration input values for the k8s-service Helm chart.
@@ -34,7 +35,6 @@
 # applicationName is a string that names the application. This is used to label the pod and to name the main application
 # container in the pod spec. The label is keyed under "gruntwork.io/app-name"
 
-
 #----------------------------------------------------------------------------------------------------------------------
 # OPTIONAL VALUES
 # These values have defaults, but may be overridden by the operator
@@ -49,6 +49,16 @@
 #   - "echo"
 #   - "Hello World"
 containerCommand: null
+
+# containerArgs is a list of strings that indicate custom args that will be passed to the container (CMD) place of the default
+# configured on the image. Omit to use the default args configured in the image
+#
+# Example (run echo "Hello World"):
+#
+# containerArgs:
+#   - "echo"
+#   - "Hello World"
+containerArgs: null
 
 # containerPorts is a map that specifies the ports to open on the container. This is a nested map: the first map lists
 # the named ports, while the second layer lists the port spec. The named references can be used to refer to the specific
@@ -125,7 +135,6 @@ securityContext: {}
 # podSecurityContext:
 #   fsGroup: 2000
 podSecurityContext: {}
-
 
 # shutdownDelay is the number of seconds to delay the shutdown sequence of the Pod by. This is implemented as a sleep
 # call in the preStop hook. By default, this chart includes a preStop hook with a shutdown delay for eventual
