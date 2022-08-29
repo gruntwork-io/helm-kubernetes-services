@@ -81,7 +81,7 @@ If you just want to try this repo out for experimenting and learning, check out 
 
 If you want to deploy this repo in production, check out the following resources:
 
-* **Gruntwork Subscriber Only** https://github.com/gruntwork-io/terraform-aws-service-catalog/blob/master/examples/for-production/infrastructure-live/prod/us-west-2/prod/services/k8s-sample-app-frontend/terragrunt.hcl[k8s-service in the example Reference Architecture]: Production-ready sample code from the Reference Architecture example.
+* **Gruntwork Subscriber Only** https://github.com/gruntwork-io/terraform-aws-service-catalog/blob/main/examples/for-production/infrastructure-live/prod/us-west-2/prod/services/k8s-sample-app-frontend/terragrunt.hcl[k8s-service in the example Reference Architecture]: Production-ready sample code from the Reference Architecture example.
 
 
 

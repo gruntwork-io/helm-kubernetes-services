@@ -33,7 +33,7 @@ Development](https://en.wikipedia.org/wiki/Test-driven_development)). That means
 verify that it's failing with a clear error message, and *then* make the code changes to get that test to pass. This
 ensures the tests stay up to date and verify all the functionality in this Module, including whatever new
 functionality you're adding in your contribution. Check out the
-[tests](https://github.com/gruntwork-io/helm-kubernetes-services/tree/master/test) folder for instructions on running
+[tests](https://github.com/gruntwork-io/helm-kubernetes-services/tree/main/test) folder for instructions on running
 the automated tests.
 
 
