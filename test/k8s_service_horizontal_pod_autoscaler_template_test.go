@@ -1,4 +1,3 @@
-//go:build all || tpl
 // +build all tpl
 
 // NOTE: We use build flags to differentiate between template tests and integration tests so that you can conveniently
