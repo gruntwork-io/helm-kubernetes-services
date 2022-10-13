@@ -325,6 +325,8 @@ minPodsAvailable: 0
 #       targetPort: http
 #       protocol: TCP
 #   sessionAffinity: ClientIP
+#   externalTrafficPolicy: Cluster
+#   internalTrafficPolicy: Cluster
 #   sessionAffinityConfig:
 #     clientIP:
 #       timeoutSeconds: 10800

@@ -33,6 +33,12 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "k8s-service.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  {{- end}}
+  {{- if .Values.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.service.internalTrafficPolicy }}
+  {{- end}}
   {{- if .Values.service.sessionAffinity }}
   sessionAffinity: {{ .Values.service.sessionAffinity }}
   {{- if .Values.service.sessionAffinityConfig }}
