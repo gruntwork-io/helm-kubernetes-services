@@ -977,6 +977,34 @@ func TestK8SServiceSessionAffinityConfig(t *testing.T) {
 	assert.Equal(t, int32(10800), *service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds)
 }
 
+// Test that externalTrafficPolicy is correctly set
+func TestK8SServiceExternalTrafficPolicy(t *testing.T) {
+	t.Parallel()
+
+	service := renderK8SServiceWithSetValues(
+		t,
+		map[string]string{
+			"service.externalTrafficPolicy": "Local",
+		},
+	)
+
+	assert.Equal(t, corev1.ServiceExternalTrafficPolicyType("Local"), service.Spec.ExternalTrafficPolicy)
+}
+
+// Test that internalTrafficPolicy is correctly set
+func TestK8SServiceInternalTrafficPolicy(t *testing.T) {
+	t.Parallel()
+
+	service := renderK8SServiceWithSetValues(
+		t,
+		map[string]string{
+			"service.internalTrafficPolicy": "Local",
+		},
+	)
+
+	assert.Equal(t, corev1.ServiceInternalTrafficPolicyType("Local"), *service.Spec.InternalTrafficPolicy)
+}
+
 // Test that sessionAffinity and sessionAffinityConfig are not rendered if not set
 func TestK8SServiceSessionAffinityOnlySetIfDefined(t *testing.T) {
 	t.Parallel()
