@@ -312,6 +312,10 @@ minPodsAvailable: 0
 #                                       Kubernetes defaults to None.
 #   - sessionAffinityConfig (object)  : Configuration for session affinity, as defined in Kubernetes
 #                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
+#   - externalTrafficPolicy (string)  : Configuration to control traffic flow from external sources - supports 'Cluster' and 'Local'
+#                                       https://kubernetes.io/docs/concepts/services-networking/service/#external-traffic-policy
+#   - internalTrafficPolicy (string)  : Configuration to control traffic flow from internal sources - supports 'Cluster' and 'Local'
+#                                       https://kubernetes.io/docs/concepts/services-networking/service/#internal-traffic-policy
 #
 # The following example uses the default config and enables client IP based session affinity with a maximum session
 # sticky time of 3 hours.
@@ -325,6 +329,8 @@ minPodsAvailable: 0
 #       targetPort: http
 #       protocol: TCP
 #   sessionAffinity: ClientIP
+#   externalTrafficPolicy: Cluster
+#   internalTrafficPolicy: Cluster
 #   sessionAffinityConfig:
 #     clientIP:
 #       timeoutSeconds: 10800
