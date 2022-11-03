@@ -196,8 +196,8 @@ func TestK8SServiceVolumeConfigMapAddsVolumeAndVolumeMountWithoutSubPathToPod(t 
 }
 
 // Test that setting the `secrets` input value with volume include the volume mount for the secret
-// We test by injecting to configMaps:
-// configMaps:
+// We test by injecting to secrets:
+// secrets:
 //   dbsettings:
 //     as: volume
 //     mountPath: /etc/db
@@ -300,7 +300,7 @@ func TestK8SServiceVolumeSecretAddsVolumeAndVolumeMountWithSubPathToPod(t *testi
 	require.Equal(t, len(renderedPodVolumes), 1)
 	podVolume := renderedPodVolumes[0]
 
-	// Check that the pod volume is a configmap volume
+	// Check that the pod volume is a secret volume
 	assert.Equal(t, podVolume.Name, "dbsettings-volume")
 	require.NotNil(t, podVolume.Secret)
 	assert.Equal(t, podVolume.Secret.SecretName, "dbsettings")
