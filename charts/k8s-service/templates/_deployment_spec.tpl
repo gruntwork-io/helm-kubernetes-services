@@ -317,6 +317,9 @@ spec:
             {{- if eq $value.as "volume" }}
             - name: {{ $name }}-volume
               mountPath: {{ quote $value.mountPath }}
+              {{- if $value.subPath }}
+              subPath: {{ quote $value.subPath }}
+              {{- end }}
             {{- end }}
           {{- end }}
           {{- range $name, $value := .Values.persistentVolumes }}

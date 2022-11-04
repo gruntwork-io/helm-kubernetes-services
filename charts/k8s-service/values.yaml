@@ -559,6 +559,10 @@ emptyDirs: {}
 #     : For Secrets mounted as a volume, specify the mount path on the container file system where the secrets will be
 #       available. Required when the Secret is exposed as a volume. Ignored when the Secret is exposed as environment
 #       variables.
+#   - subPath (string)
+#     : For Secrets mounted as a volume, specify the sub path on the volume system where the secret values will be
+#       available.  Optional when the Secret is exposed as a volume. Ignored when the Secret is exposed as
+#       environment variables.
 #   - items (map[SecretItem])
 #     : Specify how each Secret value should be made available. The keys are the key of the Secret that you wish to
 #       configure, while the value is another map that controls how that key should be exposed. Required when the Secret
