@@ -8,7 +8,6 @@ base_env: &base_env
   TERRATEST_LOG_PARSER_VERSION: v0.40.6
   HELM_VERSION: v3.8.0
   MODULE_CI_VERSION: v0.51.0
-  CRI_DOCKERD_VERSION: 0.3.0
   MINIKUBE_VERSION: v1.28.0
   TERRAFORM_VERSION: NONE
   TERRAGRUNT_VERSION: NONE
@@ -52,7 +51,7 @@ integration_test_steps: &integration_test_steps
         command: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y conntrack
-          setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}" --cri-dockerd-version "${CRI_DOCKERD_VERSION}"
+          setup-minikube --minikube-version "${MINIKUBE_VERSION}" --k8s-version "${KUBERNETES_VERSION}" ${CRI_DOCKERD_ARG}
     - run:
         <<: *install_helm_client
     - run:
@@ -134,12 +133,16 @@ jobs:
     environment:
       <<: *base_env
       KUBERNETES_VERSION: v1.24.8
+      CRI_DOCKERD_ARG: "--cri-dockerd-version 0.3.0"
+      MINIKUBE_VERSION: v1.28.0
 
   test_k8s121:
     <<: [*defaults, *integration_test_steps]
     environment:
       <<: *base_env
       KUBERNETES_VERSION: v1.21.7
+      CRI_DOCKERD_ARG: ""
+      MINIKUBE_VERSION: v1.22.0
 
   deploy:
     <<: *defaults
