@@ -7,9 +7,6 @@ base_env: &base_env
   GRUNTWORK_INSTALLER_VERSION: v0.0.38
   TERRATEST_LOG_PARSER_VERSION: v0.40.6
   HELM_VERSION: v3.8.0
-  # Newer versions of minikube has bugs in the nginx ingress setup for k8s <1.19
-  MINIKUBE_VERSION: v1.22.0
-  MODULE_CI_VERSION: v0.46.1
   TERRAFORM_VERSION: NONE
   TERRAGRUNT_VERSION: NONE
   PACKER_VERSION: NONE
@@ -129,17 +126,21 @@ jobs:
       - store_test_results:
           path: /tmp/logs
 
-  test_k8s117:
+  test_k8s124:
     <<: [*defaults, *integration_test_steps]
     environment:
       <<: *base_env
-      KUBERNETES_VERSION: v1.17.12
+      KUBERNETES_VERSION: v1.24.8
+      MINIKUBE_VERSION: v1.28.0
+      MODULE_CI_VERSION: v0.51.0
 
   test_k8s121:
     <<: [*defaults, *integration_test_steps]
     environment:
       <<: *base_env
       KUBERNETES_VERSION: v1.21.7
+      MINIKUBE_VERSION: v1.22.0
+      MODULE_CI_VERSION: v0.46.1
 
   deploy:
     <<: *defaults
@@ -193,7 +194,7 @@ workflows:
           context:
             - Gruntwork Admin
 
-      - test_k8s117:
+      - test_k8s124:
           requires:
             - setup
           filters:
@@ -214,7 +215,7 @@ workflows:
       - deploy:
           requires:
             - tpl_tests
-            - test_k8s117
+            - test_k8s124
             - test_k8s121
           filters:
             tags:
