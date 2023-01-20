@@ -40,3 +40,12 @@
     {{- print "policy/v1beta1" -}}
   {{- end -}}
 {{- end -}}
+
+{{/* Get HorizontalPodAutoscaler API Version */}}
+{{- define "gruntwork.horizontalPodAutoscaler.apiVersion" -}}
+  {{- if and (.Capabilities.APIVersions.Has "autoscaling/v2") (semverCompare ">= 1.23-0" (include "gruntwork.kubeVersion" .)) -}}
+    {{- print "autoscaling/v2" -}}
+  {{- else -}}
+    {{- print "autoscaling/v2beta2" -}}
+  {{- end -}}
+{{- end -}}
