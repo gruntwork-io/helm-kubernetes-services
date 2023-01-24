@@ -1,3 +1,4 @@
+//go:build all || tpl
 // +build all tpl
 
 // NOTE: We use build flags to differentiate between template tests and integration tests so that you can conveniently
@@ -182,4 +183,56 @@ func TestK8SServiceHorizontalPodAutoscalerCreateTrueCreatesHorizontalPodAutoscal
 	max, err := strconv.ParseFloat(maxReplicas, 64)
 	assert.Equal(t, min, rendered["spec"].(map[string]interface{})["minReplicas"])
 	assert.Equal(t, max, rendered["spec"].(map[string]interface{})["maxReplicas"])
+}
+
+// Test that the apiVersion of the Horizontal Pod Autoscaler is correct for Kubernetes < 1.23
+func TestK8SServiceHorizontalPodAutoscalerDisplaysBetaApiVersion(t *testing.T) {
+	t.Parallel()
+	expectedApiVersion := "autoscaling/v2beta2"
+
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	// We then use SetValues to override all the defaults.
+	options := &helm.Options{
+		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+		SetValues: map[string]string{
+			"horizontalPodAutoscaler.enabled": "true",
+		},
+	}
+	out := helm.RenderTemplate(t, options, helmChartPath, "hpa", []string{"templates/horizontalpodautoscaler.yaml"}, "--kube-version", "1.22")
+
+	// We take the output and render it to a map to validate it has created a Horizontal Pod Autoscaler output or not
+	rendered := map[string]interface{}{}
+	err = yaml.Unmarshal([]byte(out), &rendered)
+	assert.NoError(t, err)
+	assert.NotEqual(t, 0, len(rendered))
+	assert.Equal(t, expectedApiVersion, rendered["apiVersion"])
+}
+
+// Test that the apiVersion of the Horizontal Pod Autoscaler is correct for Kubernetes >= 1.23
+func TestK8SServiceHorizontalPodAutoscalerDisplaysStableApiVersion(t *testing.T) {
+	t.Parallel()
+	expectedApiVersion := "autoscaling/v2"
+
+	helmChartPath, err := filepath.Abs(filepath.Join("..", "charts", "k8s-service"))
+	require.NoError(t, err)
+
+	// We make sure to pass in the linter_values.yaml values file, which we assume has all the required values defined.
+	// We then use SetValues to override all the defaults.
+	options := &helm.Options{
+		ValuesFiles: []string{filepath.Join("..", "charts", "k8s-service", "linter_values.yaml")},
+		SetValues: map[string]string{
+			"horizontalPodAutoscaler.enabled": "true",
+		},
+	}
+	out := helm.RenderTemplate(t, options, helmChartPath, "hpa", []string{"templates/horizontalpodautoscaler.yaml"}, "--kube-version", "1.23", "--api-versions", "autoscaling/v2")
+
+	// We take the output and render it to a map to validate it has created a Horizontal Pod Autoscaler output or not
+	rendered := map[string]interface{}{}
+	err = yaml.Unmarshal([]byte(out), &rendered)
+	assert.NoError(t, err)
+	assert.NotEqual(t, 0, len(rendered))
+	assert.Equal(t, expectedApiVersion, rendered["apiVersion"])
 }
