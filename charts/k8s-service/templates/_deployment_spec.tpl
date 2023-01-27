@@ -140,6 +140,10 @@ spec:
       securityContext:
 {{ toYaml .Values.podSecurityContext | indent 8 }}
       {{- end}}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 8 }}
+      {{- end }}
 
       containers:
         {{- if .isCanary }}

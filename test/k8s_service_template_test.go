@@ -628,6 +628,39 @@ func TestK8SServiceWithContainerArgsHasArgsSpec(t *testing.T) {
 	assert.Equal(t, appContainer.Args, []string{"echo", "Hello world"})
 }
 
+// Test that omitting hostAliases does not set hostAliases attribute on the Deployment container spec.
+func TestK8SServiceDefaultHasNullHostAliasesSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{})
+	renderedPodSpec := deployment.Spec.Template.Spec
+	assert.Nil(t, renderedPodSpec.HostAliases)
+}
+
+// Test that setting hostAliases sets the hostAliases attribute on the Deployment container spec.
+func TestK8SServiceWithHostAliasesHasHostAliasesSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"hostAliases[0].ip":           "127.0.0.1",
+			"hostAliases[0].hostnames[0]": "foo.local",
+			"hostAliases[0].hostnames[1]": "bar.local",
+			"hostAliases[1].ip":           "10.1.2.3",
+			"hostAliases[1].hostnames[0]": "foo.remote",
+			"hostAliases[1].hostnames[1]": "bar.remote",
+		},
+	)
+	renderedPodSpec := deployment.Spec.Template.Spec
+	assert.Equal(t, len(renderedPodSpec.HostAliases), 2)
+	// order should be preserved, since order is important for /etc/hosts
+	assert.Equal(t, renderedPodSpec.HostAliases[0].IP, "127.0.0.1")
+	assert.Equal(t, renderedPodSpec.HostAliases[0].Hostnames, []string{"foo.local", "bar.local"})
+	assert.Equal(t, renderedPodSpec.HostAliases[1].IP, "10.1.2.3")
+	assert.Equal(t, renderedPodSpec.HostAliases[1].Hostnames, []string{"foo.remote", "bar.remote"})
+}
+
 // Test that providing tls configuration to Ingress renders correctly
 func TestK8SServiceIngressMultiCert(t *testing.T) {
 	t.Parallel()

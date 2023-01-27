@@ -1034,10 +1034,10 @@ To configure a canary deployment, set `canary.enabled = true` and define the `co
 
 ```yaml
 canary:
-  enabled: true
+    enabled: true
     containerImage:
-      repository: nginx
-      tag: 1.15.9
+        repository: nginx
+        tag: 1.15.9
 ```
 Once deployed, your service will route traffic across both your stable and canary deployments, allowing you to monitor for and catch any issues early.
 
