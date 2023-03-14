@@ -433,7 +433,7 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
 
-        {{- with .Values.priorityClassName }}
+    {{- with .Values.priorityClassName }}
       priorityClassName:
 {{ toYaml . | indent 8 }}
     {{- end }}
