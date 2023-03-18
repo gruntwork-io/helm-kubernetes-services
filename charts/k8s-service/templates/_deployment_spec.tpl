@@ -433,6 +433,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
 
+    {{- with .Values.priorityClassName }}
+      priorityClassName:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
     {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}

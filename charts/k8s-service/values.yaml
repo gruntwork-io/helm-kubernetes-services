@@ -637,6 +637,10 @@ containerResources: {}
 nodeSelector: {}
 affinity: {}
 
+# priorityClassName assigns a priorityClass to the deployment allowing pods to preempt or be preempted.
+# See https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+priorityClassName: {}
+
 # tolerations can be used to allow the pod to be scheduled on nodes with a specific taint.
 # NOTE: This variable is injected directly into the pod spec. See the official documentation for what this might look
 # like: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
