@@ -18,6 +18,20 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// Test that setting the `priorityClassName` input value will include priorityClassName in the pod spec of the deployment
+func TestK8sServicePriorityClassName(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"priorityClassName": "testPriorityClass",
+		},
+	)
+	renderedPriorityClassName := deployment.Spec.Template.Spec.PriorityClassName
+	require.Equal(t, renderedPriorityClassName, "testPriorityClass")
+}
+
 // Test that setting the `envVars` input value to empty object leaves env vars out of the pod.
 func TestK8SServiceEnvVarConfigMapsSecretsEmptyDoesNotAddEnvVarsAndVolumesToPod(t *testing.T) {
 	t.Parallel()
