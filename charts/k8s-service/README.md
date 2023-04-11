@@ -365,7 +365,7 @@ many kinds of `Ingress Controllers` available, each with different properties. Y
 official documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-controllers).
 
 When you use an external cloud `Ingress Controller` such as the [GCE Ingress
-Controller](https://github.com/kubernetes/ingress-gce/blob/master/README.md) or [AWS ALB Ingress
+Controller](https://github.com/kubernetes/ingress-gce) or [AWS ALB Ingress
 Controller](https://github.com/kubernetes-sigs/aws-alb-ingress-controller), Kubernetes will allocate an externally
 addressable load balancer (for GCE this will be a Cloud Load Balancer and for AWS this will be an ALB) that fulfills the
 `Ingress` rules. This includes routing the domain names and paths to the right `Service` as configured by the `Ingress`
@@ -1037,10 +1037,10 @@ To configure a canary deployment, set `canary.enabled = true` and define the `co
 
 ```yaml
 canary:
-  enabled: true
+    enabled: true
     containerImage:
-      repository: nginx
-      tag: 1.15.9
+        repository: nginx
+        tag: 1.15.9
 ```
 Once deployed, your service will route traffic across both your stable and canary deployments, allowing you to monitor for and catch any issues early.
 

@@ -1,3 +1,4 @@
+---
 #----------------------------------------------------------------------------------------------------------------------
 # CHART PARAMETERS
 # This file declares the configuration input values for the k8s-service Helm chart.
@@ -34,7 +35,6 @@
 # applicationName is a string that names the application. This is used to label the pod and to name the main application
 # container in the pod spec. The label is keyed under "gruntwork.io/app-name"
 
-
 #----------------------------------------------------------------------------------------------------------------------
 # OPTIONAL VALUES
 # These values have defaults, but may be overridden by the operator
@@ -55,6 +55,16 @@ workloadType: deployment
 #   - "echo"
 #   - "Hello World"
 containerCommand: null
+
+# containerArgs is a list of strings that indicate custom args that will be passed to the container (CMD) place of the default
+# configured on the image. Omit to use the default args configured in the image
+#
+# Example (run echo "Hello World"):
+#
+# containerArgs:
+#   - "echo"
+#   - "Hello World"
+containerArgs: null
 
 # containerPorts is a map that specifies the ports to open on the container. This is a nested map: the first map lists
 # the named ports, while the second layer lists the port spec. The named references can be used to refer to the specific
@@ -106,16 +116,40 @@ livenessProbe: {}
 #     port: http
 readinessProbe: {}
 
-# securityContext is a map that specified the privillege and access control settings for a Pod of Container. Security Context
+# hostAliases is a list of maps that specify additional entries to be added to the pod's `/etc/hosts` file. This is useful
+# for adding custom DNS entries to the pod. The items in the list are maps with the following keys:
+#   - ip        (string)       (required) : The IP address of the host.
+#   - hostnames (list[string]) (required) : A list of hostnames that should be resolved to the IP address.
+#
+# Refer to https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/ for more details.
+#
+# EXAMPLE:
+#
+# The following example specifies two aliases to be added to the pod's /etc/hosts file in a new section at the bottom:
+#
+# hostAliases:
+#   - ip: 127.0.0.1
+#     hostnames:
+#      - foo.local
+#      - bar.local
+#   - ip: 10.1.2.3
+#     hostnames:
+#      - foo.remote
+#      - bar.remote
+#
+# NOTE: This variable is injected directly into the deployment spec.
+hostAliases: []
+
+# securityContext is a map that specified the privilege and access control settings for a Pod of Container. Security Context
 # can be specified when the application requires additional access control permissions. More details on securityContext and supported
 # settings can be found at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 # similar to the podSecurityContext {} however, this sets security attributes at the container level rather than at the pod level scope.
 
 #
 # EXAMPLE:
-# 1) To run a container in privilleged mode
+# 1) To run a container in privileged mode
 # securityContext:
-#   privilleged: true
+#   privileged: true
 #
 # 2) To run a container as a specific user
 # securityContext:
@@ -131,7 +165,6 @@ securityContext: {}
 # podSecurityContext:
 #   fsGroup: 2000
 podSecurityContext: {}
-
 
 # shutdownDelay is the number of seconds to delay the shutdown sequence of the Pod by. This is implemented as a sleep
 # call in the preStop hook. By default, this chart includes a preStop hook with a shutdown delay for eventual
@@ -327,6 +360,7 @@ minPodsAvailable: 0
 #                                       Deployment. This has the same structure as containerPorts, with the additional
 #                                       key of `targetPort` to indicate which port of the container the service port
 #                                       should route to. The `targetPort` can be a name defined in `containerPorts`.
+#   - clusterIP   (string)            : The IP to use as the ClusterIP.
 #   - sessionAffinity (string)        : Used to maintain session affinity, as defined in Kubernetes - supports 'ClientIP' and 'None'
 #                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
 #                                       Kubernetes defaults to None.
@@ -334,11 +368,15 @@ minPodsAvailable: 0
 #                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
 #   - name (required for statefulset  : The name of the service associated with this deployment.
 #           workloads)     
+#   - externalTrafficPolicy (string)  : Configuration to control traffic flow from external sources - supports 'Cluster' and 'Local'
+#                                       https://kubernetes.io/docs/concepts/services-networking/service/#external-traffic-policy
+#   - internalTrafficPolicy (string)  : Configuration to control traffic flow from internal sources - supports 'Cluster' and 'Local'
+#                                       https://kubernetes.io/docs/concepts/services-networking/service/#internal-traffic-policy
 #
 # The following example uses the default config and enables client IP based session affinity with a maximum session
 # sticky time of 3 hours.
 # EXAMPLE:
-# 
+#
 # service:
 #   enabled: true
 #   ports:
@@ -347,10 +385,12 @@ minPodsAvailable: 0
 #       targetPort: http
 #       protocol: TCP
 #   sessionAffinity: ClientIP
+#   externalTrafficPolicy: Cluster
+#   internalTrafficPolicy: Cluster
 #   sessionAffinityConfig:
 #     clientIP:
 #       timeoutSeconds: 10800
-# 
+#
 # The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to the
 # port 80 of the service, and names the binding as `app`:
 service:
@@ -575,6 +615,10 @@ emptyDirs: {}
 #     : For Secrets mounted as a volume, specify the mount path on the container file system where the secrets will be
 #       available. Required when the Secret is exposed as a volume. Ignored when the Secret is exposed as environment
 #       variables.
+#   - subPath (string)
+#     : For Secrets mounted as a volume, specify the sub path on the volume system where the secret values will be
+#       available.  Optional when the Secret is exposed as a volume. Ignored when the Secret is exposed as
+#       environment variables.
 #   - items (map[SecretItem])
 #     : Specify how each Secret value should be made available. The keys are the key of the Secret that you wish to
 #       configure, while the value is another map that controls how that key should be exposed. Required when the Secret
@@ -624,6 +668,10 @@ containerResources: {}
 # like: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 nodeSelector: {}
 affinity: {}
+
+# priorityClassName assigns a priorityClass to the deployment allowing pods to preempt or be preempted.
+# See https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+priorityClassName: {}
 
 # tolerations can be used to allow the pod to be scheduled on nodes with a specific taint.
 # NOTE: This variable is injected directly into the pod spec. See the official documentation for what this might look

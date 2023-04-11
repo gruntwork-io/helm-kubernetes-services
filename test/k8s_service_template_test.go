@@ -600,6 +600,67 @@ func TestK8SServiceWithContainerCommandHasCommandSpec(t *testing.T) {
 	assert.Equal(t, appContainer.Command, []string{"echo", "Hello world"})
 }
 
+// Test that omitting containerArgs does not set args attribute on the Deployment container spec.
+func TestK8SServiceDefaultHasNullArgSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{})
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Nil(t, appContainer.Args)
+}
+
+// Test that setting containerCommand sets the command attribute on the Deployment container spec.
+func TestK8SServiceWithContainerArgsHasArgsSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"containerArgs[0]": "echo",
+			"containerArgs[1]": "Hello world",
+		},
+	)
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	assert.Equal(t, appContainer.Args, []string{"echo", "Hello world"})
+}
+
+// Test that omitting hostAliases does not set hostAliases attribute on the Deployment container spec.
+func TestK8SServiceDefaultHasNullHostAliasesSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{})
+	renderedPodSpec := deployment.Spec.Template.Spec
+	assert.Nil(t, renderedPodSpec.HostAliases)
+}
+
+// Test that setting hostAliases sets the hostAliases attribute on the Deployment container spec.
+func TestK8SServiceWithHostAliasesHasHostAliasesSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"hostAliases[0].ip":           "127.0.0.1",
+			"hostAliases[0].hostnames[0]": "foo.local",
+			"hostAliases[0].hostnames[1]": "bar.local",
+			"hostAliases[1].ip":           "10.1.2.3",
+			"hostAliases[1].hostnames[0]": "foo.remote",
+			"hostAliases[1].hostnames[1]": "bar.remote",
+		},
+	)
+	renderedPodSpec := deployment.Spec.Template.Spec
+	assert.Equal(t, len(renderedPodSpec.HostAliases), 2)
+	// order should be preserved, since order is important for /etc/hosts
+	assert.Equal(t, renderedPodSpec.HostAliases[0].IP, "127.0.0.1")
+	assert.Equal(t, renderedPodSpec.HostAliases[0].Hostnames, []string{"foo.local", "bar.local"})
+	assert.Equal(t, renderedPodSpec.HostAliases[1].IP, "10.1.2.3")
+	assert.Equal(t, renderedPodSpec.HostAliases[1].Hostnames, []string{"foo.remote", "bar.remote"})
+}
+
 // Test that providing tls configuration to Ingress renders correctly
 func TestK8SServiceIngressMultiCert(t *testing.T) {
 	t.Parallel()
@@ -949,6 +1010,34 @@ func TestK8SServiceSessionAffinityConfig(t *testing.T) {
 	assert.Equal(t, int32(10800), *service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds)
 }
 
+// Test that externalTrafficPolicy is correctly set
+func TestK8SServiceExternalTrafficPolicy(t *testing.T) {
+	t.Parallel()
+
+	service := renderK8SServiceWithSetValues(
+		t,
+		map[string]string{
+			"service.externalTrafficPolicy": "Local",
+		},
+	)
+
+	assert.Equal(t, corev1.ServiceExternalTrafficPolicyType("Local"), service.Spec.ExternalTrafficPolicy)
+}
+
+// Test that internalTrafficPolicy is correctly set
+func TestK8SServiceInternalTrafficPolicy(t *testing.T) {
+	t.Parallel()
+
+	service := renderK8SServiceWithSetValues(
+		t,
+		map[string]string{
+			"service.internalTrafficPolicy": "Local",
+		},
+	)
+
+	assert.Equal(t, corev1.ServiceInternalTrafficPolicyType("Local"), *service.Spec.InternalTrafficPolicy)
+}
+
 // Test that sessionAffinity and sessionAffinityConfig are not rendered if not set
 func TestK8SServiceSessionAffinityOnlySetIfDefined(t *testing.T) {
 	t.Parallel()
@@ -961,4 +1050,31 @@ func TestK8SServiceSessionAffinityOnlySetIfDefined(t *testing.T) {
 	// SessionAffinity and SessionAffinityConfig shouldn't be set
 	assert.Equal(t, corev1.ServiceAffinity(""), service.Spec.SessionAffinity)
 	assert.Nil(t, service.Spec.SessionAffinityConfig)
+}
+
+// Test that clusterIP is rendered correctly when it is set.
+func TestK8SServiceClusterIP(t *testing.T) {
+	t.Parallel()
+
+	testCases := []string{
+		// Unset
+		"",
+		// headless service:
+		// https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
+		"None",
+		// Some random IP
+		"192.168.0.42",
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc, func(t *testing.T) {
+			values := make(map[string]string)
+			if tc != "" {
+				values["service.clusterIP"] = tc
+			}
+
+			service := renderK8SServiceWithSetValues(t, values)
+			assert.Equal(t, tc, service.Spec.ClusterIP)
+		})
+	}
 }

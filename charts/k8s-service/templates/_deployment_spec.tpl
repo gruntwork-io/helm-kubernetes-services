@@ -140,6 +140,10 @@ spec:
       securityContext:
 {{ toYaml .Values.podSecurityContext | indent 8 }}
       {{- end}}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 8 }}
+      {{- end }}
 
       containers:
         {{- if .isCanary }}
@@ -159,7 +163,10 @@ spec:
           command:
 {{ toYaml .Values.containerCommand | indent 12 }}
           {{- end }}
-
+          {{- if .Values.containerArgs }}
+          args:
+{{ toYaml .Values.containerArgs | indent 12 }}
+          {{- end }}
           {{- if index $hasInjectionTypes "exposePorts" }}
           ports:
             {{- /*
@@ -314,6 +321,9 @@ spec:
             {{- if eq $value.as "volume" }}
             - name: {{ $name }}-volume
               mountPath: {{ quote $value.mountPath }}
+              {{- if $value.subPath }}
+              subPath: {{ quote $value.subPath }}
+              {{- end }}
             {{- end }}
           {{- end }}
           {{- range $name, $value := .Values.persistentVolumes }}
@@ -420,6 +430,11 @@ spec:
 
     {{- with .Values.affinity }}
       affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+    {{- with .Values.priorityClassName }}
+      priorityClassName:
 {{ toYaml . | indent 8 }}
     {{- end }}
 

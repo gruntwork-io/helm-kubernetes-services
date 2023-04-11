@@ -1,3 +1,4 @@
+//go:build all || tpl
 // +build all tpl
 
 // NOTE: We use build flags to differentiate between template tests and integration tests so that you can conveniently
@@ -16,6 +17,20 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 )
+
+// Test that setting the `priorityClassName` input value will include priorityClassName in the pod spec of the deployment
+func TestK8sServicePriorityClassName(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"priorityClassName": "testPriorityClass",
+		},
+	)
+	renderedPriorityClassName := deployment.Spec.Template.Spec.PriorityClassName
+	require.Equal(t, renderedPriorityClassName, "testPriorityClass")
+}
 
 // Test that setting the `envVars` input value to empty object leaves env vars out of the pod.
 func TestK8SServiceEnvVarConfigMapsSecretsEmptyDoesNotAddEnvVarsAndVolumesToPod(t *testing.T) {
@@ -194,6 +209,44 @@ func TestK8SServiceVolumeConfigMapAddsVolumeAndVolumeMountWithoutSubPathToPod(t 
 	assert.Empty(t, volumeMount.SubPath)
 }
 
+// Test that setting the `secrets` input value with volume include the volume mount for the secret
+// We test by injecting to secrets:
+// secrets:
+//   dbsettings:
+//     as: volume
+//     mountPath: /etc/db
+func TestK8SServiceVolumeSecretAddsVolumeAndVolumeMountWithoutSubPathToPod(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"secrets.dbsettings.as":        "volume",
+			"secrets.dbsettings.mountPath": "/etc/db",
+		},
+	)
+
+	// Verify that there is only one container and only one volume
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	renderedPodVolumes := deployment.Spec.Template.Spec.Volumes
+	require.Equal(t, len(renderedPodVolumes), 1)
+	podVolume := renderedPodVolumes[0]
+
+	// Check that the pod volume is a secret volume
+	assert.Equal(t, podVolume.Name, "dbsettings-volume")
+	require.NotNil(t, podVolume.Secret)
+	assert.Equal(t, podVolume.Secret.SecretName, "dbsettings")
+
+	// Check that the pod volume will be mounted
+	require.Equal(t, len(appContainer.VolumeMounts), 1)
+	volumeMount := appContainer.VolumeMounts[0]
+	assert.Equal(t, volumeMount.Name, "dbsettings-volume")
+	assert.Equal(t, volumeMount.MountPath, "/etc/db")
+	assert.Empty(t, volumeMount.SubPath)
+}
+
 // Test that setting the `configMaps` input value with volume include the volume mount and subpath for the config map
 // We test by injecting to configMaps:
 // configMaps:
@@ -225,6 +278,46 @@ func TestK8SServiceVolumeConfigMapAddsVolumeAndVolumeMountWithSubPathToPod(t *te
 	assert.Equal(t, podVolume.Name, "dbsettings-volume")
 	require.NotNil(t, podVolume.ConfigMap)
 	assert.Equal(t, podVolume.ConfigMap.Name, "dbsettings")
+
+	// Check that the pod volume will be mounted
+	require.Equal(t, len(appContainer.VolumeMounts), 1)
+	volumeMount := appContainer.VolumeMounts[0]
+	assert.Equal(t, volumeMount.Name, "dbsettings-volume")
+	assert.Equal(t, volumeMount.MountPath, "/etc/db/host.txt")
+	assert.Equal(t, volumeMount.SubPath, "host.txt")
+}
+
+// Test that setting the `secrets` input value with volume include the volume mount and subpath for the secret
+// We test by injecting to secrets:
+// secrets:
+//   dbsettings:
+//     as: volume
+//     mountPath: /etc/db/host.txt
+//     subPath: host.xt
+func TestK8SServiceVolumeSecretAddsVolumeAndVolumeMountWithSubPathToPod(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"secrets.dbsettings.as":        "volume",
+			"secrets.dbsettings.mountPath": "/etc/db/host.txt",
+			"secrets.dbsettings.subPath":   "host.txt",
+		},
+	)
+
+	// Verify that there is only one container and only one volume
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	renderedPodVolumes := deployment.Spec.Template.Spec.Volumes
+	require.Equal(t, len(renderedPodVolumes), 1)
+	podVolume := renderedPodVolumes[0]
+
+	// Check that the pod volume is a secret volume
+	assert.Equal(t, podVolume.Name, "dbsettings-volume")
+	require.NotNil(t, podVolume.Secret)
+	assert.Equal(t, podVolume.Secret.SecretName, "dbsettings")
 
 	// Check that the pod volume will be mounted
 	require.Equal(t, len(appContainer.VolumeMounts), 1)

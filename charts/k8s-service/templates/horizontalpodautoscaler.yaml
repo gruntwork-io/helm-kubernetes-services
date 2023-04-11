@@ -1,5 +1,5 @@
 {{- if .Values.horizontalPodAutoscaler.enabled }}
-apiVersion: autoscaling/v2beta2
+apiVersion: {{ include "gruntwork.horizontalPodAutoscaler.apiVersion" . }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "k8s-service.fullname" . }}

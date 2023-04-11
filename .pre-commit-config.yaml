@@ -1,5 +1,5 @@
 repos:
   - repo: https://github.com/gruntwork-io/pre-commit
-    sha: v0.0.7
+    rev: v0.1.17
     hooks:
       - id: helmlint
