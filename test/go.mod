@@ -76,7 +76,7 @@ require (
 	github.com/urfave/cli v1.22.2 // indirect
 	github.com/zclconf/go-cty v1.9.1 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/net v0.3.1-0.20221206200815-1e63c2f08a10 // indirect
 	golang.org/x/oauth2 v0.1.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
