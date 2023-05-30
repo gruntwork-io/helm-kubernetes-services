@@ -76,13 +76,36 @@ containerPorts:
     port: 80
     protocol: TCP
 
+# startupProbe is a map that specifies the startup probe of the main application container. Startup probes indicate
+# when a container application has started. If such a probe is configured, it disables liveness and readiness checks
+# until it succeeds, making sure those probes don't interfere with the application startup. This can be used to adopt
+# liveness checks on slow starting containers, avoiding them getting killed by the kubelet before they are up and running.
+# You can read more about container startup probes in the official docs:
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# NOTE: This variable is injected directly into the container spec.
+#
+# The following example specifies an http GET based startup probe that will be based on a http GET request to
+# the port bound to name `http` (see description on `containerPorts`) on the path `/`. The application will have a maximum
+# of 5 minutes (30 * 10 = 300s) to finish its startup. Once the startup probe has succeeded once, the liveness probe takes over.
+# If the startup probe never succeeds, the container is killed after 300s and subject to the pod's `restartPolicy`.
+#
+# EXAMPLE:
+#
+# startupProbe:
+#   httpGet:
+#     path: /
+#     port: http
+#   failureThreshold: 30
+#   periodSeconds: 10
+startupProbe: {}
+
 # livenessProbe is a map that specifies the liveness probe of the main application container. Liveness probes indicate
 # when a container has reached a fatal state where it needs to be restarted to recover. When the liveness probe fails,
 # the container is automatically recreated. You can read more about container liveness probes in the official docs:
-# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 # NOTE: This variable is injected directly into the container spec.
 #
-# The following example specifies an http GET based liveness probe, that will base the probe on a http GET request to
+# The following example specifies an http GET based liveness probe that will be based on a http GET request to
 # the port bound to name `http` (see description on `containerPorts`) on the path `/`.
 #
 # EXAMPLE:
@@ -96,10 +119,10 @@ livenessProbe: {}
 # readinessProbe is a map that specifies the readiness probe of the main application container. Readiness probes
 # indicate when a container is unable to serve traffic. When the readiness probe fails, the container is cycled out of
 # the list of available containers to the `Service`. You can read more about readiness probes in the official docs:
-# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 # NOTE: This variable is injected directly into the container spec.
 #
-# The following example specifies an http GET based readiness probe, that will base the probe on a http GET request to
+# The following example specifies an http GET based readiness probe that will be based on a http GET request to
 # the port bound to name `http` (see description on `containerPorts`) on the path `/`.
 #
 # EXAMPLE:
