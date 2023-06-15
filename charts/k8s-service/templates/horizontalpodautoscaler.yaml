@@ -28,4 +28,8 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
   {{- end }}
+  {{- if .Values.horizontalPodAutoscaler.behavior }}
+  behavior:
+{{ tpl (toYaml .Values.horizontalPodAutoscaler.behavior) $ | indent 4 }}
+  {{- end }}
 {{- end }}
