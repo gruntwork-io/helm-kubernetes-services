@@ -23,12 +23,10 @@ func TestK8SServiceDeploymentCheckSecretStoreCSIBlock(t *testing.T) {
 	deployment := renderK8SServiceDeploymentWithSetValues(
 		t,
 		map[string]string{
-<<<<<<< HEAD
-			"secrets.dbsettings.as":           "volume",
-=======
-			"serviceAccount.name":             "secret-sa",
-			"secrets.dbsettings.as":           "csi",
->>>>>>> 046a51b (test: check env section is added)
+
+			"serviceAccount.name":   "secret-sa",
+			"secrets.dbsettings.as": "csi",
+
 			"secrets.dbsettings.mountPath":    "/etc/db",
 			"secrets.dbsettings.csi.driver":   "secrets-store.csi.k8s.io",
 			"secrets.dbsettings.csi.readOnly": "true",
@@ -60,7 +58,7 @@ func TestK8SServiceDeploymentCheckSecretStoreCSIBlock(t *testing.T) {
 	assert.Equal(t, podVolume.CSI.Driver, "secrets-store.csi.k8s.io")
 	assert.NotNil(t, podVolume.CSI.VolumeAttributes)
 	assert.Equal(t, podVolume.CSI.VolumeAttributes, map[string]string{
-		"secretProviderClass": "backend-deployment-aws-secrets",
+		"secretProviderClass": "secret-provider-class",
 	})
 
 	// Check that the container env contains the ENV from secrets
