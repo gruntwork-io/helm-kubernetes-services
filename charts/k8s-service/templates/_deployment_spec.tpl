@@ -145,6 +145,10 @@ spec:
 {{ toYaml .Values.hostAliases | indent 8 }}
       {{- end }}
 
+      {{- if .Values.dnsPolicy }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      {{- end }}
+
       containers:
         {{- if .isCanary }}
         - name: {{ .Values.applicationName }}-canary
