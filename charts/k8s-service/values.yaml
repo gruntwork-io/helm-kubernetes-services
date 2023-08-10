@@ -76,6 +76,14 @@ containerPorts:
     port: 80
     protocol: TCP
 
+# dnsPolicy sets the Pod DNS policy. Allowed values are "Default", "ClusterFirst", "ClusterFirstWithHostNet" (not supported on Windows), 
+# and "None". Note that "Default" is not the default DNS policy. If dnsPolicy is not explicitly specified, then "ClusterFirst" is used.
+# See [Pod's DNS Policy](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy) for details.
+#
+# EXAMPLE:
+#
+# dnsPolicy: "ClusterFirst"
+
 # startupProbe is a map that specifies the startup probe of the main application container. Startup probes indicate
 # when a container application has started. If such a probe is configured, it disables liveness and readiness checks
 # until it succeeds, making sure those probes don't interfere with the application startup. This can be used to adopt
