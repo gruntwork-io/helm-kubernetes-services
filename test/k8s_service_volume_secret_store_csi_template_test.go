@@ -21,9 +21,9 @@ func TestK8SServiceDeploymentCheckSecretStoreCSIBlock(t *testing.T) {
 		map[string]string{
 			"secrets.dbsettings.as":        "csi",
 			"secrets.dbsettings.mountPath": "/etc/db",
+			"secrets.dbsettings.readOnly":  "true",
 
 			"secrets.dbsettings.csi.driver":              "secrets-store.csi.k8s.io",
-			"secrets.dbsettings.csi.readOnly":            "true",
 			"secrets.dbsettings.csi.secretProviderClass": "secret-provider-class",
 
 			"secrets.dbsettings.items.host.envVarName": "DB_HOST",
