@@ -630,6 +630,7 @@ emptyDirs: {}
 #       - driver (string)    : The name of the CSI driver.
 #       - readOnly (boolean) : Specify whether the volume should be mounted read-only.
 #       - secretProviderClass (string) : The name of the SecretProviderClass.
+#   - readOnly (boolean) : Specify whether the volume should be mounted read-only.
 # NOTE: These secrets are only automatically injected to the main application container. To add them to the side car
 # containers, use the official Kubernetes Pod syntax:
 # https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets
@@ -657,9 +658,9 @@ emptyDirs: {}
 #   onemoresecret:
 #     as: csi
 #     mountPath: /mnt/secrets-store-volume
+#     readOnly: true
 #     csi:
 #       driver: secrets-store.csi.k8s.io
-#       readOnly: true
 #       secretProviderClass: mysecretproviderclass
 #     items:
 #       onemoresecret:
