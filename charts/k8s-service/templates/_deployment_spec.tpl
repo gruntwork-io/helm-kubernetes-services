@@ -294,12 +294,12 @@ spec:
             {{- end }}
             {{- end }}
             {{- if eq $value.as "csi" }}
-            {{- range $secretName, $keyEnvVarConfig := $value.items }}
-            - name: {{ required "envVarName is required on secrets items when using environment" $keyEnvVarConfig.name | quote }}
+            {{- range $secretKey, $keyEnvVarConfig := $value.items }}
+            - name: {{ required "envVarName is required on secrets items when using csi" $keyEnvVarConfig.envVarName | quote }}
               valueFrom:
                 secretKeyRef:
                   name: {{ $name }}
-                  key: {{ $keyEnvVarConfig.name }}
+                  key: {{ $secretKey }}
             {{- end }}
             {{- end }}
           {{- end }}
@@ -340,6 +340,9 @@ spec:
               mountPath: {{ quote $value.mountPath }}
               {{- if $value.subPath }}
               subPath: {{ quote $value.subPath }}
+              {{- end }}
+              {{- if eq $value.as "csi" }}
+              readOnly: {{ $value.csi.readOnly }}
               {{- end }}
             {{- end }}
           {{- end }}
@@ -429,7 +432,7 @@ spec:
             readOnly: {{ $value.csi.readOnly }}
             driver:  {{ $value.csi.driver }}
             volumeAttributes:
-              secretProviderClass: {{ $value.csi.volumeAttributes.secretProviderClass }}
+              secretProviderClass: {{ $value.csi.secretProviderClass }}
           
       {{- end }}    
     {{- end }}
