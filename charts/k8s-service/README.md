@@ -903,17 +903,13 @@ secrets:
   my-secret:
     as: csi
     mountPath: /etc/db
+    readOnly: true
     csi:
       driver: secrets-store.csi.k8s.io
-      readOnly: true
-      volumeAttributes:
-        secretProviderClass: secret-provider-class
+      secretProviderClass: secret-provider-class
     items:
-      - name: ENV_1
-        valueFrom:
-        secretKeyRef:
-          name: my-secret
-          key: ENV_1
+      my-secret:
+        envVarName: SECRET_VAR
 ```
 
 **NOTE**: The volumes are different between `secrets` and `configMaps`. This means that if you use the same `mountPath`
