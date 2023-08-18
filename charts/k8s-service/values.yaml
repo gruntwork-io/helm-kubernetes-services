@@ -597,9 +597,9 @@ emptyDirs: {}
 # secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
 # the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value
 # specifying how to expose the Secret. The value is also a map and has the following attributes:
-#   - as (enum[volume,environment,envFrom,none]) (required)
+#   - as (enum[volume,environment,envFrom,csi,none]) (required)
 #     : Secrets can be exposed to Pods as a volume mount, or as environment variables. This attribute is a string enum
-#       that is expected to be either "volume", "environment", or "envFrom", specifying that the Secret should be
+#       that is expected to be either "volume", "environment", "envFrom", or "csi" specifying that the Secret should be
 #       exposed as a mounted volume, via environment variables, or loaded in its entirety as environment variables
 #       respectively. This attribute can also be set to "none", which disables the `Secret` on the container.
 #   - mountPath (string)
@@ -624,7 +624,12 @@ emptyDirs: {}
 #                           exposed as environment variables. Expected to be the octal (e.g 777, 644). Defaults to 644.
 #   - envVarName (string) : The name of the environment variable where the value of the Secret keyed at the given key of
 #                           the item should be stored. Ignored when the Secret is exposed as a volume mount.
-#
+#   - csi (map)
+#     : For Secrets exposed as a volume using a CSI driver, specify the CSI driver details. This field should contain the
+#       following attributes:
+#       - driver (string)    : The name of the CSI driver.
+#       - readOnly (boolean) : Specify whether the volume should be mounted read-only.
+#       - secretProviderClass (string) : The name of the SecretProviderClass.
 # NOTE: These secrets are only automatically injected to the main application container. To add them to the side car
 # containers, use the official Kubernetes Pod syntax:
 # https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets
@@ -632,6 +637,9 @@ emptyDirs: {}
 # The following example exposes the Secret `mysecret` as a volume mounted to `/etc/mysecret`, while it exposes the
 # Secret `myothersecret` as an environment variable. Additionally, it automatically mounts all of the keys
 # `anothersecret` as environment variables using the `envFrom` keyword.
+# The following example exposes the Secret `onemoresecret` as a volume mounted to `/mnt/secrets-store-volume`,
+# using the CSI driver `secrets-store.csi.k8s.io`, and configures an environment variable `SECRET_ONEMORESECRET`
+# with the corresponding value from the Secret.
 #
 # EXAMPLE:
 #
@@ -646,6 +654,16 @@ emptyDirs: {}
 #         envVarName: SECRET_FOO
 #   anothersecret:
 #     as: envFrom
+#   onemoresecret:
+#     as: csi
+#     mountPath: /mnt/secrets-store-volume
+#     csi:
+#       driver: secrets-store.csi.k8s.io
+#       readOnly: true
+#       secretProviderClass: mysecretproviderclass
+#     items:
+#       onemoresecret:
+#         envVarName: SECRET_VAR
 secrets: {}
 
 # containerResources specifies the amount of resources the application container will require. Only specify if you have
