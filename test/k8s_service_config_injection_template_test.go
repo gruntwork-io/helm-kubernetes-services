@@ -446,6 +446,62 @@ func TestK8SServiceEnvironmentSecretAddsEnvVarsToPod(t *testing.T) {
 	assert.Equal(t, renderedEnvVar["DB_PORT"].ValueFrom.SecretKeyRef.Name, "dbsettings")
 }
 
+// Test that setting the `secrets` input value with environment include those csi vars
+// We test by injecting to secrets:
+// secrets:
+//
+//	dbsettings:
+//	  as: csi
+//	  items:
+//	    host:
+//	      envVarName: DB_HOST
+//	    port:
+//	      envVarName: DB_PORT
+func TestK8SServiceCSISecretAddsEnvVarsToPod(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{			
+			"secrets.dbsettings.as":                    "csi",
+
+			"secrets.dbsettings.csi.driver":              "secrets-store.csi.k8s.io",
+			"secrets.dbsettings.csi.readOnly":            "true",
+			"secrets.dbsettings.csi.secretProviderClass": "secret-provider-class",
+			
+			"secrets.dbsettings.items.host.envVarName": "DB_HOST",
+			"secrets.dbsettings.items.port.envVarName": "DB_PORT",
+		},
+	)
+
+	// Verify that there is only one container and that the environments section is empty.
+	renderedPodContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(renderedPodContainers), 1)
+	appContainer := renderedPodContainers[0]
+	environments := appContainer.Env
+	assert.Equal(t, len(environments), 2)
+
+	// Read in the configured env vars for convenient mapping of env var name
+	renderedEnvVar := map[string]corev1.EnvVar{}
+	for _, env := range environments {
+		renderedEnvVar[env.Name] = env
+	}
+
+	// Verify the DB_HOST env var comes from secret host key of dbsettings
+	assert.Equal(t, renderedEnvVar["DB_HOST"].Value, "")
+	require.NotNil(t, renderedEnvVar["DB_HOST"].ValueFrom)
+	require.NotNil(t, renderedEnvVar["DB_HOST"].ValueFrom.SecretKeyRef)
+	assert.Equal(t, renderedEnvVar["DB_HOST"].ValueFrom.SecretKeyRef.Key, "host")
+	assert.Equal(t, renderedEnvVar["DB_HOST"].ValueFrom.SecretKeyRef.Name, "dbsettings")
+
+	// Verify the DB_PORT env var comes from secret port key of dbsettings
+	assert.Equal(t, renderedEnvVar["DB_PORT"].Value, "")
+	require.NotNil(t, renderedEnvVar["DB_PORT"].ValueFrom)
+	require.NotNil(t, renderedEnvVar["DB_PORT"].ValueFrom.SecretKeyRef)
+	assert.Equal(t, renderedEnvVar["DB_PORT"].ValueFrom.SecretKeyRef.Key, "port")
+	assert.Equal(t, renderedEnvVar["DB_PORT"].ValueFrom.SecretKeyRef.Name, "dbsettings")
+}
+
 // Test that setting the `secrets` input value with volume include the volume mount for the secret
 // We test by injecting to secrets:
 // secrets:
