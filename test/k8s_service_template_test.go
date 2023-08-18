@@ -887,7 +887,6 @@ func TestK8SServiceFullnameOverride(t *testing.T) {
 func TestK8SServiceEnvFrom(t *testing.T) {
 	t.Parallel()
 
-	// TODO: this test is failing
 	t.Run("BothConfigMapsAndSecretsEnvFrom", func(t *testing.T) {
 		deployment := renderK8SServiceDeploymentWithSetValues(t,
 			map[string]string{
@@ -914,7 +913,6 @@ func TestK8SServiceEnvFrom(t *testing.T) {
 		assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef.Name, "test-configmap")
 	})
 
-	// TODO: this test is failing
 	t.Run("OnlySecretsEnvFrom", func(t *testing.T) {
 		deployment := renderK8SServiceDeploymentWithSetValues(t,
 			map[string]string{
