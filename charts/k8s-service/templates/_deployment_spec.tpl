@@ -43,6 +43,9 @@ We need this because certain sections are omitted if there are no volumes or env
     {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
   {{- else if eq (index . "as") "environment" -}}
     {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
+  {{- else if eq (index . "as") "csi" -}}
+    {{- $_ := set $hasInjectionTypes "hasEnvVars" true -}}
+    {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
   {{- else if eq (index . "as") "envFrom" }}
     {{- $_ := set $hasInjectionTypes "hasEnvFrom" true -}}
   {{- else if eq (index . "as") "none" -}}
@@ -285,9 +288,9 @@ spec:
             {{- end }}
           {{- end }}
           {{- range $name, $value := .Values.secrets }}
-            {{- if eq $value.as "environment" }}
+            {{- if or (eq $value.as "environment") (eq $value.as "csi") }}
             {{- range $secretKey, $keyEnvVarConfig := $value.items }}
-            - name: {{ required "envVarName is required on secrets items when using environment" $keyEnvVarConfig.envVarName | quote }}
+            - name: {{ required "envVarName is required on secrets items when using environment or csi" $keyEnvVarConfig.envVarName | quote }}
               valueFrom:
                 secretKeyRef:
                   name: {{ $name }}
@@ -327,12 +330,13 @@ spec:
             {{- end }}
           {{- end }}
           {{- range $name, $value := .Values.secrets }}
-            {{- if eq $value.as "volume" }}
+            {{- if or (eq $value.as "volume") (eq $value.as "csi") }}
             - name: {{ $name }}-volume
               mountPath: {{ quote $value.mountPath }}
               {{- if $value.subPath }}
               subPath: {{ quote $value.subPath }}
               {{- end }}
+              readOnly: {{ $value.readOnly }}
             {{- end }}
           {{- end }}
           {{- range $name, $value := .Values.persistentVolumes }}
@@ -415,6 +419,15 @@ spec:
               {{- end }}
             {{- end }}
       {{- end }}
+      {{- if eq $value.as "csi" }}
+        - name: {{ $name }}-volume
+          csi: 
+            readOnly: {{ $value.readOnly }}
+            driver:  {{ $value.csi.driver }}
+            volumeAttributes:
+              secretProviderClass: {{ $value.csi.secretProviderClass }}
+
+      {{- end }}    
     {{- end }}
     {{- range $name, $value := .Values.persistentVolumes }}
         - name: {{ $name }}

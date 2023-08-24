@@ -41,7 +41,8 @@ toc::[]
 * Deploy your application containers on to Kubernetes
 * Zero-downtime rolling deployments
 * Auto scaling and auto healing
-* Configuration management and Secrets management
+* Configuration management and Secrets management 
+** Secrets as Environment/Volumes/Secret Store CSI
 * Ingress and Service endpoints
 
 
