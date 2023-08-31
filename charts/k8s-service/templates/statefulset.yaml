@@ -3,5 +3,5 @@ The main Statefulset Controller for the application being deployed. This resourc
 of the Pods backing your application.
 */ -}}
 {{- if eq .Values.workloadType "statefulset" -}}
-{{ include "k8s-service.statefulsetSpec" (dict "Values" .Values "isCanary" false "Release" .Release "Chart" .Chart) }}
+{{ include "k8s-service.statefulsetSpec" (dict "Values" .Values "Release" .Release "Chart" .Chart) }}
 {{- end }}

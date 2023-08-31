@@ -41,7 +41,7 @@
 #----------------------------------------------------------------------------------------------------------------------
 
 # workloadType defines which type of resource this Helm Chart should deploy.
-# Possible values are: 
+# Possible values are:
 #   - deployment  : Use this to generate a Deployment workload application
 #   - statefulset : Use this to generate a Statefulset workload application
 workloadType: deployment
@@ -82,7 +82,7 @@ containerPorts:
     port: 80
     protocol: TCP
 
-# dnsPolicy sets the Pod DNS policy. Allowed values are "Default", "ClusterFirst", "ClusterFirstWithHostNet" (not supported on Windows), 
+# dnsPolicy sets the Pod DNS policy. Allowed values are "Default", "ClusterFirst", "ClusterFirstWithHostNet" (not supported on Windows),
 # and "None". Note that "Default" is not the default DNS policy. If dnsPolicy is not explicitly specified, then "ClusterFirst" is used.
 # See [Pod's DNS Policy](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy) for details.
 #
@@ -331,9 +331,9 @@ deploymentStrategy:
 #
 # RollingUpdate can be further refined by providing custom rollingUpdate options.
 # The rollingUpdate variable is a map that is directly injected into the statefulset spec and it allows you to specify partitioned rolling updates.
-# If a partition is specified, all Pods with an ordinal that is greater than or equal to the partition will be updated when the StatefulSet's .spec.template is updated. 
-# All Pods with an ordinal that is less than the partition will not be updated, and, even if they are deleted, they will be recreated at the previous version. 
-# If a StatefulSet's .spec.updateStrategy.rollingUpdate.partition is greater than its .spec.replicas, updates to its .spec.template will not be propagated to its Pods. 
+# If a partition is specified, all Pods with an ordinal that is greater than or equal to the partition will be updated when the StatefulSet's .spec.template is updated.
+# All Pods with an ordinal that is less than the partition will not be updated, and, even if they are deleted, they will be recreated at the previous version.
+# If a StatefulSet's .spec.updateStrategy.rollingUpdate.partition is greater than its .spec.replicas, updates to its .spec.template will not be propagated to its Pods.
 # In most cases you will not need to use a partition, but they are useful if you want to stage an update, roll out a canary, or perform a phased roll out.
 #
 # EXAMPLE:
@@ -341,7 +341,7 @@ deploymentStrategy:
 # updateStrategy:
 #   enabled: false
 #   type: RollingUpdate
-# 
+#
 # NOTE: This field is only used in `statefulset` workloads.
 updateStrategy:
   enabled: false
@@ -398,7 +398,7 @@ minPodsAvailable: 0
 #   - sessionAffinityConfig (object)  : Configuration for session affinity, as defined in Kubernetes
 #                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
 #   - name (required for statefulset  : The name of the service associated with this deployment.
-#           workloads)     
+#           workloads)
 #   - externalTrafficPolicy (string)  : Configuration to control traffic flow from external sources - supports 'Cluster' and 'Local'
 #                                       https://kubernetes.io/docs/concepts/services-networking/service/#external-traffic-policy
 #   - internalTrafficPolicy (string)  : Configuration to control traffic flow from internal sources - supports 'Cluster' and 'Local'
@@ -425,6 +425,58 @@ minPodsAvailable: 0
 # The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to the
 # port 80 of the service, and names the binding as `app`:
 service:
+  enabled: true
+  ports:
+    app:
+      port: 80
+      targetPort: http
+      protocol: TCP
+
+# headlessService is a map that specifies the configuration for the Service resource that is created by the chart.
+# A Headless Service is used for discovering individual pods (especially IP Addresses) which allow another service
+# to interact directly with the Pods instead of a proxy. This Service resource should be used by StatefulSet workloads.
+# The expected keys are:
+#   - enabled     (bool)   (required) : Whether or not the headlessService resource should be created. If false, no headlessService
+#                                       resource will be created.
+#   - annotations (map)               : Annotations that should be added to the headlessService resource. This is injected
+#                                       directly in to the resource yaml.
+#   - ports       (map)    (required) : A map that specifies the port bindings of the service against the Pods in the
+#                                       Deployment. This has the same structure as containerPorts, with the additional
+#                                       key of `targetPort` to indicate which port of the container the service port
+#                                       should route to. The `targetPort` can be a name defined in `containerPorts`.
+#   - sessionAffinity (string)        : Used to maintain session affinity, as defined in Kubernetes - supports 'ClientIP' and 'None'
+#                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
+#                                       Kubernetes defaults to None.
+#   - sessionAffinityConfig (object)  : Configuration for session affinity, as defined in Kubernetes
+#                                       (https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies)
+#   - name (required for statefulset  : The name of the service associated with this deployment.
+#           workloads)
+#   - externalTrafficPolicy (string)  : Configuration to control traffic flow from external sources - supports 'Cluster' and 'Local'
+#                                       https://kubernetes.io/docs/concepts/services-networking/service/#external-traffic-policy
+#   - internalTrafficPolicy (string)  : Configuration to control traffic flow from internal sources - supports 'Cluster' and 'Local'
+#                                       https://kubernetes.io/docs/concepts/services-networking/service/#internal-traffic-policy
+#
+# The following example uses the default config to create a headlessService and enables client IP based session affinity with a maximum session
+# sticky time of 3 hours.
+# EXAMPLE:
+#
+# headlessService:
+#   enabled: true
+#   ports:
+#     app:
+#       port: 80
+#       targetPort: http
+#       protocol: TCP
+#   sessionAffinity: ClientIP
+#   externalTrafficPolicy: Cluster
+#   internalTrafficPolicy: Cluster
+#   sessionAffinityConfig:
+#     clientIP:
+#       timeoutSeconds: 10800
+#
+# The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to the
+# port 80 of the service, and names the binding as `app`:
+headlessService:
   enabled: true
   ports:
     app:
@@ -770,8 +822,8 @@ serviceAccount:
 #   - maxReplicas          (int)    : The maximum amount of replicas allowed
 #   - avgCpuUtilization    (int)    : The target average CPU utilization to be used with the metrics
 #   - avgMemoryUtilization (int)    : The target average Memory utilization to be used with the metrics
-#   - behavior             (object) : Configures the scaling behavior of the target in both Up and Down directions 
-#                                     (scaleUp and scaleDown fields respectively). If not set, the default 
+#   - behavior             (object) : Configures the scaling behavior of the target in both Up and Down directions
+#                                     (scaleUp and scaleDown fields respectively). If not set, the default
 #                                     HPAScalingRules for scale up and scale down are used.
 #                                     Details: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2/#HorizontalPodAutoscalerSpec
 # The expected attributes of the "behavior" object are:
@@ -779,20 +831,20 @@ serviceAccount:
 #   - scaleUp              (object) : The scaling policy for scaling Up
 #
 # The expected attributes of both the "scaleDown" and "scaleUp" objects are:
-#   - policies                   (list[object])  : List of potential scaling policies which can be used during 
-#                                                  scaling. At least one policy must be specified, otherwise the 
+#   - policies                   (list[object])  : List of potential scaling policies which can be used during
+#                                                  scaling. At least one policy must be specified, otherwise the
 #                                                  HPAScalingRules will be discarded as invalid
-#   - selectPolicy               (string)        : Used to specify which policy should be used. If not set, the 
+#   - selectPolicy               (string)        : Used to specify which policy should be used. If not set, the
 #                                                  default value MaxPolicySelect is used.
-#   - stabilizationWindowSeconds (int)           : The number of seconds for which past recommendations should be 
-#                                                  considered while scaling up or scaling down. StabilizationWindowSeconds 
-#                                                  must be greater than or equal to zero and less than or equal to 3600 (one hour). 
-#                                                  If not set, use the default values: 
-#                                                    - For scale up: 0 (i.e. no stabilization is done). 
+#   - stabilizationWindowSeconds (int)           : The number of seconds for which past recommendations should be
+#                                                  considered while scaling up or scaling down. StabilizationWindowSeconds
+#                                                  must be greater than or equal to zero and less than or equal to 3600 (one hour).
+#                                                  If not set, use the default values:
+#                                                    - For scale up: 0 (i.e. no stabilization is done).
 #                                                    - For scale down: 300 (i.e. the stabilization window is 300 seconds long).
 #
 # The expected attributes of the "policies" list for both the "scaleDown" and "scaleUp" objects are:
-#   - periodSeconds           (int)    : Specifies the window of time for which the policy should hold true. PeriodSeconds 
+#   - periodSeconds           (int)    : Specifies the window of time for which the policy should hold true. PeriodSeconds
 #                                        must be greater than zero and less than or equal to 1800 (30 min).
 #   - type                    (string) : Used to specify the scaling policy.
 #   - value                   (int)    : The amount of change which is permitted by the policy. It must be greater than zero.

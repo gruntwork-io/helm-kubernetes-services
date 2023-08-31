@@ -1,12 +1,10 @@
 {{- /*
-Common deployment spec that is shared between the canary and main Statefulset controllers. This template requires 
-the context:
+Common deployment spec that is used by main Statefulset controllers. This template requires the context:
 - Values
 - Release
 - Chart
-- isCanary (a boolean indicating if we are rendering the canary deployment or not)
 You can construct this context using dict:
-(dict "Values" .Values "Release" .Release "Chart" .Chart "isCanary" true)
+(dict "Values" .Values "Release" .Release "Chart")
 */ -}}
 {{- define "k8s-service.statefulsetSpec" -}}
 {{- /*
@@ -15,7 +13,7 @@ whether or not there are configMaps OR secrets that are specified as volume moun
 by using a map to track whether or not we have seen a volume type. We have to use a map because we cannot update a
 variable in helm chart templates.
 
-Similarly, we need to decide whether or not there are environment variables to add
+Similarly, we need to decide whether or not there are environment variables to add.
 
 We need this because certain sections are omitted if there are no volumes or environment variables to add.
 */ -}}
@@ -77,7 +75,7 @@ We need this because certain sections are omitted if there are no volumes or env
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "k8s-service.fullname" . }}{{ if .isCanary }}-canary{{ end }}
+  name: {{ include "k8s-service.fullname" . }}
   labels:
     # These labels are required by helm. You can read more about required labels in the chart best practices guide:
     # https://docs.helm.sh/chart_best_practices/#standard-labels
@@ -93,7 +91,7 @@ metadata:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-  replicas: {{ if .isCanary }}{{ .Values.canary.replicaCount | default 1 }}{{ else }}{{ .Values.replicaCount }}{{ end }}
+  replicas: {{ .Values.replicaCount }}
   {{- if .Values.service.name }}
   serviceName: {{ .Values.service.name }}
   {{- else }}
@@ -111,21 +109,13 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ include "k8s-service.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
-      {{- if .isCanary }}
-      gruntwork.io/deployment-type: canary
-      {{- else }}
       gruntwork.io/deployment-type: main
-      {{- end }}
   template:
     metadata:
       labels:
         app.kubernetes.io/name: {{ include "k8s-service.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        {{- if .isCanary }}
-        gruntwork.io/deployment-type: canary
-        {{- else }}
         gruntwork.io/deployment-type: main
-        {{- end }}
         {{- range $key, $value := .Values.additionalPodLabels }}
         {{ $key }}: {{ $value }}
         {{- end }}
@@ -147,19 +137,11 @@ spec:
       {{- end}}
 
       containers:
-        {{- if .isCanary }}
-        - name: {{ .Values.applicationName }}-canary
-          {{- $repo := required ".Values.canary.containerImage.repository is required" .Values.canary.containerImage.repository }}
-          {{- $tag := required ".Values.canary.containerImage.tag is required" .Values.canary.containerImage.tag }}
-          image: "{{ $repo }}:{{ $tag }}"
-          imagePullPolicy: {{ .Values.canary.containerImage.pullPolicy | default "IfNotPresent" }}
-        {{- else }}
         - name: {{ .Values.applicationName }}
           {{- $repo := required ".Values.containerImage.repository is required" .Values.containerImage.repository }}
           {{- $tag := required ".Values.containerImage.tag is required" .Values.containerImage.tag }}
           image: "{{ $repo }}:{{ $tag }}"
           imagePullPolicy: {{ .Values.containerImage.pullPolicy | default "IfNotPresent" }}
-        {{- end }}
           {{- if .Values.containerCommand }}
           command:
 {{ toYaml .Values.containerCommand | indent 12 }}
