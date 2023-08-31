@@ -899,12 +899,30 @@ secrets:
         filePath: password
 ```
 
+**Mounting secrets with CSI**: In this example, we mount the `my-secret` `Secret` as the file `/etc/db`, and specify that the secret will sync with Secret Manager store (AWS, GCP, Vault) secret named `my-secret`. We also details the csi block were we define the driver and secreteProviderClass.
+
+```yaml
+secrets:
+  my-secret:
+    as: csi
+    mountPath: /etc/db
+    readOnly: true
+    csi:
+      driver: secrets-store.csi.k8s.io
+      secretProviderClass: secret-provider-class
+    items:
+      my-secret:
+        envVarName: SECRET_VAR
+```
+
 **NOTE**: The volumes are different between `secrets` and `configMaps`. This means that if you use the same `mountPath`
 for different secrets and config maps, you can end up with only one. It is undefined which `Secret` or `ConfigMap` ends
 up getting mounted. To be safe, use a different `mountPath` for each one.
 
 **NOTE**: If you want mount the volumes created with `secrets` or `configMaps` on your init or sidecar containers, you will 
 have to append `-volume` to the volume name in . In the example above, the resulting volume will be `my-secret-volume`.
+
+**Note** When installing the CSI driver on your cluster you have an option to activate syncing of secrets 
 
 ```yaml
 sideCarContainers:

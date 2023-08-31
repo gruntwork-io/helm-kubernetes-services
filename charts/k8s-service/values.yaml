@@ -82,13 +82,44 @@ containerPorts:
     port: 80
     protocol: TCP
 
+# dnsPolicy sets the Pod DNS policy. Allowed values are "Default", "ClusterFirst", "ClusterFirstWithHostNet" (not supported on Windows), 
+# and "None". Note that "Default" is not the default DNS policy. If dnsPolicy is not explicitly specified, then "ClusterFirst" is used.
+# See [Pod's DNS Policy](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy) for details.
+#
+# EXAMPLE:
+#
+# dnsPolicy: "ClusterFirst"
+
+# startupProbe is a map that specifies the startup probe of the main application container. Startup probes indicate
+# when a container application has started. If such a probe is configured, it disables liveness and readiness checks
+# until it succeeds, making sure those probes don't interfere with the application startup. This can be used to adopt
+# liveness checks on slow starting containers, avoiding them getting killed by the kubelet before they are up and running.
+# You can read more about container startup probes in the official docs:
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# NOTE: This variable is injected directly into the container spec.
+#
+# The following example specifies an http GET based startup probe that will be based on a http GET request to
+# the port bound to name `http` (see description on `containerPorts`) on the path `/`. The application will have a maximum
+# of 5 minutes (30 * 10 = 300s) to finish its startup. Once the startup probe has succeeded once, the liveness probe takes over.
+# If the startup probe never succeeds, the container is killed after 300s and subject to the pod's `restartPolicy`.
+#
+# EXAMPLE:
+#
+# startupProbe:
+#   httpGet:
+#     path: /
+#     port: http
+#   failureThreshold: 30
+#   periodSeconds: 10
+startupProbe: {}
+
 # livenessProbe is a map that specifies the liveness probe of the main application container. Liveness probes indicate
 # when a container has reached a fatal state where it needs to be restarted to recover. When the liveness probe fails,
 # the container is automatically recreated. You can read more about container liveness probes in the official docs:
-# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 # NOTE: This variable is injected directly into the container spec.
 #
-# The following example specifies an http GET based liveness probe, that will base the probe on a http GET request to
+# The following example specifies an http GET based liveness probe that will be based on a http GET request to
 # the port bound to name `http` (see description on `containerPorts`) on the path `/`.
 #
 # EXAMPLE:
@@ -102,10 +133,10 @@ livenessProbe: {}
 # readinessProbe is a map that specifies the readiness probe of the main application container. Readiness probes
 # indicate when a container is unable to serve traffic. When the readiness probe fails, the container is cycled out of
 # the list of available containers to the `Service`. You can read more about readiness probes in the official docs:
-# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 # NOTE: This variable is injected directly into the container spec.
 #
-# The following example specifies an http GET based readiness probe, that will base the probe on a http GET request to
+# The following example specifies an http GET based readiness probe that will be based on a http GET request to
 # the port bound to name `http` (see description on `containerPorts`) on the path `/`.
 #
 # EXAMPLE:
@@ -606,9 +637,9 @@ emptyDirs: {}
 # secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each entry in
 # the map represents a Secret resource. The key refers to the name of the Secret that should be exposed, with the value
 # specifying how to expose the Secret. The value is also a map and has the following attributes:
-#   - as (enum[volume,environment,envFrom,none]) (required)
+#   - as (enum[volume,environment,envFrom,csi,none]) (required)
 #     : Secrets can be exposed to Pods as a volume mount, or as environment variables. This attribute is a string enum
-#       that is expected to be either "volume", "environment", or "envFrom", specifying that the Secret should be
+#       that is expected to be either "volume", "environment", "envFrom", or "csi" specifying that the Secret should be
 #       exposed as a mounted volume, via environment variables, or loaded in its entirety as environment variables
 #       respectively. This attribute can also be set to "none", which disables the `Secret` on the container.
 #   - mountPath (string)
@@ -633,7 +664,13 @@ emptyDirs: {}
 #                           exposed as environment variables. Expected to be the octal (e.g 777, 644). Defaults to 644.
 #   - envVarName (string) : The name of the environment variable where the value of the Secret keyed at the given key of
 #                           the item should be stored. Ignored when the Secret is exposed as a volume mount.
-#
+#   - csi (map)
+#     : For Secrets exposed as a volume using a CSI driver, specify the CSI driver details. This field should contain the
+#       following attributes:
+#       - driver (string)    : The name of the CSI driver.
+#       - readOnly (boolean) : Specify whether the volume should be mounted read-only.
+#       - secretProviderClass (string) : The name of the SecretProviderClass.
+#   - readOnly (boolean) : Specify whether the volume should be mounted read-only.
 # NOTE: These secrets are only automatically injected to the main application container. To add them to the side car
 # containers, use the official Kubernetes Pod syntax:
 # https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets
@@ -641,6 +678,9 @@ emptyDirs: {}
 # The following example exposes the Secret `mysecret` as a volume mounted to `/etc/mysecret`, while it exposes the
 # Secret `myothersecret` as an environment variable. Additionally, it automatically mounts all of the keys
 # `anothersecret` as environment variables using the `envFrom` keyword.
+# The following example exposes the Secret `onemoresecret` as a volume mounted to `/mnt/secrets-store-volume`,
+# using the CSI driver `secrets-store.csi.k8s.io`, and configures an environment variable `SECRET_ONEMORESECRET`
+# with the corresponding value from the Secret.
 #
 # EXAMPLE:
 #
@@ -655,6 +695,16 @@ emptyDirs: {}
 #         envVarName: SECRET_FOO
 #   anothersecret:
 #     as: envFrom
+#   onemoresecret:
+#     as: csi
+#     mountPath: /mnt/secrets-store-volume
+#     readOnly: true
+#     csi:
+#       driver: secrets-store.csi.k8s.io
+#       secretProviderClass: mysecretproviderclass
+#     items:
+#       onemoresecret:
+#         envVarName: SECRET_VAR
 secrets: {}
 
 # containerResources specifies the amount of resources the application container will require. Only specify if you have
@@ -714,12 +764,71 @@ serviceAccount:
 
 # horizontalPodAutoscaler is a map that configures the Horizontal Pod Autoscaler information for this pod
 # The expected keys of hpa are:
-#   - enabled              (bool) : Whether or not Horizontal Pod Autoscaler should be created, if false the
+#   - enabled              (bool)   : Whether or not Horizontal Pod Autoscaler should be created, if false the
 #                                             Horizontal Pod Autoscaler will not be created
-#   - minReplicas          (int)  : The minimum amount of replicas allowed
-#   - maxReplicas          (int)  : The maximum amount of replicas allowed
-#   - avgCpuUtilization    (int)  : The target average CPU utilization to be used with the metrics
-#   - avgMemoryUtilization (int)  : The target average Memory utilization to be used with the metrics
+#   - minReplicas          (int)    : The minimum amount of replicas allowed
+#   - maxReplicas          (int)    : The maximum amount of replicas allowed
+#   - avgCpuUtilization    (int)    : The target average CPU utilization to be used with the metrics
+#   - avgMemoryUtilization (int)    : The target average Memory utilization to be used with the metrics
+#   - behavior             (object) : Configures the scaling behavior of the target in both Up and Down directions 
+#                                     (scaleUp and scaleDown fields respectively). If not set, the default 
+#                                     HPAScalingRules for scale up and scale down are used.
+#                                     Details: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2/#HorizontalPodAutoscalerSpec
+# The expected attributes of the "behavior" object are:
+#   - scaleDown            (object) : The scaling policy for scaling Down
+#   - scaleUp              (object) : The scaling policy for scaling Up
+#
+# The expected attributes of both the "scaleDown" and "scaleUp" objects are:
+#   - policies                   (list[object])  : List of potential scaling policies which can be used during 
+#                                                  scaling. At least one policy must be specified, otherwise the 
+#                                                  HPAScalingRules will be discarded as invalid
+#   - selectPolicy               (string)        : Used to specify which policy should be used. If not set, the 
+#                                                  default value MaxPolicySelect is used.
+#   - stabilizationWindowSeconds (int)           : The number of seconds for which past recommendations should be 
+#                                                  considered while scaling up or scaling down. StabilizationWindowSeconds 
+#                                                  must be greater than or equal to zero and less than or equal to 3600 (one hour). 
+#                                                  If not set, use the default values: 
+#                                                    - For scale up: 0 (i.e. no stabilization is done). 
+#                                                    - For scale down: 300 (i.e. the stabilization window is 300 seconds long).
+#
+# The expected attributes of the "policies" list for both the "scaleDown" and "scaleUp" objects are:
+#   - periodSeconds           (int)    : Specifies the window of time for which the policy should hold true. PeriodSeconds 
+#                                        must be greater than zero and less than or equal to 1800 (30 min).
+#   - type                    (string) : Used to specify the scaling policy.
+#   - value                   (int)    : The amount of change which is permitted by the policy. It must be greater than zero.
+#
+# Example horizontalPodAutoscaler with "behavior" configuration:
+#
+#  apiVersion: autoscaling/v2
+#  kind: HorizontalPodAutoscaler
+#  metadata:
+#    name: k8s-service-canary-test
+#    namespace: default
+#  spec:
+#    scaleTargetRef:
+#      apiVersion: apps/v1
+#      kind: Deployment
+#      name: k8s-service-canary-test
+#    minReplicas: 1
+#    maxReplicas: 10
+#    behavior:
+#      scaleDown:
+#        policies:
+#        - periodSeconds: 15
+#          type: Percent
+#          value: 100
+#        stabilizationWindowSeconds: 300
+#      scaleUp:
+#        policies:
+#        - periodSeconds: 15
+#          type: Percent
+#          value: 100
+#        - periodSeconds: 15
+#          type: Pods
+#          value: 4
+#        selectPolicy: Max
+#        stabilizationWindowSeconds: 0
+#
 #
 # The default config will not create the Horizontal Pod Autoscaler by setting enabled = false, the default values are
 # set so if enabled is true the horizontalPodAutoscaler has valid values.
