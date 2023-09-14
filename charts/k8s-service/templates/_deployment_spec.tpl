@@ -96,7 +96,9 @@ metadata:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
+{{- if not .Values.horizontalPodAutoscaler.enabled }}
   replicas: {{ if .isCanary }}{{ .Values.canary.replicaCount | default 1 }}{{ else }}{{ .Values.replicaCount }}{{ end }}
+{{- end }}
 {{- if .Values.deploymentStrategy.enabled }}
   strategy:
     type: {{ .Values.deploymentStrategy.type }}
