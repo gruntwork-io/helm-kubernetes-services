@@ -1,0 +1,164 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.applicationName }}
+  namespace: {{ .Values.argoNamespace }}
+  {{- if .Values.finalizers }}
+  finalizers:
+{{ tpl .Values.finalizers $ | indent 4 }}
+{{- end }}
+  {{- if .Values.labels }}
+  labels:
+{{ tpl .Values.labels $ | indent 4 }}
+{{- end }}
+spec:
+  project: {{ .Values.project }}
+  destination:
+    namespace: {{ .Values.destination.namespace }}
+    {{- if .Values.destination.clusterName }}
+    name: {{ .Values.destination.clusterName }}
+    {{- else }}
+    server: {{ .Values.destination.clusterServer }}
+    {{- end }}
+  source:
+    repoURL: {{ .Values.source.repoURL }}
+    targetRevision: {{ .Values.source.targetRevision }}
+    path: {{ .Values.source.path }}
+    {{- if .Values.source.chart }}
+    chart: {{ .Values.source.chart }}
+    {{- end }}
+    # HELM
+    {{- if .Values.source.helm }}
+    helm:
+      passCredentials: {{ .Values.source.helm.passCredentials }}
+      {{- if .Values.source.helm.parameters }}
+      parameters:
+{{ tpl .Values.source.helm.parameters $ | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.helm.fileParameters }}
+      fileParameters:
+{{ tpl .Values.source.helm.fileParameters $ | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.helm.releaseName }}
+      releaseName: {{ .Values.source.helm.releaseName }}
+      {{- end }}
+      {{- if .Values.source.helm.valueFiles }}
+      valueFiles:
+{{ tpl .Values.source.helm.valueFiles $ | indent 6 }}
+      {{- end }}
+      ignoreMissingValueFiles: {{ .Values.source.helm.ignoreMissingValueFiles }}
+      {{- if .Values.source.helm.valuesBlockFile }}
+{{ tpl .Values.source.helm.valuesBlockFile $ | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.helm.valuesBlockObject }}
+{{ tpl .Values.source.helm.valuesBlockObject $ | indent 6 }}
+      {{- end }}
+      skipCrds: {{ .Values.source.helm.skipCrds }}
+      {{- if .Values.source.helm.version }}
+      version: {{ .Values.source.helm.version }}
+      {{- end }}
+    {{- end }}
+    # KUSTOMIZE
+    {{- if .Values.source.kustomize }}
+    kustomize:
+      {{- if .Values.source.kustomize.version }}
+      version: {{ .Values.source.kustomize.version }}
+      {{- end }}
+      {{- if .Values.source.kustomize.namePrefix }}
+      namePrefix: {{ .Values.source.kustomize.namePrefix }}
+      {{- end }}
+      {{- if .Values.source.kustomize.nameSuffix }}
+      nameSuffix: {{ .Values.source.kustomize.nameSuffix }}
+      {{- end }}
+      {{- if .Values.source.kustomize.commonLabels }}
+      commonLabels: 
+{{ tpl .Values.source.kustomize.commonLabels $ | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.kustomize.commonAnnotations }}
+      commonAnnotations: 
+{{ tpl .Values.source.kustomize.commonAnnotations $ | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.kustomize.commonAnnotationsEnvsubst }}
+      commonAnnotationsEnvsubst: {{ .Values.source.kustomize.commonAnnotationsEnvsubst }}
+      {{- end }}
+      {{- if .Values.source.kustomize.images }}
+      images: 
+{{ tpl .Values.source.kustomize.images $ | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.kustomize.namespace }}
+      namespace: {{ .Values.source.kustomize.namespace }}
+      {{- end }}
+      {{- if .Values.source.kustomize.replicas }}
+      replicas: 
+{{ tpl .Values.source.kustomize.replicas $ | indent 6 }}
+      {{- end }}
+    {{- end }}
+
+    # DIRECTORY
+    {{- if .Values.source.directory }}
+    directory:
+      {{- if .Values.source.directory.recurse }}
+      recurse: {{ .Values.source.directory.recurse }}
+      {{- end }}
+      {{- if .Values.source.directory.jsonnet }}
+      jsonnet: 
+{{ tpl .Values.source.directory.jsonnet $ | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.directory.exclude }}
+      exclude: {{ .Values.source.directory.exclude }}
+      {{- end }}
+      {{- if .Values.source.directory.include }}
+      include: {{ .Values.source.directory.include }}
+      {{- end }}
+    {{- end }}
+  # SOURCES
+  {{- if .Values.sources }}
+  sources: 
+{{ tpl .Values.sources $ | indent 2 }}
+  {{- end }}
+  {{- if .Values.info }}
+  info: 
+{{ tpl .Values.info $ | indent 2 }}
+  {{- end }}
+  # Sync policy
+  syncPolicy:
+    automated:
+      prune: {{ .Values.syncPolicy.prune | default true }}
+      selfHeal: {{ .Values.syncPolicy.selfHeal | default true }}
+      allowEmpty: {{ .Values.syncPolicy.allowEmpty | default false }}
+    {{- if .Values.syncPolicy.syncOptions }}
+    syncOptions:
+    {{- range .Values.syncPolicy.syncOptions }}
+    - {{ . }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.syncPolicy.managedNamespaceMetadata }}
+    managedNamespaceMetadata:
+    {{- end }}
+    {{- if (and .Values.syncPolicy.managedNamespaceMetadata .Values.syncPolicy.managedNamespaceMetadata.labels) }}
+      labels:
+      {{- range $k, $v := .Values.syncPolicy.managedNamespaceMetadata.labels }}
+        {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    {{- if (and .Values.syncPolicy.managedNamespaceMetadata .Values.syncPolicy.managedNamespaceMetadata.annotations) }}
+      annotations:
+      {{- range $k, $v := .Values.syncPolicy.managedNamespaceMetadata.annotations }}
+        {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.syncPolicy.retry }}
+    retry:
+      limit: {{ .Values.syncPolicy.retry.limit | default 5 }}
+      {{- if .Values.syncPolicy.retry.backoff }}
+      backoff:
+        duration: {{ .Values.syncPolicy.retry.backoff.duration }}
+        factor: {{ .Values.syncPolicy.retry.backoff.factor }}
+        maxDuration: {{ .Values.syncPolicy.retry.backoff.maxDuration }}
+      {{- end }}
+    {{- end }}
+  {{- if .Values.ignoreDifferences }}
+  ignoreDifferences:
+{{ tpl .Values.ignoreDifferences $ | indent 2 }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 10 }}

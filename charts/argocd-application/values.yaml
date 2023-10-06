@@ -1,0 +1,59 @@
+# 
+applicationName: "test-app"
+argoNamespace: "argocd"
+finalizers:
+- resources-finalizer.argocd.argoproj.io
+labels:
+project: "default"
+destination:
+  clusterName:
+  clusterServer: "https://kubernetes.default.svc"
+source:
+  repoURL:
+  targetRevision:
+  path:
+  chart:
+  helm:
+    passCredentials: false
+    parameters:
+    fileParameters:
+    releaseName:
+    valueFiles:
+    ignoreMissingValueFiles: false 
+    valuesBlockFile:
+    valuesBlockObject:
+    skipCrds: false
+    version: 
+  kustomize:
+    version:
+    namePrefix:
+    nameSuffix:
+    commonLabels:
+    commonAnnotations:
+    commonAnnotationsEnvsubst:
+    images:
+    namespace:
+    replicas:
+  directory:
+    recurse:
+    jsonnet:
+    exclude:
+    include:
+sources:
+info:
+syncPolicy:
+  prune:
+  selfHeal:
+  allowEmpty:
+  syncOptions:
+  managedNamespaceMetadata:
+    labels:
+    annotations:
+  retry:
+    limit:
+    backoff:
+      duration:
+      factor:
+      maxDuration:
+ignoreDifferences:
+revisionHistoryLimit: 10
