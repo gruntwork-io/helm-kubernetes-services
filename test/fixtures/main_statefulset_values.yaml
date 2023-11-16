@@ -4,6 +4,7 @@ containerImage:
   tag: 1.14.2
   pullPolicy: IfNotPresent
 applicationName: sts-test
+replicaCount: 3
 livenessProbe:
   httpGet:
     path: /

@@ -270,10 +270,10 @@ func verifyServiceRoutesToMainAndCanaryPods(
 	})
 }
 
-// verifyServiceRoutesToMainPods ensures that the service is routing to the main pods
+// verifyServiceRoutesToMainStsPods ensures that the service is routing to the main pods
 // It does this by repeatedly issuing requests to the service and inspecting the nginx Server header
 // Once nginx tags have been seen in this header - we can be confident that we've reached the pods via the service
-func verifyServiceRoutesToMainPods(
+func verifyServiceRoutesToMainStsPods(
 	t *testing.T,
 	kubectlOptions *k8s.KubectlOptions,
 	appName string,
@@ -294,7 +294,7 @@ func verifyServiceRoutesToMainPods(
 
 	// Ensure that the service routes to the main deployment pods
 	// Read the latest values dynamically in case the fixtures file changes
-	valuesFile, err := ioutil.ReadFile(filepath.Join("fixtures", "main_deployment_values.yaml"))
+	valuesFile, err := ioutil.ReadFile(filepath.Join("fixtures", "main_statefulset_values.yaml"))
 	assert.NoError(t, err)
 
 	rendered := map[string]interface{}{}

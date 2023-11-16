@@ -1,3 +1,5 @@
+// +build all integration
+
 // NOTE: We use build flags to differentiate between template test and integration test so that you can conveniently
 // run just the template test. See the test README for more information.
 
@@ -50,5 +52,5 @@ func TestK8SServiceStatefulset(t *testing.T) {
 	// Uses label filters to ensure the correct pods were created
 	verifyMainPodsCreatedSuccessfully(t, kubectlOptions, "sts-test", releaseName)
 	verifyAllPodsAvailable(t, kubectlOptions, "sts-test", releaseName, nginxValidationFunction)
-	verifyServiceRoutesToMainPods(t, kubectlOptions, "sts-svc-test", releaseName)
+	verifyServiceRoutesToMainStsPods(t, kubectlOptions, "sts-test", releaseName)
 }
