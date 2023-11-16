@@ -477,7 +477,7 @@ service:
 # The default config configures a Service of type ClusterIP with no annotation, and binds port 80 of the pod to the
 # port 80 of the service, and names the binding as `app`:
 headlessService:
-  enabled: true
+  enabled: false
   ports:
     app:
       port: 80
