@@ -1077,3 +1077,33 @@ func TestK8SServiceClusterIP(t *testing.T) {
 		})
 	}
 }
+
+// Test that setting horizontalPodAutoscaler.enabled = true will cause the helm template to not render replicas
+func TestK8SServiceServiceHorizontalPodAutoscalerDoesNotConfigureReplicas(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"horizontalPodAutoscaler.enabled": "true",
+			"replicaCount":                    "3",
+		},
+	)
+	assert.Equal(t, (*int32)(nil), deployment.Spec.Replicas)
+}
+
+// Test that setting horizontalPodAutoscaler = true  will not affect the canary
+func TestK8SServiceServiceHorizontalPodAutoscalerDoesNotAffectCanaryConfiguration(t *testing.T) {
+	t.Parallel()
+	deployment := renderK8SServiceCanaryDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"canary.enabled":                   "true",
+			"canary.replicaCount":              "6",
+			"canary.containerImage.repository": "nginx",
+			"canary.containerImage.tag":        "1.16.0",
+			"horizontalPodAutoscaler.enabled":  "true",
+		},
+	)
+	assert.EqualValues(t, 6, *deployment.Spec.Replicas)
+}
