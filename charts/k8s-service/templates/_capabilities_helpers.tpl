@@ -49,3 +49,8 @@
     {{- print "autoscaling/v2beta2" -}}
   {{- end -}}
 {{- end -}}
+
+{{/* Get VertialPodAutoscaler API Version */}}
+{{- define "gruntwork.verticalPodAutoscaler.apiVersion" -}}
+    {{- print "autoscaling.k8s.io/v1" -}}
+{{- end -}}
