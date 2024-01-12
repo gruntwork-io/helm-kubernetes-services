@@ -1,0 +1,26 @@
+{{- if .Values.verticalPodAutoscaler.enabled }}
+apiVersion: {{ include "gruntwork.verticalPodAutoscaler.apiVersion" . }}
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "k8s-service.fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "k8s-service.fullname" . }}
+  updatePolicy:
+    updateMode: {{ .Values.verticalPodAutoscaler.updateMode | default "Off" }}
+    minReplicas: {{ .Values.verticalPodAutoscaler.minReplicas | default 2 }}
+  resourcePolicy:
+    containerPolicies:
+    - containerName: {{ include "k8s-service.fullname" . }}
+      controlledResources: 
+      {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledResources | nindent 8 }}
+      minAllowed:
+      {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.minAllowed | nindent 8 }}
+      maxAllowed:
+      {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.maxAllowed | nindent 8 }}
+      controlledValues: {{ .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledValues }}
+    {{- toYaml .Values.verticalPodAutoscaler.extraResourcePolicy | nindent 4 }}
+{{- end }}
