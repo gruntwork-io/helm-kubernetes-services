@@ -10,17 +10,31 @@ spec:
     kind: Deployment
     name: {{ include "k8s-service.fullname" . }}
   updatePolicy:
-    updateMode: {{ .Values.verticalPodAutoscaler.updateMode | default "Off" }}
-    minReplicas: {{ .Values.verticalPodAutoscaler.minReplicas | default 2 }}
+    updateMode: {{ .Values.verticalPodAutoscaler.updateMode | quote }}
+    minReplicas: {{ .Values.verticalPodAutoscaler.minReplicas }}
   resourcePolicy:
     containerPolicies:
     - containerName: {{ include "k8s-service.fullname" . }}
-      controlledResources: 
-      {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledResources | nindent 8 }}
+      {{- if .Values.verticalPodAutoscaler.mainContainerResourcePolicy.minAllowed }}
       minAllowed:
       {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.minAllowed | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.verticalPodAutoscaler.mainContainerResourcePolicy.maxAllowed }}
       maxAllowed:
       {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.maxAllowed | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledResources }}
+      controlledResources: 
+      {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledResources | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledValues }}
       controlledValues: {{ .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledValues }}
+      {{- end }}
+
+    {{- if .Values.verticalPodAutoscaler.extraResourcePolicy }}
     {{- toYaml .Values.verticalPodAutoscaler.extraResourcePolicy | nindent 4 }}
+    {{- end }}
 {{- end }}
