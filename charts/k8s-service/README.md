@@ -42,6 +42,9 @@ The following resources will be deployed with this Helm Chart, depending on whic
 - `Horizontal Pod Autoscaler`: The `Horizontal Pod Autoscaler` automatically scales the number of pods in a replication
                                 controller, deployment, replica set or stateful set based on observed CPU or memory utilization.
                                 Created only if the user sets `horizontalPodAutoscaler.enabled = true`.
+- `Vertical Pod Autoscaler`: The `Verrtical Pod Autoscaler` can offer recommendations or change the CPU and memory for both 
+                             requests and limits based on specified configuration.
+                              Created only if the user sets `verticalPodAutoscaler.enabled = true`.
 - `PodDisruptionBudget`: The `PodDisruptionBudget` resource that specifies a disruption budget for the `Pods` managed by
                          the `Deployment`. This manages how many pods can be disrupted by a voluntary disruption (e.g
                          node maintenance). Created if you specify a non-zero value for the `minPodsAvailable` input
@@ -1216,5 +1219,41 @@ imagePullSecrets:
 
 You can learn more about using private registries with Kubernetes in [the official
 documentation](https://kubernetes.io/docs/concepts/containers/images/#using-a-private-registry).
+
+back to [root README](/README.adoc#day-to-day-operations)
+
+## How to enable Vertical Pod Autoscaler ?
+
+[Vertical Pod Auto scaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) is used 
+dynamically change the requests and limits of running pods. It should **not be used** in combination with Horizontal Pod Autoscaler.
+
+First you need to install it in the cluster by following the [installation guide](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation)
+
+
+VPA has the following modes:
+
+* `Off` where right sizing recommendation will be generated but it won't change any existing pods
+* `Initial` when a new pod is created, it will be configured with the limits/requests that are considered appropriate
+* `Recreate` every time a new suitable sizing event happens (when better requests/limits are computed) pods may be evicted to apply the new configuration
+* `Auto` it is the same as `Recreate`, but in the future, it may support restart-free updates 
+
+By default, the VPA is configured to generate recommendations only. The following configuration enables it:
+```yaml
+verticalPodAutoscaler:
+  enabled: true
+```
+
+To see the recommendation you can run
+```bash
+~ $ kubectl get vpa 
+NAME            MODE   CPU   MEM   PROVIDED   AGE
+release-nginx   Auto                          24m
+
+
+~ $ kubectl describe vpa release-nginx
+```
+
+You can learn more about using Vertical Pod Autoscaler [the official
+documentation](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler).
 
 back to [root README](/README.adoc#day-to-day-operations)
