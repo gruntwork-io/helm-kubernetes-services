@@ -52,5 +52,9 @@
 
 {{/* Get VertialPodAutoscaler API Version */}}
 {{- define "gruntwork.verticalPodAutoscaler.apiVersion" -}}
+  {{- if and (.Capabilities.APIVersions.Has "autoscaling.k8s.io/v1") (semverCompare ">= 1.23-0" (include "gruntwork.kubeVersion" .)) -}}
     {{- print "autoscaling.k8s.io/v1" -}}
+  {{- else -}}
+    {{- print "autoscaling.k8s.io/v1beta2" -}}
+  {{- end -}}
 {{- end -}}
