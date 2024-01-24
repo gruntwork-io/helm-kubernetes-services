@@ -89,7 +89,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     {{- range $key, $value := .Values.additionalDeploymentLabels }}
-    {{ $key }}: {{ $value }}
+    {{ $key }}: "{{ $value }}"
     {{- end}}
 {{- with .Values.deploymentAnnotations }}
   annotations:
@@ -131,7 +131,7 @@ spec:
         gruntwork.io/deployment-type: main
         {{- end }}
         {{- range $key, $value := .Values.additionalPodLabels }}
-        {{ $key }}: {{ $value }}
+        {{ $key }}: "{{ $value }}"
         {{- end }}
 
       {{- with .Values.podAnnotations }}
