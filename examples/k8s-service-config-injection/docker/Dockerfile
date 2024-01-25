@@ -1,6 +1,6 @@
 FROM ruby:2.7.8
 
-RUN gem install sinatra json
+RUN gem install sinatra json rackup
 
 COPY app.rb /usr/src/app.rb
 WORKDIR /usr/src
