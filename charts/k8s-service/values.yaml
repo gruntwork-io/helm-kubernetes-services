@@ -806,10 +806,10 @@ horizontalPodAutoscaler:
   maxReplicas: 10
 
 # verticalPodAutoscaler is a map that configures the Vertical Pod Autoscaler information for this pod
-# The expected keys of hpa are:
+# The expected keys of vpa are:
 #   - enabled                       (bool)   : Whether or not Vertical Pod Autoscaler should be created, if false the
 #                                              Vertical Pod Autoscaler will not be created
-#   - updateMode                    (stirng) : Controls when autoscaler applies changes to the pod resources. Possible values:
+#   - updateMode                    (string) : Controls when autoscaler applies changes to the pod resources. Possible values:
 #                                                * "Off" Changes are only recommended but the pods are not changed
 #                                                * "Initial" Changes are applied at pod creation only
 #                                                * "Recreate" Pods will be evicted to apply new scaling settings
