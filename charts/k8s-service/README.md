@@ -42,7 +42,7 @@ The following resources will be deployed with this Helm Chart, depending on whic
 - `Horizontal Pod Autoscaler`: The `Horizontal Pod Autoscaler` automatically scales the number of pods in a replication
                                 controller, deployment, replica set or stateful set based on observed CPU or memory utilization.
                                 Created only if the user sets `horizontalPodAutoscaler.enabled = true`.
-- `Vertical Pod Autoscaler`: The `Verrtical Pod Autoscaler` can offer recommendations or change the CPU and memory for both 
+- `Vertical Pod Autoscaler`: The `Vertical Pod Autoscaler` can offer recommendations or change the CPU and memory for both 
                              requests and limits based on specified configuration.
                               Created only if the user sets `verticalPodAutoscaler.enabled = true`.
 - `PodDisruptionBudget`: The `PodDisruptionBudget` resource that specifies a disruption budget for the `Pods` managed by
@@ -1224,8 +1224,8 @@ back to [root README](/README.adoc#day-to-day-operations)
 
 ## How to enable Vertical Pod Autoscaler ?
 
-[Vertical Pod Auto scaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) is used 
-dynamically change the requests and limits of running pods. It should **not be used** in combination with Horizontal Pod Autoscaler.
+[Vertical Pod Auto scaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) is used to dynamically change
+the requests and limits of running pods. It should **not be used** in combination with Horizontal Pod Autoscaler.
 
 First you need to install it in the cluster by following the [installation guide](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation)
 
