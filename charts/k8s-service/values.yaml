@@ -805,6 +805,159 @@ horizontalPodAutoscaler:
   minReplicas: 1
   maxReplicas: 10
 
+# verticalPodAutoscaler is a map that configures the Vertical Pod Autoscaler information for this pod
+# The expected keys of vpa are:
+#   - enabled                       (bool)   : Whether or not Vertical Pod Autoscaler should be created, if false the
+#                                              Vertical Pod Autoscaler will not be created
+#   - updateMode                    (string) : Controls when autoscaler applies changes to the pod resources. Possible values:
+#                                                * "Off" Changes are only recommended but the pods are not changed
+#                                                * "Initial" Changes are applied at pod creation only
+#                                                * "Recreate" Pods will be evicted to apply new scaling settings
+#                                                * "Auto" Currently it is equivalent with "Recreate" but in the future
+#                                                  it will update pods without eviction
+#   - minReplicas                   (int)    : Minimal number of replicas which need to be alive for Updater to attempt
+#                                              pod eviction (pending other checks like PDB).
+#   - evictionRequirements          (list)   : Requirements that need to be true for an eviction event to be attempted
+#   - mainContainerResourcePolicy   (object) : Configuration for the main container 
+#   - extraResourcePolicy           (list)   : Configuration injected. Can be used if other sideCarContainers are used
+#
+#
+# The expected attributes for objects of type evictionRequirement:
+#   - resource             (list)    :  A list of one or more resources that the condition applies to. These resources can be "cpu", "memory", etc.
+#   - changeRequirement    (string)  : The type of change required. Possible options:
+#                                      * "TargetHigherThanRequests" - The eviction is attempted when the new target is higher than the current requests,
+#                                        i.e., the Pod is scaled up.
+#                                      * "TargetLowerThanRequests" - The eviction is attempted if the new target is lower than the current requests,
+#                                        i.e., the Pod is scaled down.
+#
+# The expected attributes for `mainContainerResourcePolicy` object:
+#  - mode                    (string) : The mode of operation. Can be "Off", "Auto"
+#  - minAllowed              (object) : The minimum resources allowed for the container. 
+#  - maxAllowed              (object) : The maximum resources allowed for the container.
+#  - controlledResources     (list)   : The list of resources that the policy can control. Can include "cpu" and "memory".
+#  - controlledValues        (string) : The values that the policy can control. Can be "RequestsOnly" or "RequestsAndLimits".
+#
+#
+# The expected attributes for `extraResourcePolicy` list of objects:
+#  - containerName           (string) : The name of the container that the policy applies to.
+#  - mode                    (string) : The mode of operation. Can be "Off", "Auto"
+#  - minAllowed              (object) : The minimum resources allowed for the container.
+#  - maxAllowed              (object) : The maximum resources allowed for the container.
+#  - controlledResources     (list)   : The list of resources that the policy can control. Can include "cpu" and "memory".
+#  - controlledValues        (string) : The values that the policy can control. Can be "RequestsOnly" or "RequestsAndLimits".
+
+# The expected attributes for `minAllowed` and `maxAllowed` objects:
+#  - cpu (string): 
+#  - memory (string): 
+# 
+#
+# Example configuration that uses all the features
+#
+# ```yaml
+# verticalPodAutoscaler:
+#   enabled: true
+#   updateMode: "Auto"
+#   minPodsAvailable: 2
+#   evictionRequirements:
+#     # Allow scale up events if the CPU needs adjusting
+#     - resource: ["cpu"]  
+#       changeRequirement: TargetHigherThanRequests
+#
+#     # Allow scale up events if the Memory needs adjusting
+#     - resource: ["memory"]
+#       changeRequirement: TargetHigherThanRequests
+#
+#     # Allow scale down events if both the CPU and memory need adjusting
+#     - resource: ["cpu", "memory"]
+#       changeRequirement: TargetLowerThanRequests
+#   mainContainerResourcePolicy:
+#     # Enable scaling for the main container
+#     mode: "Auto"
+#     minAllowed:
+#       cpu: "0.2"
+#       memory: "200Mi"
+#     maxAllowed:
+#       cpu: "1"
+#       memory: "500Mi"
+#     # Scale both the CPU and Memory of the container
+#     controlledResources: ["cpu", "memory"]
+#     # Adjust both requests and limits
+#     controlledValues: "RequestsAndLimits"
+#   # Configuration for other containers (e.g. when sideCarContainers are used)
+#   extraResourcePolicy:
+#     # Disable the scaling for all other containers by default
+#     - containerName: "*"
+#       mode: "Off"
+#     # Assuming we have a sideCarContainers called "proxy"
+#     - containerName: "proxy"
+#       # Enable scaling actions
+#       mode: "Auto"
+#       minAllowed:
+#         cpu: "0.2"
+#       maxAllowed:
+#         cpu: "1"
+#       # Only scale the CPU
+#       controlledResources: ["cpu"]
+#       # Scale only the requests
+#       controlledValues: "RequestsOnly"
+# ```
+#
+#
+# This will result in the following configuration
+#
+# ```yaml
+# apiVersion: autoscaling.k8s.io/v1
+# kind: VerticalPodAutoscaler
+# metadata:
+#   name: XXXX
+# spec:
+#   resourcePolicy:
+#     containerPolicies:
+#     - containerName: XXXX
+#       controlledResources:
+#       - cpu
+#       - memory
+#       controlledValues: RequestsAndLimits
+#       maxAllowed:
+#         cpu: "1"
+#         memory: 500Mi
+#       minAllowed:
+#         cpu: "0.2"
+#         memory: 200Mi
+#     - containerName: ""
+#       mode: "Off"
+#     - containerName: proxy
+#       controlledResources:
+#       - cpu
+#       controlledValues: RequestsOnly
+#       maxAllowed:
+#         cpu: "1"
+#       minAllowed:
+#         cpu: "0.2"
+#       mode: Auto
+#   targetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: m1-nginx
+#   updatePolicy:
+#     minReplicas: 2
+#     updateMode: Auto
+#```
+#
+# The default config will not create the Vertical Pod Autoscaler by setting enabled = false,
+# the default values are set so if enabled is true the verticalPodAutoscaler has valid values
+# and is running in recommendation only mode
+verticalPodAutoscaler:
+  enabled: false
+  updateMode: "Off"
+  minReplicas: 2
+  mainContainerResourcePolicy:
+    controlledResources: ["cpu", "memory"]
+    controlledValues: "RequestsAndLimits"
+  extraResourcePolicy:
+  - containerName: ""
+    mode: "Off"
+
 # customResources is a map that lets you define Kubernetes resources you want installed and configured as part of this chart.
 # The expected keys of customResources are:
 #   - enabled   (bool) : Whether or not the provided custom resource definitions should be created.

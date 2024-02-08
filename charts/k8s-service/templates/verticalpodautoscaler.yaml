@@ -1,0 +1,40 @@
+{{- if .Values.verticalPodAutoscaler.enabled }}
+apiVersion: {{ include "gruntwork.verticalPodAutoscaler.apiVersion" . }}
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "k8s-service.fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "k8s-service.fullname" . }}
+  updatePolicy:
+    updateMode: {{ .Values.verticalPodAutoscaler.updateMode | quote }}
+    minReplicas: {{ .Values.verticalPodAutoscaler.minReplicas }}
+  resourcePolicy:
+    containerPolicies:
+    - containerName: {{ include "k8s-service.fullname" . }}
+      {{- if .Values.verticalPodAutoscaler.mainContainerResourcePolicy.minAllowed }}
+      minAllowed:
+      {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.minAllowed | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.verticalPodAutoscaler.mainContainerResourcePolicy.maxAllowed }}
+      maxAllowed:
+      {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.maxAllowed | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledResources }}
+      controlledResources: 
+      {{- toYaml .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledResources | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledValues }}
+      controlledValues: {{ .Values.verticalPodAutoscaler.mainContainerResourcePolicy.controlledValues }}
+      {{- end }}
+
+    {{- if .Values.verticalPodAutoscaler.extraResourcePolicy }}
+    {{- toYaml .Values.verticalPodAutoscaler.extraResourcePolicy | nindent 4 }}
+    {{- end }}
+{{- end }}
