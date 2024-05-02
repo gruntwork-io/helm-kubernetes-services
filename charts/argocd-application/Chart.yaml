@@ -1,0 +1,10 @@
+apiVersion: v2
+name: argocd-application
+description: Wrapper Chart for an Argo CD Application CRD
+type: application
+version: 0.1.0
+home: https://github.com/gruntwork-io/helm-kubernetes-services
+maintainers:
+  - name: Gruntwork
+    email: info@gruntwork.io
+    url: https://gruntwork.io
