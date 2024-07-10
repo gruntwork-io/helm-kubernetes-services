@@ -4,6 +4,8 @@ of only the canary Pod(s) backing your application. It is intended to be used to
 and ensure they are free of issues prior to performing a full roll out.
 */ -}}
 
+{{- if eq .Values.workloadType "deployment" -}}
 {{- if .Values.canary.enabled -}}
 {{ include "k8s-service.deploymentSpec" (dict "Values" .Values "isCanary" true "Release" .Release "Chart" .Chart) }}
+{{- end }}
 {{- end }}

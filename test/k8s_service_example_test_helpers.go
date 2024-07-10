@@ -86,6 +86,27 @@ func verifyCanaryAndMainPodsCreatedSuccessfully(
 
 }
 
+// verifyMainPodsCreatedSuccessfully uses gruntwork.io/deployment-type labels to ensure availability of main pods of a given release
+func verifyMainPodsCreatedSuccessfully(
+	t *testing.T,
+	kubectlOptions *k8s.KubectlOptions,
+	appName string,
+	releaseName string,
+) {
+
+	mainDeploymentFilters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s,gruntwork.io/deployment-type=main", appName, releaseName),
+	}
+
+	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, mainDeploymentFilters, NumPodsExpected, WaitTimerRetries, WaitTimerSleep)
+	mainPods := k8s.ListPods(t, kubectlOptions, mainDeploymentFilters)
+
+	for _, mainPod := range mainPods {
+		k8s.WaitUntilPodAvailable(t, kubectlOptions, mainPod.Name, WaitTimerRetries, WaitTimerSleep)
+	}
+
+}
+
 // verifyDifferentContainerTagsForCanaryPods ensures that the pods that comprise the main deployment
 // and the pods that comprise the canary deployment are running different image tags
 func verifyDifferentContainerTagsForCanaryPods(
@@ -246,5 +267,65 @@ func verifyServiceRoutesToMainAndCanaryPods(
 		}
 
 		return "", fmt.Errorf("Still waiting to see both nginx tags returned: %v", seen)
+	})
+}
+
+// verifyServiceRoutesToMainStsPods ensures that the service is routing to the main pods
+// It does this by repeatedly issuing requests to the service and inspecting the nginx Server header
+// Once nginx tags have been seen in this header - we can be confident that we've reached the pods via the service
+func verifyServiceRoutesToMainStsPods(
+	t *testing.T,
+	kubectlOptions *k8s.KubectlOptions,
+	appName string,
+	releaseName string,
+) {
+
+	// Get the service and wait until it is available
+	filters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app.kubernetes.io/name=%s,app.kubernetes.io/instance=%s", appName, releaseName),
+	}
+	services := k8s.ListServices(t, kubectlOptions, filters)
+	require.Equal(t, len(services), 1)
+	service := services[0]
+	k8s.WaitUntilServiceAvailable(t, kubectlOptions, service.Name, WaitTimerRetries, WaitTimerSleep)
+
+	var availableService = *k8s.GetService(t, kubectlOptions, service.Name)
+	serviceEndpoint := k8s.GetServiceEndpoint(t, kubectlOptions, &availableService, 80)
+
+	// Ensure that the service routes to the main deployment pods
+	// Read the latest values dynamically in case the fixtures file changes
+	valuesFile, err := ioutil.ReadFile(filepath.Join("fixtures", "main_statefulset_values.yaml"))
+	assert.NoError(t, err)
+
+	rendered := map[string]interface{}{}
+	err = yaml.Unmarshal([]byte(valuesFile), &rendered)
+
+	mainImageTag := rendered["containerImage"].(map[string]interface{})["tag"].(string)
+
+	// We haven't seen the tag come back in the nginx Server header yet
+	seen := make(map[string]bool)
+	seen[mainImageTag] = false
+
+	// This will take 30 seconds to timeout (30 max tries with a 1 second sleep between each try)
+	maxRetries := 30
+	sleepDuration := 1 * time.Second
+
+	retry.DoWithRetry(t, "Read Server header returned by nginx", maxRetries, sleepDuration, func() (string, error) {
+		resp, err := http.Get(fmt.Sprintf("http://%s", serviceEndpoint))
+		require.NoError(t, err)
+
+		serverNginxHeader := resp.Header.Get("Server")
+		// Nginx returns a server header in the format "nginx/1.16.0"
+		serverTag := strings.ReplaceAll(serverNginxHeader, "nginx/", "")
+
+		// When we see a header value, update it as seen
+		seen[serverTag] = true
+
+		if seen[mainImageTag] {
+			logger.Logf(t, "Successfully saw main nginx tags via service: %v", seen)
+			return "", nil
+		}
+
+		return "", fmt.Errorf("Still waiting to see nginx tags returned: %v", seen)
 	})
 }

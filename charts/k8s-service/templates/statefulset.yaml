@@ -1,0 +1,7 @@
+{{- /*
+The main Statefulset Controller for the application being deployed. This resource manages the creation and replacement
+of the Pods backing your application.
+*/ -}}
+{{- if eq .Values.workloadType "statefulset" -}}
+{{ include "k8s-service.statefulsetSpec" (dict "Values" .Values "Release" .Release "Chart" .Chart) }}
+{{- end }}
