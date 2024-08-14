@@ -433,11 +433,12 @@ serviceMonitor:
 # ingress is a map that can be used to configure an Ingress resource for this service. By default, turn off ingress.
 # NOTE: if you enable Ingress, then Service must also be enabled.
 # The expected keys are:
-#   - enabled     (bool)         (required)  : Whether or not the Ingress resource should be created. If false, no
+#   - enabled             (bool)  (required) : Whether or not the Ingress resource should be created. If false, no
 #                                              Ingress resource will be created.
-#   - annotations (map)                      : Annotations that should be added to the Service resource. This is
+#   - annotations         (map)              : Annotations that should be added to the Service resource. This is
 #                                              injected directly in to the resource yaml.
-#   - tls         (list[map])                : Sets up TLS termination on the ingress rule. Each item is a separate TLS
+#   - ingressClassName    (string)           : Name of the IngressClass cluster resource. 
+#   - tls                 (list[map])        : Sets up TLS termination on the ingress rule. Each item is a separate TLS
 #                                              rule that maps to one or more hosts specified in this ingress rule. This
 #                                              is injected directly in to the resource yaml.
 #   - hosts       (list[string])             : Sets up the host routes for the ingress resource. There will be a routing
