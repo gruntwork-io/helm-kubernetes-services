@@ -1,0 +1,53 @@
+{{- /*
+If the operator configures the service input variable, then also create a Headless Service resource that exposes the Pod as a
+stable endpoint that can be routed within the Kubernetes cluster. Headless services is used for discovering individual pods(especially IPs) which allows another service to interact directly with the Pods instead of a proxy
+*/ -}}
+{{- if .Values.headlessService.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  {{- if .Values.headlessService.name }}
+  name: {{ .Values.headlessService.name }}
+  {{- else }}
+  name: {{ include "k8s-service.fullname" . }}
+  {{- end }}
+  labels:
+    # These labels are required by helm. You can read more about required labels in the chart best practices guide:
+    # https://docs.helm.sh/chart_best_practices/#standard-labels
+    app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+    helm.sh/chart: {{ include "k8s-service.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.headlessService.annotations }}
+{{- with .Values.headlessService.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- end }}
+spec:
+  type: ClusterIP  # Required for Headless Service
+  ports:
+    {{- range $key, $value := .Values.headlessService.ports }}
+    - name: {{ $key }}
+{{ toYaml $value | indent 6 }}
+    {{- end }}
+  clusterIP: None  # Required for a Headless Service
+  selector:
+    app.kubernetes.io/name: {{ include "k8s-service.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if .Values.headlessService.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.headlessService.externalTrafficPolicy }}
+  {{- end}}
+  {{- if .Values.headlessService.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.headlessService.internalTrafficPolicy }}
+  {{- end}}
+  {{- if .Values.headlessService.sessionAffinity }}
+  sessionAffinity: {{ .Values.headlessService.sessionAffinity }}
+  {{- if .Values.headlessService.sessionAffinityConfig }}
+  {{- with .Values.headlessService.sessionAffinityConfig }}
+  sessionAffinityConfig:
+{{ toYaml . | indent 4 }}
+  {{- end}}
+  {{- end}}
+  {{- end}}
+{{- end }}

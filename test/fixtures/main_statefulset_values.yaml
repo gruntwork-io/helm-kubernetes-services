@@ -1,0 +1,17 @@
+workloadType: statefulset
+containerImage:
+  repository: nginx
+  tag: 1.14.2
+  pullPolicy: IfNotPresent
+applicationName: sts-test
+replicaCount: 3
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+service:
+  type: NodePort

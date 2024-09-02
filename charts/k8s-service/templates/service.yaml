@@ -6,7 +6,11 @@ stable endpoint that can be routed within the Kubernetes cluster.
 apiVersion: v1
 kind: Service
 metadata:
+  {{- if .Values.service.name }}
+  name: {{ .Values.service.name }}
+  {{- else }}
   name: {{ include "k8s-service.fullname" . }}
+  {{- end }}
   labels:
     # These labels are required by helm. You can read more about required labels in the chart best practices guide:
     # https://docs.helm.sh/chart_best_practices/#standard-labels
