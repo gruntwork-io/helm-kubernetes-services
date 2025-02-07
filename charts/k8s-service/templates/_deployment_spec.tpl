@@ -78,7 +78,7 @@ We need this because certain sections are omitted if there are no volumes or env
   {{- $_ := set $hasInjectionTypes "hasVolume" true -}}
 {{- end -}}
 apiVersion: apps/v1
-kind: Deployment
+kind: {{ if not .Values.statefulSet }}Deployment{{ else }}StatefulSet{{ end }}
 metadata:
   name: {{ include "k8s-service.fullname" . }}{{ if .isCanary }}-canary{{ end }}
   labels:

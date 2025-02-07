@@ -40,6 +40,9 @@
 # These values have defaults, but may be overridden by the operator
 #----------------------------------------------------------------------------------------------------------------------
 
+# statefulSet is a boolean value that when true, will deploy the container as part of a statefulSet instead of a deployment
+statefulSet: false
+
 # containerCommand is a list of strings that indicate a custom command to run for the container in place of the default
 # configured on the image. Omit to run the default command configured on the image.
 #
