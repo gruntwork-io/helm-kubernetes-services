@@ -739,6 +739,8 @@ serviceAccount:
 #   - maxReplicas          (int)    : The maximum amount of replicas allowed
 #   - avgCpuUtilization    (int)    : The target average CPU utilization to be used with the metrics
 #   - avgMemoryUtilization (int)    : The target average Memory utilization to be used with the metrics
+#   - customMetrics        (list)   : List of objects that define custom resource metrics for scaling.
+#                                     See: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics
 #   - behavior             (object) : Configures the scaling behavior of the target in both Up and Down directions 
 #                                     (scaleUp and scaleDown fields respectively). If not set, the default 
 #                                     HPAScalingRules for scale up and scale down are used.

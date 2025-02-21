@@ -12,7 +12,7 @@ spec:
   minReplicas: {{ .Values.horizontalPodAutoscaler.minReplicas }}
   maxReplicas: {{ .Values.horizontalPodAutoscaler.maxReplicas }}
   metrics:
-  {{ if .Values.horizontalPodAutoscaler.avgCpuUtilization }}
+  {{- if .Values.horizontalPodAutoscaler.avgCpuUtilization }}
     - type: Resource
       resource:
         name: cpu
@@ -20,13 +20,16 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.horizontalPodAutoscaler.avgCpuUtilization }}
   {{- end }}
-  {{ if .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
+  {{- if .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
           averageUtilization: {{ .Values.horizontalPodAutoscaler.avgMemoryUtilization }}
+  {{- end }}
+  {{- if .Values.horizontalPodAutoscaler.customMetrics }}
+{{ toYaml .Values.horizontalPodAutoscaler.customMetrics | indent 4 }}
   {{- end }}
   {{- if .Values.horizontalPodAutoscaler.behavior }}
   behavior:
