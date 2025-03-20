@@ -127,7 +127,7 @@ jobs:
       <<: *base_env
       KUBERNETES_VERSION: v1.24.8
       CRI_DOCKERD_ARG: "--cri-dockerd-version 0.3.0"
-      MINIKUBE_VERSION: v1.32.0
+      MINIKUBE_VERSION: v1.28.0
       MODULE_CI_VERSION: v0.51.0
 
   test_k8s121:
