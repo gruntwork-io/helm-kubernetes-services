@@ -7,7 +7,7 @@ base_env: &base_env
   GRUNTWORK_INSTALLER_VERSION: v0.0.38
   TERRATEST_LOG_PARSER_VERSION: v0.40.6
   HELM_VERSION: v3.8.0
-  MODULE_CI_VERSION: v0.51.0
+  MODULE_CI_VERSION: v0.55.1
   MINIKUBE_VERSION: v1.28.0
   TERRAFORM_VERSION: NONE
   TERRAGRUNT_VERSION: NONE
@@ -76,25 +76,18 @@ jobs:
     environment:
       <<: *base_env
     docker:
-      - image: cimg/python:3.10.2
+      - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.21.9-tf1.5-tg39.1-pck1.8-ci54.0
     steps:
       - checkout
       # Install gruntwork utilities
       - run:
           <<: *install_gruntwork_utils
-      # Export go install location to $PATH so it is available in subsequent steps
-      - run:
-          command: |
-            echo 'export PATH=/usr/local/go/bin:$PATH' >> $BASH_ENV
       - run:
           <<: *install_helm_client
       # Fail the build if the pre-commit hooks don't pass. Note: if you run pre-commit install locally, these hooks will
       # execute automatically every time before you commit, ensuring the build never fails at this step!
       - run:
           command: |
-            pip install pre-commit
-            # Go's location was added to the PATH above
-            go get golang.org/x/tools/cmd/goimports
             pre-commit install
             pre-commit run --all-files
       - persist_to_workspace:
