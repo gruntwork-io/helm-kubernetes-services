@@ -1,0 +1,59 @@
+#----------------------------------------------------------------------------------------------------------------------
+# CHART PARAMETERS FOR NGINX EXAMPLE
+# This file declares the required values for the k8s-service helm chart to deploy nginx.
+# This is a YAML-formatted file.
+#----------------------------------------------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------------------------------------------
+# REQUIRED VALUES OF CHART
+# These are the required values defined by the k8s-service chart. Here we will set them to deploy an nginx container.
+#----------------------------------------------------------------------------------------------------------------------
+
+# containerImage is a map that describes the container image that should be used to serve the application managed by
+# the k8s-service chart.
+# The expected keys are:
+#   - repository (string) (required) : The container image repository that should be used.
+#                                      E.g `nginx` ; `gcr.io/kubernetes-helm/tiller`
+#   - tag        (string) (required) : The tag of the image (e.g `latest`) that should be used. We recommend using a
+#                                      fixed tag or the SHA of the image. Avoid using the tags `latest`, `head`,
+#                                      `canary`, or other tags that are designed to be “floating”.
+#   - pullPolicy (string)            : The image pull policy to employ. Determines when the image will be pulled in. See
+#                                      the official Kubernetes docs for more info. If undefined, this will default to
+#                                      `IfNotPresent`.
+#
+# The following example deploys the `nginx:stable` image with a `IfNotPresent` image pull policy, which indicates that
+# the image should only be pulled if it has not been pulled previously. We deploy a specific, locked tag so that we
+# don't inadvertently upgrade nginx during a deployment that changes some other unrelated input value.
+containerImage:
+  repository: busybox
+  tag: 1.34
+  pullPolicy: IfNotPresent
+
+# applicationName is a string that names the application. This is used to label the pod and to name the main application
+# container in the pod spec. Here we use nginx as the name since we are deploying nginx.
+applicationName: "busybox"
+
+#----------------------------------------------------------------------------------------------------------------------
+# OVERRIDE OPTIONAL VALUES
+# These values have defaults in the k8s-service chart, but we override a few of them for the purposes of this demo.
+#----------------------------------------------------------------------------------------------------------------------
+# containerCommand is a list of strings that indicate a custom command to run for the container in place of the default
+# configured on the image. Omit to run the default command configured on the image.
+#
+# Example (run echo "Hello World"):
+#
+# containerCommand:
+#   - "echo"
+#   - "Hello World"
+containerCommand: "/bin/sh"
+
+# containerArgs is a list of strings that indicate custom arguments when a pod is created. Omit and no arguments will be injected.
+#
+# Example (run echo "Hello World"):
+#
+# containerArgs:
+#   - "echo"
+#   - "Hello World"
+containerArgs:
+  - "-c"
+  - "while true; do echo hello; sleep 10;done"
