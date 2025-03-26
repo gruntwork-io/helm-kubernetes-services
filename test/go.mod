@@ -1,6 +1,7 @@
 module github.com/gruntwork-io/helm-kubernetes-services/test
 
-go 1.18
+go 1.23.1
+
 toolchain go1.24.1
 
 require (

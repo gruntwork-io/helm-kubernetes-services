@@ -76,7 +76,7 @@ jobs:
     environment:
       <<: *base_env
     docker:
-      - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.21.9-tf1.5-tg39.1-pck1.8-ci54.0
+      - image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:go1.23.1-tf1.5-tg58.8-pck1.8-ci58.2
     steps:
       - checkout
       # Install gruntwork utilities
