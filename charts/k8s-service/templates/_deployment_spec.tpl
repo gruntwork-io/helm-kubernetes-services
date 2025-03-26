@@ -163,13 +163,21 @@ spec:
         - name: {{ .Values.applicationName }}-canary
           {{- $repo := required ".Values.canary.containerImage.repository is required" .Values.canary.containerImage.repository }}
           {{- $tag := required ".Values.canary.containerImage.tag is required" .Values.canary.containerImage.tag }}
+          {{- if eq (substr 0 7 $tag) "sha256:" }}
+          image: "{{ $repo }}@{{ $tag }}"
+          {{- else }}
           image: "{{ $repo }}:{{ $tag }}"
+          {{- end }}          
           imagePullPolicy: {{ .Values.canary.containerImage.pullPolicy | default "IfNotPresent" }}
         {{- else }}
         - name: {{ .Values.applicationName }}
           {{- $repo := required ".Values.containerImage.repository is required" .Values.containerImage.repository }}
           {{- $tag := required ".Values.containerImage.tag is required" .Values.containerImage.tag }}
+          {{- if eq (substr 0 7 $tag) "sha256:" }}
+          image: "{{ $repo }}@{{ $tag }}"
+          {{- else }}
           image: "{{ $repo }}:{{ $tag }}"
+          {{- end }}          
           imagePullPolicy: {{ .Values.containerImage.pullPolicy | default "IfNotPresent" }}
         {{- end }}
           {{- if .Values.containerCommand }}
