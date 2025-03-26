@@ -1,0 +1,54 @@
+{{- if .Values.DaemonSet.create }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.DaemonSet.name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ .Values.DaemonSet.name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.DaemonSet.name }}
+      release: {{ .Release.Name }}
+  updateStrategy:
+    {{- if eq .Values.DaemonSet.updateStrategy "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.DaemonSet.maxUnavailable }}
+    {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.DaemonSet.name }}
+        release: {{ .Release.Name }}
+    spec:
+      tolerations:
+        - key: {{ .Values.DaemonSet.tolerationKey }}
+          operator: {{ .Values.DaemonSet.tolerationOperator }}
+          effect: {{ .Values.DaemonSet.tolerationEffect }}
+      containers:
+      - name: {{ .Values.DaemonSet.name }}
+        image: {{ .Values.DaemonSet.containerImage }}
+      {{- if .Values.DaemonSet.volumeMountCreate }}
+        volumeMounts:
+        - name: {{ .Values.DaemonSet.volumeName }}
+          mountPath: {{ .Values.DaemonSet.volumeMountPath }}
+      {{- if .Values.DaemonSet.extraVolumeMountCreate }}
+        - name: {{ .Values.DaemonSet.extraVolumeName }}
+          mountPath: {{ .Values.DaemonSet.extraVolumeMountPath }}
+          readOnly: true
+      {{- end }}
+      volumes:
+      - name: {{ .Values.DaemonSet.volumeName }}
+        hostPath:
+          path: {{ .Values.DaemonSet.volumeMountPath }}
+      {{- end }}
+      {{- if .Values.DaemonSet.extraVolumeMountCreate }}
+      - name: {{ .Values.DaemonSet.extraVolumeName }}
+        hostPath:
+          path: {{ .Values.DaemonSet.extraVolumeMountPath }}
+      {{- end }}
+{{- end }}
+

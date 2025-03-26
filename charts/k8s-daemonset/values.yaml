@@ -1,0 +1,29 @@
+# DaemonSet is a map that configures the pods to run as daemon on all (or some) Nodes.
+# The expected keys of DaemonSet are:
+#   - name                         (string) : The name of the DaemonSet.
+#   - create                       (bool)   : Whether or not to create a DaemonSet with the desired name
+#   - labels                       (map)    : Labels will add the provided map to the DaemonSet created
+#   - selectorLabels               (map)    : Tells the resource to match the pod, according to that label
+#   - tolerationKey                (string) : Toleration Key, Example: node-role.kubernetes.io/master
+#   - tolerationOperator           (string) : Toleration Operator, Example: Exists
+#   - tolerationEffect             (string) : Toleration Key, Example: NoSchedule
+#   - volumeName                   (string) : Name of the volumes mount inside container
+#   - volumeMountPath              (string) : Path name to Mount volumes into container
+#   - updateStrategy               (string) : Type of deployment
+#   - maxUnavailable               (number) : Only used when updateStrategy is set to "RollingUpdate"
+
+DaemonSet:
+  name: "fluentd"
+  create: true
+  tolerationKey: "node-role.kubernetes.io/master"
+  tolerationOperator: "Exists"
+  tolerationEffect: "NoSchedule"
+  containerImage: "quay.io/fluentd_elasticsearch/fluentd:v2.5.2"
+  volumeMountCreate: true
+  volumeName: "varlog"
+  volumeMountPath: "/var/log"
+  updateStrategy: "RollingUpdate"
+  maxUnavailable: 1
+  extraVolumeMountCreate: true
+  extraVolumeName: "varlibdockercontainers"
+  extraVolumeMountPath: "/var/lib/docker/containers"
