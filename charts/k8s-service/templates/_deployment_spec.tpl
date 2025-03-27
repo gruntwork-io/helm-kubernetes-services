@@ -96,6 +96,9 @@ metadata:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
+{{- if .Values.statefulSet }}
+  podManagementPolicy: {{ .Values.podManagementPolicy | default "OrderedReady" }}
+{{- end }}
   replicas: {{ if .isCanary }}{{ .Values.canary.replicaCount | default 1 }}{{ else }}{{ .Values.replicaCount }}{{ end }}
 {{- if .Values.deploymentStrategy.enabled }}
   strategy:
