@@ -223,7 +223,7 @@ jobs:
             # Merge the release index entries into the helmcharts index.
             # New versions are appended; existing versions are left unchanged (idempotent).
             python3 scripts/merge-helm-index.py \
-              /tmp/release-index.yaml \
+              /tmp/index.yaml \
               /tmp/helmcharts/index.yaml \
               /tmp/helmcharts/index.yaml
       - run:
