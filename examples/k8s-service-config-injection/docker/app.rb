@@ -8,6 +8,7 @@ server_text = ENV['SERVER_TEXT'] || 'Hello from backend'
 
 set :port, server_port
 set :bind, '0.0.0.0'
+set :protection, except: :host_authorization
 
 get '/' do
   content_type :json
