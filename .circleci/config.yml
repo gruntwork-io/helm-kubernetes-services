@@ -70,7 +70,7 @@ integration_test_steps: &integration_test_steps
     - store_test_results:
         path: /tmp/logs
 
-version: 2
+version: 2.1
 jobs:
   setup:
     environment:
@@ -270,7 +270,6 @@ jobs:
             fi
 
 workflows:
-  version: 2
   test-and-deploy:
     jobs:
       - setup:
