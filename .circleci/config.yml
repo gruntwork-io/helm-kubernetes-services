@@ -159,7 +159,7 @@ jobs:
           command: |
             mkdir -p assets
             assets_dir="$(python -c "import os; print(os.path.abspath('./assets'))")"
-            version_tag="$(echo "$CIRCLE_TAG" | sed 's/^.*-v//' | sed 's/^v//')"
+            version_tag="$(echo "$CIRCLE_TAG" | sed 's/^.*-v/v/')"
             for chart in charts/*/; do
               chart_name="$(basename "$chart")"
               echo "Packaging chart ${chart_name}"
