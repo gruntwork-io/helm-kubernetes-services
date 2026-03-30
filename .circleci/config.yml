@@ -155,7 +155,7 @@ jobs:
           command: |
             mkdir -p assets
             assets_dir="$(python -c "import os; print(os.path.abspath('./assets'))")"
-            version_tag="$(echo "$CIRCLE_TAG" | sed "s/^v?//")"
+            version_tag="$(echo "$CIRCLE_TAG" | sed 's/^.*-v//' | sed 's/^v//')"
             for chart in charts/*/; do
               chart_name="$(basename "$chart")"
               echo "Packaging chart ${chart_name}"
@@ -171,6 +171,93 @@ jobs:
             helm repo index --url "https://github.com/gruntwork-io/helm-kubernetes-services/releases/download/${CIRCLE_TAG}" .
       - run:
           command: upload-github-release-assets ./assets/*
+
+  open-helmcharts-pr:
+    <<: *defaults
+    environment:
+      <<: *base_env
+      GH_VERSION: "2.47.0"
+      HELMCHARTS_REPO: gruntwork-io/helmcharts
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Install gh CLI
+          command: |
+            curl -fsSLo /tmp/gh.tar.gz \
+              "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz"
+            tar -xzf /tmp/gh.tar.gz -C /tmp
+            sudo mv "/tmp/gh_${GH_VERSION}_linux_amd64/bin/gh" /usr/local/bin/gh
+            echo "$GITHUB_OAUTH_TOKEN" | gh auth login --with-token
+      - run:
+          name: Clone helmcharts repo
+          command: |
+            git clone \
+              "https://x-access-token:${GITHUB_OAUTH_TOKEN}@github.com/${HELMCHARTS_REPO}.git" \
+              /tmp/helmcharts
+            git -C /tmp/helmcharts config user.email "ci@gruntwork.io"
+            git -C /tmp/helmcharts config user.name "gruntwork-ci"
+      - run:
+          name: Download release index and merge into helmcharts index
+          command: |
+            # Download the index.yaml already generated and uploaded by the deploy job.
+            # Using the release artifact directly avoids needing to reconstruct .tgz filenames,
+            # which makes this step immune to tag naming convention changes.
+            curl -fSLo /tmp/release-index.yaml \
+              -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" \
+              -H "Accept: application/octet-stream" \
+              "https://github.com/gruntwork-io/helm-kubernetes-services/releases/download/${CIRCLE_TAG}/index.yaml"
+
+            # Merge the release index entries into the helmcharts index.
+            # New versions are appended; existing versions are left unchanged (idempotent).
+            python3 scripts/merge-helm-index.py \
+              /tmp/release-index.yaml \
+              /tmp/helmcharts/index.yaml \
+              /tmp/helmcharts/index.yaml
+      - run:
+          name: Commit and open PR in helmcharts repo
+          command: |
+            BRANCH_NAME="update-helm-index-${CIRCLE_TAG}"
+            DEFAULT_BRANCH="$(gh repo view "${HELMCHARTS_REPO}" --json defaultBranchRef --jq '.defaultBranchRef.name')"
+            cd /tmp/helmcharts
+
+            # Handle pre-existing remote branch (job retry scenario)
+            if git ls-remote --exit-code --heads origin "${BRANCH_NAME}" > /dev/null 2>&1; then
+              echo "Branch ${BRANCH_NAME} already exists remotely, checking out."
+              git fetch origin "${BRANCH_NAME}"
+              git checkout "${BRANCH_NAME}"
+            else
+              git checkout -b "${BRANCH_NAME}"
+            fi
+
+            git add index.yaml
+
+            # Exit cleanly if no changes (idempotent re-runs)
+            if git diff --cached --quiet; then
+              echo "index.yaml unchanged, nothing to commit."
+              exit 0
+            fi
+
+            git commit -m "Update helm repo index for helm-kubernetes-services ${CIRCLE_TAG}"
+            git push origin "${BRANCH_NAME}"
+
+            # Open PR, skip if one already exists for this branch
+            EXISTING_PR="$(gh pr list \
+              --repo "${HELMCHARTS_REPO}" \
+              --head "${BRANCH_NAME}" \
+              --json number \
+              --jq '.[0].number')"
+            if [ -n "$EXISTING_PR" ]; then
+              echo "PR #${EXISTING_PR} already exists for branch ${BRANCH_NAME}."
+            else
+              gh pr create \
+                --repo "${HELMCHARTS_REPO}" \
+                --base "${DEFAULT_BRANCH}" \
+                --head "${BRANCH_NAME}" \
+                --title "Update Helm repo index for helm-kubernetes-services ${CIRCLE_TAG}" \
+                --body "Automated PR to update the Helm repository index after releasing \`${CIRCLE_TAG}\` of [helm-kubernetes-services](https://github.com/gruntwork-io/helm-kubernetes-services/releases/tag/${CIRCLE_TAG})."
+            fi
+
 workflows:
   version: 2
   test-and-deploy:
@@ -178,7 +265,7 @@ workflows:
       - setup:
           filters:
             tags:
-              only: /^v.*/
+              only: /^(v\d|[a-z0-9-]+-v\d).*/
           context:
             - AWS__PHXDEVOPS__circle-ci-test
             - GITHUB__PAT__gruntwork-ci
@@ -188,7 +275,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /^v.*/
+              only: /^(v\d|[a-z0-9-]+-v\d).*/
           context:
             - AWS__PHXDEVOPS__circle-ci-test
             - GITHUB__PAT__gruntwork-ci
@@ -198,7 +285,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /^v.*/
+              only: /^(v\d|[a-z0-9-]+-v\d).*/
           context:
             - AWS__PHXDEVOPS__circle-ci-test
             - GITHUB__PAT__gruntwork-ci
@@ -208,7 +295,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /^v.*/
+              only: /^(v\d|[a-z0-9-]+-v\d).*/
           context:
             - AWS__PHXDEVOPS__circle-ci-test
             - GITHUB__PAT__gruntwork-ci
@@ -220,9 +307,20 @@ workflows:
             - test_k8s121
           filters:
             tags:
-              only: /^v.*/
+              only: /^(v\d|[a-z0-9-]+-v\d).*/
             branches:
               ignore: /.*/
           context:
             - AWS__PHXDEVOPS__circle-ci-test
+            - GITHUB__PAT__gruntwork-ci
+
+      - open-helmcharts-pr:
+          requires:
+            - deploy
+          filters:
+            tags:
+              only: /^(v\d|[a-z0-9-]+-v\d).*/
+            branches:
+              ignore: /.*/
+          context:
             - GITHUB__PAT__gruntwork-ci
