@@ -224,8 +224,8 @@ jobs:
             # New versions are appended; existing versions are left unchanged (idempotent).
             python3 scripts/merge-helm-index.py \
               /tmp/index.yaml \
-              /tmp/helmcharts/index.yaml \
-              /tmp/helmcharts/index.yaml
+              /tmp/helmcharts/docs/index.yaml \
+              /tmp/helmcharts/docs/index.yaml
       - run:
           name: Commit and open PR in helmcharts repo
           command: |
@@ -237,12 +237,12 @@ jobs:
             if git ls-remote --exit-code --heads origin "${BRANCH_NAME}" > /dev/null 2>&1; then
               echo "Branch ${BRANCH_NAME} already exists remotely, checking out."
               git fetch origin "${BRANCH_NAME}"
-              git checkout "${BRANCH_NAME}"
+              git checkout -b "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
             else
               git checkout -b "${BRANCH_NAME}"
             fi
 
-            git add index.yaml
+            git add docs/index.yaml
 
             # Exit cleanly if no changes (idempotent re-runs)
             if git diff --cached --quiet; then

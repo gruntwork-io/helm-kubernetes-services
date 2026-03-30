@@ -7,17 +7,31 @@ Usage:
 
 New chart versions from the release index are appended to the helmcharts index.
 Existing versions are left unchanged (operation is idempotent).
+If the helmcharts index does not exist yet, it is created from scratch.
 """
+import os
 import sys
 import yaml
 from datetime import datetime, timezone
 
 
+EMPTY_INDEX = {
+    "apiVersion": "v1",
+    "entries": {},
+    "generated": "",
+}
+
+
 def merge_indexes(release_index_path, helmcharts_index_path, output_path):
     with open(release_index_path) as f:
         release_idx = yaml.safe_load(f)
-    with open(helmcharts_index_path) as f:
-        helmcharts_idx = yaml.safe_load(f)
+
+    if os.path.exists(helmcharts_index_path):
+        with open(helmcharts_index_path) as f:
+            helmcharts_idx = yaml.safe_load(f)
+    else:
+        print(f"{helmcharts_index_path} not found, starting from an empty index.")
+        helmcharts_idx = dict(EMPTY_INDEX)
 
     for chart_name, versions in release_idx.get("entries", {}).items():
         helmcharts_idx.setdefault("entries", {}).setdefault(chart_name, [])
