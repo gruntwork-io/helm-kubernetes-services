@@ -185,15 +185,6 @@ jobs:
     steps:
       - attach_workspace:
           at: /home/circleci
-      # TEMP: remove this step before merging — allows branch builds to test this job
-      # by falling back to an existing release tag when CIRCLE_TAG is not set.
-      - run:
-          name: Set fallback CIRCLE_TAG for branch testing
-          command: |
-            if [ -z "${CIRCLE_TAG}" ]; then
-              echo 'export CIRCLE_TAG="v0.2.29"' >> "$BASH_ENV"
-              echo "Branch build detected: using CIRCLE_TAG=v0.2.29 for testing"
-            fi
       - run:
           name: Install gh CLI
           command: |
@@ -335,17 +326,5 @@ workflows:
               only: /^(v\d|[a-z0-9-]+-v\d).*/
             branches:
               ignore: /.*/
-          context:
-            - GITHUB__PAT__gruntwork-ci
-
-      # TEMP: remove this block before merging — runs open-helmcharts-pr on the feature branch
-      # without requiring deploy, using the fallback CIRCLE_TAG set in the job.
-      - open-helmcharts-pr:
-          name: open-helmcharts-pr-branch-test
-          requires:
-            - setup
-          filters:
-            branches:
-              only: /^ci\/fix-helmchart-publish$/
           context:
             - GITHUB__PAT__gruntwork-ci
