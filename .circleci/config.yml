@@ -13,6 +13,7 @@ base_env: &base_env
   TERRAGRUNT_VERSION: NONE
   PACKER_VERSION: NONE
   GOLANG_VERSION: 1.24.0
+  MISE_VERSION: NONE
   GO111MODULE: auto
   KUBECONFIG: /home/circleci/.kube/config
 
@@ -40,7 +41,7 @@ install_gruntwork_utils: &install_gruntwork_utils
       --terragrunt-version ${TERRAGRUNT_VERSION} \
       --packer-version ${PACKER_VERSION} \
       --go-version ${GOLANG_VERSION} \
-      --mise-version NONE
+      ${MISE_VERSION:+--mise-version $MISE_VERSION}
 
 integration_test_steps: &integration_test_steps
   steps:
@@ -130,6 +131,7 @@ jobs:
       CRI_DOCKERD_ARG: "--cri-dockerd-version 0.3.0"
       MINIKUBE_VERSION: v1.28.0
       MODULE_CI_VERSION: v0.51.0
+      MISE_VERSION: ""
 
   test_k8s121:
     <<: [*defaults, *integration_test_steps]
@@ -139,6 +141,7 @@ jobs:
       CRI_DOCKERD_ARG: ""
       MINIKUBE_VERSION: v1.22.0
       MODULE_CI_VERSION: v0.50.0
+      MISE_VERSION: ""
 
   deploy:
     <<: *defaults
