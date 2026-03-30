@@ -218,25 +218,26 @@ jobs:
               git -C /tmp/helmcharts checkout -b "${BRANCH_NAME}"
             fi
       - run:
-          name: Download release index and merge into helmcharts index
+          <<: *install_helm_client
+      - run:
+          name: Download release assets and merge Helm index
           command: |
-            # Download the index.yaml already generated and uploaded by the deploy job.
-            # Using the release artifact directly avoids needing to reconstruct .tgz filenames,
-            # which makes this step immune to tag naming convention changes.
+            mkdir -p /tmp/helm-release-assets
+
+            # Download all .tgz chart packages from the release
             gh release download "${CIRCLE_TAG}" \
               --repo gruntwork-io/helm-kubernetes-services \
-              --pattern "index.yaml" \
-              --dir /tmp \
+              --pattern "*.tgz" \
+              --dir /tmp/helm-release-assets \
               --clobber
 
-            pip3 install --quiet -r scripts/requirements.txt
+            # Use helm repo index to generate a new index from the .tgz files,
+            # merging with the existing helmcharts index to preserve all prior versions.
+            helm repo index /tmp/helm-release-assets \
+              --url "https://github.com/gruntwork-io/helm-kubernetes-services/releases/download/${CIRCLE_TAG}" \
+              --merge /tmp/helmcharts/docs/index.yaml
 
-            # Merge the release index entries into the helmcharts index.
-            # New versions are appended; existing versions are left unchanged (idempotent).
-            python3 scripts/merge-helm-index.py \
-              /tmp/index.yaml \
-              /tmp/helmcharts/docs/index.yaml \
-              /tmp/helmcharts/docs/index.yaml
+            cp /tmp/helm-release-assets/index.yaml /tmp/helmcharts/docs/index.yaml
       - run:
           name: Commit and open PR in helmcharts repo
           command: |
