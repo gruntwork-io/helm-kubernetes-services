@@ -1,9 +1,6 @@
-FROM ruby:2.7.8
+FROM python:3.12-alpine
 
-RUN gem install sinatra json rackup
-
-COPY app.rb /usr/src/app.rb
-WORKDIR /usr/src
+COPY app.py /app.py
 
 EXPOSE 8080
-CMD ["ruby", "app.rb"]
+CMD ["python", "/app.py"]
