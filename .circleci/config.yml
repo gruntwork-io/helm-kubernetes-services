@@ -199,13 +199,24 @@ jobs:
             sudo mv "/tmp/gh_${GH_VERSION}_linux_amd64/bin/gh" /usr/local/bin/gh
             echo "$GITHUB_OAUTH_TOKEN" | gh auth login --with-token
       - run:
-          name: Clone helmcharts repo
+          name: Clone helmcharts repo and create branch
           command: |
+            BRANCH_NAME="update-helm-index-${CIRCLE_TAG}"
+
             git clone \
               "https://x-access-token:${GITHUB_OAUTH_TOKEN}@github.com/${HELMCHARTS_REPO}.git" \
               /tmp/helmcharts
             git -C /tmp/helmcharts config user.email "ci@gruntwork.io"
             git -C /tmp/helmcharts config user.name "gruntwork-ci"
+
+            # Create or check out the branch before any files are modified
+            if git -C /tmp/helmcharts ls-remote --exit-code --heads origin "${BRANCH_NAME}" > /dev/null 2>&1; then
+              echo "Branch ${BRANCH_NAME} already exists remotely, checking out."
+              git -C /tmp/helmcharts fetch origin "${BRANCH_NAME}"
+              git -C /tmp/helmcharts checkout -b "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
+            else
+              git -C /tmp/helmcharts checkout -b "${BRANCH_NAME}"
+            fi
       - run:
           name: Download release index and merge into helmcharts index
           command: |
@@ -232,15 +243,6 @@ jobs:
             BRANCH_NAME="update-helm-index-${CIRCLE_TAG}"
             DEFAULT_BRANCH="$(gh repo view "${HELMCHARTS_REPO}" --json defaultBranchRef --jq '.defaultBranchRef.name')"
             cd /tmp/helmcharts
-
-            # Handle pre-existing remote branch (job retry scenario)
-            if git ls-remote --exit-code --heads origin "${BRANCH_NAME}" > /dev/null 2>&1; then
-              echo "Branch ${BRANCH_NAME} already exists remotely, checking out."
-              git fetch origin "${BRANCH_NAME}"
-              git checkout -b "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
-            else
-              git checkout -b "${BRANCH_NAME}"
-            fi
 
             git add docs/index.yaml
 
