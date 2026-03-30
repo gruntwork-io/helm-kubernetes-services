@@ -40,6 +40,7 @@ install_gruntwork_utils: &install_gruntwork_utils
       --terragrunt-version ${TERRAGRUNT_VERSION} \
       --packer-version ${PACKER_VERSION} \
       --go-version ${GOLANG_VERSION} \
+      --mise-version NONE
 
 integration_test_steps: &integration_test_steps
   steps:
