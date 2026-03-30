@@ -209,14 +209,9 @@ jobs:
             git -C /tmp/helmcharts config user.email "ci@gruntwork.io"
             git -C /tmp/helmcharts config user.name "gruntwork-ci"
 
-            # Create or check out the branch before any files are modified
-            if git -C /tmp/helmcharts ls-remote --exit-code --heads origin "${BRANCH_NAME}" > /dev/null 2>&1; then
-              echo "Branch ${BRANCH_NAME} already exists remotely, checking out."
-              git -C /tmp/helmcharts fetch origin "${BRANCH_NAME}"
-              git -C /tmp/helmcharts checkout -b "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
-            else
-              git -C /tmp/helmcharts checkout -b "${BRANCH_NAME}"
-            fi
+            # Always branch from the default branch to ensure a clean base.
+            # If the branch already exists from a prior run, it will be force-pushed.
+            git -C /tmp/helmcharts checkout -b "${BRANCH_NAME}"
       - run:
           <<: *install_helm_client
       - run:
@@ -254,7 +249,7 @@ jobs:
             fi
 
             git commit -m "Update helm repo index for helm-kubernetes-services ${CIRCLE_TAG}"
-            git push origin "${BRANCH_NAME}"
+            git push --force-with-lease origin "${BRANCH_NAME}"
 
             # Open PR, skip if one already exists for this branch
             EXISTING_PR="$(gh pr list \
