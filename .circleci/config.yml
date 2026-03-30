@@ -187,8 +187,8 @@ jobs:
           name: Set fallback CIRCLE_TAG for branch testing
           command: |
             if [ -z "${CIRCLE_TAG}" ]; then
-              echo 'export CIRCLE_TAG="v0.2.30"' >> "$BASH_ENV"
-              echo "Branch build detected: using CIRCLE_TAG=v0.2.30 for testing"
+              echo 'export CIRCLE_TAG="v0.2.29"' >> "$BASH_ENV"
+              echo "Branch build detected: using CIRCLE_TAG=v0.2.29 for testing"
             fi
       - run:
           name: Install gh CLI
@@ -212,10 +212,11 @@ jobs:
             # Download the index.yaml already generated and uploaded by the deploy job.
             # Using the release artifact directly avoids needing to reconstruct .tgz filenames,
             # which makes this step immune to tag naming convention changes.
-            curl -fSLo /tmp/release-index.yaml \
-              -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" \
-              -H "Accept: application/octet-stream" \
-              "https://github.com/gruntwork-io/helm-kubernetes-services/releases/download/${CIRCLE_TAG}/index.yaml"
+            gh release download "${CIRCLE_TAG}" \
+              --repo gruntwork-io/helm-kubernetes-services \
+              --pattern "index.yaml" \
+              --dir /tmp \
+              --clobber
 
             pip3 install --quiet -r scripts/requirements.txt
 
