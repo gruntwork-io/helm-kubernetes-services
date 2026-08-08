@@ -1,0 +1,172 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.applicationName }}
+  namespace: {{ .Values.argoNamespace }}
+  {{- if .Values.finalizers }}
+  finalizers:
+  {{- range .Values.finalizers }}
+    - {{ . }}
+  {{- end }}
+{{- end }}
+  {{- if .Values.labels }}
+  labels:
+{{ toYaml .Values.labels | indent 4 }}
+{{- end }}
+spec:
+  project: {{ .Values.project }}
+  destination:
+    namespace: {{ .Values.destination.namespace }}
+    {{- if .Values.destination.clusterName }}
+    name: {{ .Values.destination.clusterName }}
+    {{- else }}
+    server: {{ .Values.destination.clusterServer }}
+    {{- end }}
+  source:
+    repoURL: {{ .Values.source.repoURL }}
+    targetRevision: {{ .Values.source.targetRevision }}
+    path: {{ .Values.source.path }}
+    {{- if .Values.source.chart }}
+    chart: {{ .Values.source.chart }}
+    {{- end }}
+    # HELM
+    {{- if .Values.source.helm }}
+    helm:
+      passCredentials: {{ .Values.source.helm.passCredentials }}
+      {{- if .Values.source.helm.parameters }}
+      parameters:
+{{ toYaml .Values.source.helm.parameters | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.helm.fileParameters }}
+      fileParameters:
+{{ toYaml .Values.source.helm.fileParameters | indent 6 }}
+      {{- end }}
+      {{- if .Values.source.helm.releaseName }}
+      releaseName: {{ .Values.source.helm.releaseName }}
+      {{- end }}
+      {{- if .Values.source.helm.valueFiles }}
+      valueFiles:
+      {{- range .Values.source.helm.valueFiles }}
+      - {{ . }}
+      {{- end }}
+      {{- end }}
+      ignoreMissingValueFiles: {{ .Values.source.helm.ignoreMissingValueFiles }}
+      {{- if .Values.source.helm.valuesBlockFile }}
+      values: |
+{{ tpl .Values.source.helm.valuesBlockFile $ | indent 8 }}
+      {{- end }}
+      {{- if .Values.source.helm.valuesBlockObject }}
+      valuesObject:
+{{ toYaml .Values.source.helm.valuesBlockObject | indent 8 }}
+      {{- end }}
+      skipCrds: {{ .Values.source.helm.skipCrds }}
+      {{- if .Values.source.helm.version }}
+      version: {{ .Values.source.helm.version }}
+      {{- end }}
+    {{- end }}
+    # KUSTOMIZE
+    {{- if .Values.source.kustomize }}
+    kustomize:
+      {{- if .Values.source.kustomize.version }}
+      version: {{ .Values.source.kustomize.version }}
+      {{- end }}
+      {{- if .Values.source.kustomize.namePrefix }}
+      namePrefix: {{ .Values.source.kustomize.namePrefix }}
+      {{- end }}
+      {{- if .Values.source.kustomize.nameSuffix }}
+      nameSuffix: {{ .Values.source.kustomize.nameSuffix }}
+      {{- end }}
+      {{- if .Values.source.kustomize.commonLabels }}
+      commonLabels: 
+{{ toYaml .Values.source.kustomize.commonLabels | indent 8 }}
+      {{- end }}
+      {{- if .Values.source.kustomize.commonAnnotations }}
+      commonAnnotations: 
+{{ toYaml .Values.source.kustomize.commonAnnotations | indent 8 }}
+      {{- end }}
+      {{- if .Values.source.kustomize.commonAnnotationsEnvsubst }}
+      commonAnnotationsEnvsubst: {{ .Values.source.kustomize.commonAnnotationsEnvsubst }}
+      {{- end }}
+      {{- if .Values.source.kustomize.images }}
+      images: 
+      {{- range .Values.source.kustomize.images }}
+      - {{ . }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.source.kustomize.namespace }}
+      namespace: {{ .Values.source.kustomize.namespace }}
+      {{- end }}
+      {{- if .Values.source.kustomize.replicas }}
+      replicas: 
+{{ toYaml .Values.source.kustomize.replicas | indent 6 }}
+      {{- end }}
+    {{- end }}
+
+    # DIRECTORY
+    {{- if .Values.source.directory }}
+    directory:
+      {{- if .Values.source.directory.recurse }}
+      recurse: {{ .Values.source.directory.recurse }}
+      {{- end }}
+      {{- if .Values.source.directory.jsonnet }}
+      jsonnet: 
+{{ toYaml .Values.source.directory.jsonnet | indent 8 }}
+      {{- end }}
+      {{- if .Values.source.directory.exclude }}
+      exclude: {{ .Values.source.directory.exclude | quote }}
+      {{- end }}
+      {{- if .Values.source.directory.include }}
+      include: {{ .Values.source.directory.include | quote }}
+      {{- end }}
+    {{- end }}
+  # SOURCES
+  {{- if .Values.sources }}
+  sources: 
+{{ toYaml .Values.sources | indent 4 }}
+  {{- end }}
+  {{- if .Values.info }}
+  info: 
+{{ toYaml .Values.info | indent 4 }}
+  {{- end }}
+  # Sync policy
+  syncPolicy:
+    automated:
+      prune: {{ .Values.syncPolicy.prune | default true }}
+      selfHeal: {{ .Values.syncPolicy.selfHeal | default true }}
+      allowEmpty: {{ .Values.syncPolicy.allowEmpty | default false }}
+    {{- if .Values.syncPolicy.syncOptions }}
+    syncOptions:
+    {{- range .Values.syncPolicy.syncOptions }}
+    - {{ . }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.syncPolicy.managedNamespaceMetadata }}
+    managedNamespaceMetadata:
+    {{- end }}
+    {{- if (and .Values.syncPolicy.managedNamespaceMetadata .Values.syncPolicy.managedNamespaceMetadata.labels) }}
+      labels:
+      {{- range $k, $v := .Values.syncPolicy.managedNamespaceMetadata.labels }}
+        {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    {{- if (and .Values.syncPolicy.managedNamespaceMetadata .Values.syncPolicy.managedNamespaceMetadata.annotations) }}
+      annotations:
+      {{- range $k, $v := .Values.syncPolicy.managedNamespaceMetadata.annotations }}
+        {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.syncPolicy.retry }}
+    retry:
+      limit: {{ .Values.syncPolicy.retry.limit | default 5 }}
+      {{- if .Values.syncPolicy.retry.backoff }}
+      backoff:
+        duration: {{ .Values.syncPolicy.retry.backoff.duration }}
+        factor: {{ .Values.syncPolicy.retry.backoff.factor }}
+        maxDuration: {{ .Values.syncPolicy.retry.backoff.maxDuration }}
+      {{- end }}
+    {{- end }}
+  {{- if .Values.ignoreDifferences }}
+  ignoreDifferences:
+{{ toYaml .Values.ignoreDifferences | indent 2 }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 10 }}
