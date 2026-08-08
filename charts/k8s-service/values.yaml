@@ -682,11 +682,12 @@ secrets: {}
 # like: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
 containerResources: {}
 
-# nodeSelector and affinity specify restrictions on what node this pod should be scheduled on.
+# nodeSelector, affinity and topologySpreadConstraints specify restrictions on what node this pod should be scheduled on.
 # NOTE: These variables are injected directly into the pod spec. See the official documentation for what this might look
 # like: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 nodeSelector: {}
 affinity: {}
+topologySpreadConstraints: []
 
 # priorityClassName assigns a priorityClass to the deployment allowing pods to preempt or be preempted.
 # See https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
