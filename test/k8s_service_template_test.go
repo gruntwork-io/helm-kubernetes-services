@@ -814,7 +814,7 @@ func TestK8SServiceDeploymentRollingUpdateStrategy(t *testing.T) {
 			"deploymentStrategy.enabled": "true",
 			"deploymentStrategy.type":    "RollingUpdate",
 		},
-	)
+	) 
 
 	assert.EqualValues(t, "RollingUpdate", string(deployment.Spec.Strategy.Type))
 	require.Nil(t, deployment.Spec.Strategy.RollingUpdate)
