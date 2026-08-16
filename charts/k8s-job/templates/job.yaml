@@ -1,0 +1,5 @@
+{{- /*
+The standalone Job to be deployed. This resource manages the creation and replacement
+of Jobs you schedule.
+*/ -}}
+{{ include "k8s-job.jobSpec" }}

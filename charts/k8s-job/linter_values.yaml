@@ -1,0 +1,42 @@
+#----------------------------------------------------------------------------------------------------------------------
+# CHART PARAMETERS TO USE WITH HELM LINT
+# This file declares a complete configuration value for this chart, with required values defined so that it can be used
+# with helm lint to lint the chart. This should only specify the required values of the chart, and be combined with the
+# default values of the chart.
+# This is a YAML-formatted file.
+#----------------------------------------------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------------------------------------------
+# REQUIRED VALUES
+# These values are expected to be defined and passed in by the operator when deploying this helm chart.
+#----------------------------------------------------------------------------------------------------------------------
+
+# containerImage is a map that describes the container image that should be used to serve the application managed by
+# this chart.
+# The expected keys are:
+#   - repository (string) (required) : The container image repository that should be used.
+#                                      E.g `nginx` ; `gcr.io/kubernetes-helm/tiller`
+#   - tag        (string) (required) : The tag of the image (e.g `latest`) that should be used. We recommend using a
+#                                      fixed tag or the SHA of the image. Avoid using the tags `latest`, `head`,
+#                                      `canary`, or other tags that are designed to be “floating”.
+#   - pullPolicy (string)            : The image pull policy to employ. Determines when the image will be pulled in. See
+#                                      the official Kubernetes docs for more info. If undefined, this will default to
+#                                      `IfNotPresent`.
+#
+# The following example deploys the `nginx:stable` image with a `IfNotPresent` image pull policy, which indicates that
+# the image should only be pulled if it has not been pulled previously.
+#
+# EXAMPLE:
+#
+# containerImage:
+#   repository: nginx
+#   tag: stable
+#   pullPolicy: IfNotPresent
+containerImage:
+  repository: nginx
+  tag: stable
+  pullPolicy: IfNotPresent
+
+# applicationName is a string that names the application. This is used to label the pod and to name the main application
+# container in the pod spec. The label is keyed under "gruntwork.io/app-name"
+applicationName: "linter"
