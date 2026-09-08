@@ -461,6 +461,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
 
+    {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
     {{- with .Values.priorityClassName }}
       priorityClassName:
 {{ toYaml . | indent 8 }}
