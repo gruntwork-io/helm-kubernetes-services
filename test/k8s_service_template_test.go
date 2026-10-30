@@ -661,6 +661,37 @@ func TestK8SServiceWithHostAliasesHasHostAliasesSpec(t *testing.T) {
 	assert.Equal(t, renderedPodSpec.HostAliases[1].Hostnames, []string{"foo.remote", "bar.remote"})
 }
 
+// Test that omitting dnsConfig does not set dnsConfig attribute on the Deployment pod spec.
+func TestK8SServiceDefaultHasNullDnsConfigSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(t, map[string]string{})
+	renderedPodSpec := deployment.Spec.Template.Spec
+	assert.Nil(t, renderedPodSpec.DNSConfig)
+}
+
+// Test that setting dnsConfig sets the dnsConfig attribute on the Deployment pod spec.
+func TestK8SServiceWithDnsConfigHasDnsConfigSpec(t *testing.T) {
+	t.Parallel()
+
+	deployment := renderK8SServiceDeploymentWithSetValues(
+		t,
+		map[string]string{
+			"dnsConfig.nameservers[0]": "1.2.3.4",
+			"dnsConfig.searches[0]":    "ns1.svc.cluster.local",
+			"dnsConfig.searches[1]":    "my.dns.search.suffix",
+			"dnsConfig.options[0].name": "edns0",
+		},
+	)
+	renderedPodSpec := deployment.Spec.Template.Spec
+	require.NotNil(t, renderedPodSpec.DNSConfig)
+	assert.Equal(t, renderedPodSpec.DNSConfig.Nameservers, []string{"1.2.3.4"})
+	assert.Equal(t, renderedPodSpec.DNSConfig.Searches, []string{"ns1.svc.cluster.local", "my.dns.search.suffix"})
+	require.Equal(t, len(renderedPodSpec.DNSConfig.Options), 1)
+	assert.Equal(t, renderedPodSpec.DNSConfig.Options[0].Name, "edns0")
+	assert.Nil(t, renderedPodSpec.DNSConfig.Options[0].Value)
+}
+
 // Test that providing tls configuration to Ingress renders correctly
 func TestK8SServiceIngressMultiCert(t *testing.T) {
 	t.Parallel()
