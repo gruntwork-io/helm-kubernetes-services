@@ -158,6 +158,11 @@ spec:
       dnsPolicy: {{ .Values.dnsPolicy }}
       {{- end }}
 
+      {{- if .Values.dnsConfig }}
+      dnsConfig:
+{{ toYaml .Values.dnsConfig | indent 8 }}
+      {{- end }}
+
       containers:
         {{- if .isCanary }}
         - name: {{ .Values.applicationName }}-canary

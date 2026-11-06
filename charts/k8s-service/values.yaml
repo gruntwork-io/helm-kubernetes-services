@@ -84,6 +84,23 @@ containerPorts:
 #
 # dnsPolicy: "ClusterFirst"
 
+# dnsConfig is a map that specifies the Pod's DNS configuration. This is optional and is only used when dnsPolicy is set
+# to "None". The map is injected directly into the pod spec. See [Pod's DNS Config](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config) for details.
+# NOTE: This variable is injected directly into the deployment spec using `toYaml`.
+#
+# EXAMPLE:
+#
+# dnsConfig:
+#   nameservers:
+#     - 1.2.3.4
+#   searches:
+#     - ns1.svc.cluster.local
+#     - my.dns.search.suffix
+#   options:
+#     - name: ndots
+#       value: "2"
+#     - name: edns0
+
 # startupProbe is a map that specifies the startup probe of the main application container. Startup probes indicate
 # when a container application has started. If such a probe is configured, it disables liveness and readiness checks
 # until it succeeds, making sure those probes don't interfere with the application startup. This can be used to adopt
